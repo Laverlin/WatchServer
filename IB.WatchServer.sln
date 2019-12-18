@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29318.209
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IB.WatchServer.Service", "IB.WatchServer.Service\IB.WatchServer.Service.csproj", "{C8AD0E04-908C-4614-B535-3E6B2071A1D9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8AD0E04-908C-4614-B535-3E6B2071A1D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8AD0E04-908C-4614-B535-3E6B2071A1D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8AD0E04-908C-4614-B535-3E6B2071A1D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8AD0E04-908C-4614-B535-3E6B2071A1D9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {96974A3B-40A1-45DF-9A0D-EB45EB31DEB7}
+	EndGlobalSection
+	GlobalSection(AutomaticVersions) = postSolution
+		UpdateAssemblyVersion = True
+		UpdateAssemblyFileVersion = False
+		UpdateAssemblyInfoVersion = False
+		AssemblyVersionSettings = None.None.ShortYearStamp.DayOfYearStamp
+		UpdatePackageVersion = False
+		AssemblyInfoVersionType = SettingsVersion
+		InheritWinAppVersionFrom = None
+	EndGlobalSection
+EndGlobal
