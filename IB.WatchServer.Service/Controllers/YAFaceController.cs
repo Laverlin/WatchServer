@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Http;
@@ -9,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Service;
+using IB.WatchServer.Service.Infrastructure;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -41,37 +40,41 @@ namespace IB.WatchServer.Service.Controllers
             return new Pong { DeviceCount = deviceCount };
         }
 
-        /*
 
+        /// <summary>
+        /// Process request of the location
+        /// </summary>
+        /// <param name="locationRequest"></param>
+        /// <returns></returns>
         [HttpGet("location")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-      //  [RequestRateLimit(Seconds = 5, KeyField = "did")]
-        public async Task<ActionResult<LocationInfo>> Location([FromQuery] WatchRequest watchRequest)
+        [RequestRateLimit(Seconds = 5, KeyField = "did")]
+        public async Task<ActionResult<LocationResponse>> Location([FromQuery] LocationRequest locationRequest)
         {
             try
             {
                 string city;
-                string deviceId = watchRequest.DeviceId ?? "unknown";
+                string deviceId = locationRequest.DeviceId ?? "unknown";
 
-                city = await _locationService.RequestLocationName(watchRequest.Lat, watchRequest.Lon);
+                city = await _yaFaceProvider.RequestLocationName(locationRequest.Lat, locationRequest.Lon);
 
                 var cityInfo = new CityInfo
                 {
                     CityName = city,
-                    Lat = Convert.ToDecimal(watchRequest.Lat),
-                    Lon = Convert.ToDecimal(watchRequest.Lon),
+                    Lat = Convert.ToDecimal(locationRequest.Lat),
+                    Lon = Convert.ToDecimal(locationRequest.Lon),
                     RequestTime = DateTime.UtcNow,
-                    Version = watchRequest.Version,
-                    Framework = watchRequest.Framework,
-                    CiqVersion = watchRequest.CiqVersion
+                    Version = locationRequest.Version,
+                    Framework = locationRequest.Framework,
+                    CiqVersion = locationRequest.CiqVersion
                 };
 
-                await _locationService.SaveRequest(deviceId, watchRequest.DeviceName, cityInfo);
+                await _yaFaceProvider.SaveRequest(deviceId, locationRequest.DeviceName, cityInfo);
 
-                var locationInfo = new LocationInfo { CityName = _locationService.RemoveDiacritics(city) };
+                var locationInfo = new LocationResponse { CityName = _yaFaceProvider.RemoveDiacritics(city) };
 
-                _logger.LogInformation(new EventId(100, "WatchRequestLog"), "CityName {CityName}, WatchRequest {@WatchRequest}", locationInfo.CityName, watchRequest);
+                _logger.LogInformation(new EventId(100, "LocationRequestLog"), "CityName {CityName}, LocationRequest {@LocationRequest}", locationInfo.CityName, locationRequest);
 
                 return locationInfo;
 
@@ -83,6 +86,6 @@ namespace IB.WatchServer.Service.Controllers
             }
 
         }
-        */
+
     }
 }

@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace IB.WatchServer.Service
 {
@@ -30,8 +31,12 @@ namespace IB.WatchServer.Service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(Configuration.GetSection(typeof(PostgresSettings).Name).Get<PostgresSettings>());
-            
+            services.AddSingleton(Configuration.GetSection(typeof(FaceSettings).Name).Get<FaceSettings>());
+
+            services.AddHttpClient();
             services.AddScoped<YAFaceProvider>();
+            services.AddHostedService<StartupHostedService>();
+
             services.AddControllers();
         }
 
@@ -42,6 +47,8 @@ namespace IB.WatchServer.Service
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSerilogRequestLogging();
 
             app.UseRouting();
 

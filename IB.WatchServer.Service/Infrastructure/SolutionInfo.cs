@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace IB.WatchServer.Service.Infrastructure
 {
@@ -9,12 +8,17 @@ namespace IB.WatchServer.Service.Infrastructure
     public static class SolutionInfo
     {
         /// <summary>
-        /// Get assembly version info
+        /// Assembly version info
         /// </summary>
         /// <returns>string with assembly version</returns>
         public static string GetVersion()
         {
             return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+
+        internal static string GetName()
+        {
+            return Assembly.GetExecutingAssembly().GetName().Name;
         }
     }
 }
