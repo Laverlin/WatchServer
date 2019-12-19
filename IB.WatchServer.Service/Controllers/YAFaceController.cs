@@ -49,7 +49,8 @@ namespace IB.WatchServer.Service.Controllers
         [HttpGet("location")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [RequestRateLimit(Seconds = 5, KeyField = "did")]
+        //[RequestRateLimit(Seconds = 5, KeyField = "did")]
+        [ServiceFilter(typeof(RequestRateLimitAttribute))]
         public async Task<ActionResult<LocationResponse>> Location([FromQuery] LocationRequest locationRequest)
         {
             try
@@ -72,11 +73,11 @@ namespace IB.WatchServer.Service.Controllers
 
                 await _yaFaceProvider.SaveRequest(deviceId, locationRequest.DeviceName, cityInfo);
 
-                var locationInfo = new LocationResponse { CityName = _yaFaceProvider.RemoveDiacritics(city) };
+                var locationResponse = new LocationResponse { CityName = _yaFaceProvider.RemoveDiacritics(city) };
 
-                _logger.LogInformation(new EventId(100, "LocationRequestLog"), "CityName {CityName}, LocationRequest {@LocationRequest}", locationInfo.CityName, locationRequest);
+                _logger.LogInformation(new EventId(100, "LocationRequest"), "CityName {CityName}, LocationRequest {@LocationRequest}", locationResponse.CityName, locationRequest);
 
-                return locationInfo;
+                return locationResponse;
 
             }
             catch (Exception ex)

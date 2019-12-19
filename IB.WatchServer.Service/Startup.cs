@@ -36,6 +36,12 @@ namespace IB.WatchServer.Service
             services.AddHttpClient();
             services.AddScoped<YAFaceProvider>();
             services.AddHostedService<StartupHostedService>();
+            services.AddScoped(factory => new RequestRateLimitAttribute 
+            { 
+                KeyField = "did",
+                Seconds = 5,
+                Logger = factory.GetRequiredService<ILogger<RequestRateLimitAttribute>>() 
+            });
 
             services.AddControllers();
         }

@@ -11,6 +11,7 @@ using System.Text;
 using System.Globalization;
 using System.Net.Http;
 using System.Text.Json;
+using System;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -67,8 +68,8 @@ namespace IB.WatchServer.Service.Service
         /// <returns>ascii text or null if null has ben passed</returns>
         public string RemoveDiacritics(string text)
         {
-            if (text == null)
-                return null;
+            if (string.IsNullOrEmpty(text))
+                return text;
 
             var normalizedString = text.Normalize(NormalizationForm.FormD);
             var stringBuilder = new StringBuilder();
