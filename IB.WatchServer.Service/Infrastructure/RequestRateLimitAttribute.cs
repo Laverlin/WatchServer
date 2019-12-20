@@ -11,9 +11,10 @@ namespace IB.WatchServer.Service.Infrastructure
     /// Trottling attribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class RequestRateLimitAttribute : ActionFilterAttribute
+    public class RequestRateLimit : ActionFilterAttribute
     {
-        private static MemoryCache MemoryCache { get; } = new MemoryCache(new MemoryCacheOptions());
+        private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        private readonly ILogger<RequestRateLimit> _logger;
 
         /// <summary>
         /// The number of seconds during that subsequent requests from the same source will be prevented
@@ -25,10 +26,10 @@ namespace IB.WatchServer.Service.Infrastructure
         /// </summary>
         public string KeyField { get; set; }
 
-        /// <summary>
-        /// Logger instance
-        /// </summary>
-        public ILogger<RequestRateLimitAttribute> Logger { get; set; }
+        public RequestRateLimit(ILogger<RequestRateLimit> logger)
+        {
+            _logger = logger;
+        }
 
         /// <summary>
         /// Actual execution
@@ -42,19 +43,19 @@ namespace IB.WatchServer.Service.Infrastructure
                 return;
 
             string memoryCacheKey = $"device-key-{keyValue}";
+            _logger.LogTrace("{memoryCacheKey}", memoryCacheKey);
 
-            if (!MemoryCache.TryGetValue(memoryCacheKey, out bool _))
+            if (!_memoryCache.TryGetValue(memoryCacheKey, out bool _))
             {
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetAbsoluteExpiration(TimeSpan.FromSeconds(Seconds));
-                MemoryCache.Set(memoryCacheKey, true, cacheEntryOptions);
+                _memoryCache.Set(memoryCacheKey, true, cacheEntryOptions);
             }
             else
             {
                 context.Result = new ContentResult { Content = "Too many requests" };
                 context.HttpContext.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                if (Logger != null)
-                    Logger.LogWarning("Too many requests from {KeyValue}", keyValue);
+                _logger.LogWarning("Too many requests from {KeyValue}", keyValue);
             }
         }
     }

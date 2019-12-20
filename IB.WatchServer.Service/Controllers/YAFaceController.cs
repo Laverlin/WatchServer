@@ -50,7 +50,7 @@ namespace IB.WatchServer.Service.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         //[RequestRateLimit(Seconds = 5, KeyField = "did")]
-        [ServiceFilter(typeof(RequestRateLimitAttribute))]
+        [RequestRateFactory(KeyField ="did", Seconds = 5)]
         public async Task<ActionResult<LocationResponse>> Location([FromQuery] LocationRequest locationRequest)
         {
             try
