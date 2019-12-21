@@ -9,7 +9,7 @@
     <Company>IB</Company>
     <Description>The server-side component for the Garmin watch applications</Description>
     <Copyright>Ivan Bodyagin (c) 2019</Copyright>
-    <AssemblyVersion>1.0.19.354</AssemblyVersion>
+    <AssemblyVersion>1.0.19.355</AssemblyVersion>
     <AssemblyName>IB.WatchServer</AssemblyName>
   </PropertyGroup>
 
