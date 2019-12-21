@@ -17,4 +17,4 @@ RUN dotnet publish "IB.WatchServer.Service.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "IB.WatchServer.Service.dll"]
+ENTRYPOINT ["dotnet", "IB.WatchServer.dll"]
