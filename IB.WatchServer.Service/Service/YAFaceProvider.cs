@@ -2,7 +2,6 @@
 
 using LinqToDB;
 using LinqToDB.Data;
-using LinqToDB.DataProvider.PostgreSQL;
 
 using IB.WatchServer.Service.Entity;
 using Microsoft.Extensions.Logging;
@@ -11,7 +10,8 @@ using System.Text;
 using System.Globalization;
 using System.Net.Http;
 using System.Text.Json;
-using System;
+
+using IB.WatchServer.Service.Infrastructure.Linq2DB;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -20,18 +20,19 @@ namespace IB.WatchServer.Service.Service
     /// </summary>
     public class YAFaceProvider
     {
-        private readonly PostgresSettings _postgresSettings;
+        //private readonly PostgresSettings _postgresSettings;
         private readonly ILogger<YAFaceProvider> _logger;
-        private readonly FaceSettings _locationSetting;
+        private readonly FaceSettings _faceSettings;
         private readonly IHttpClientFactory _clientFactory;
+        private readonly DataConnectionFactory _dbFactory;
 
         public YAFaceProvider(
-            ILogger<YAFaceProvider> logger, IHttpClientFactory clientFactory, FaceSettings locationSetting, PostgresSettings postgresSettings)
+            ILogger<YAFaceProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, DataConnectionFactory dbFactory)
         {
             _logger = logger;
-            _postgresSettings = postgresSettings;
             _clientFactory = clientFactory;
-            _locationSetting = locationSetting;
+            _faceSettings = faceSettings;
+            _dbFactory = dbFactory;
         }
 
         /// <summary>
@@ -39,8 +40,9 @@ namespace IB.WatchServer.Service.Service
         /// </summary>
         public async Task<long> GetDeviceCount()
         {
-            using var db = new DataConnection(new PostgreSQLDataProvider(), _postgresSettings.ConnectionString);
+            using var db = _dbFactory.Create();
             return await db.GetTable<DeviceInfo>().CountAsync();
+
         }
 
         /// <summary>
@@ -51,7 +53,7 @@ namespace IB.WatchServer.Service.Service
         /// <param name="cityInfo"><see cref="CityInfo"/> City info with request data</param>
         public async Task SaveRequest(string deviceId, string deviceName, CityInfo cityInfo)
         {
-            using var db = new DataConnection(new PostgreSQLDataProvider(), _postgresSettings.ConnectionString);
+            using var db = _dbFactory.Create();
             var deviceInfo = db.QueryProc<DeviceInfo>(
                 "add_device", new DataParameter("device_id", deviceId), new DataParameter("device_name", deviceName))
                 .Single();
@@ -94,7 +96,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Location name</returns>
         public async Task<string> RequestLocationName(string lat, string lon)
         {
-            var url = string.Format(_locationSetting.BaseUrl, lat, lon, _locationSetting.ApiKey);
+            var url = string.Format(_faceSettings.BaseUrl, lat, lon, _faceSettings.ApiKey);
 
             var client = _clientFactory.CreateClient();
             using var response = await client.GetAsync(url);

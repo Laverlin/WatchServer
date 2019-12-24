@@ -2,6 +2,7 @@ using App.Metrics;
 using App.Metrics.Formatters.Prometheus;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
+using IB.WatchServer.Service.Infrastructure.Linq2DB;
 using IB.WatchServer.Service.Service;
 
 using Microsoft.AspNetCore.Builder;
@@ -30,12 +31,13 @@ namespace IB.WatchServer.Service
         {
             // configuration
             //
-            services.AddSingleton(Configuration.GetSection(nameof(PostgresSettings)).Get<PostgresSettings>());
-            services.AddSingleton(Configuration.GetSection(nameof(FaceSettings)).Get<FaceSettings>());
+            services.AddConfiguration<FaceSettings>();
+            services.AddConfiguration<IConnectionSettings, PostgresProviderSettings>();
 
             // services
             //
             services.AddHttpClient();
+            services.AddSingleton<DataConnectionFactory>();
             services.AddScoped<YAFaceProvider>();
             services.AddScoped<RequestRateLimit>();
 
@@ -85,6 +87,7 @@ namespace IB.WatchServer.Service
                 endpoints.MapControllers();
             });
             app.UseMetricsEndpoint();
+
         }
     }
 }

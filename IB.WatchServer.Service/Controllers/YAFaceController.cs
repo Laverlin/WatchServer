@@ -49,7 +49,6 @@ namespace IB.WatchServer.Service.Controllers
         [HttpGet("location")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        //[RequestRateLimit(Seconds = 5, KeyField = "did")]
         [RequestRateFactory(KeyField ="did", Seconds = 5)]
         public async Task<ActionResult<LocationResponse>> Location([FromQuery] LocationRequest locationRequest)
         {
