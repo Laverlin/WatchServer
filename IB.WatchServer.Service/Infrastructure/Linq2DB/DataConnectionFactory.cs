@@ -22,11 +22,9 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
             _connectionString = connectionString;
         }
 
-        public DataConnectionFactory(IConnectionSettings connectionSettings)
-        {
-            _dataProvider = connectionSettings.GetDataProvider();
-            _connectionString = connectionSettings.GetConnectionString();
-        }
+        public DataConnectionFactory(IConnectionSettings connectionSettings) :
+            this(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
+        { }
 
         /// <summary>
         /// Create data connection with provided settings

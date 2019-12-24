@@ -1,7 +1,5 @@
-﻿using System.Text;
-using System.Reflection;
-using System.ComponentModel;
-
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using LinqToDB.DataProvider;
 using LinqToDB.DataProvider.PostgreSQL;
 
@@ -13,23 +11,6 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
     public class PostgresProviderSettings : IConnectionSettings
     {
         /// <summary>
-        /// Return connection string
-        /// </summary>
-        public string GetConnectionString()
-        {
-            var connectionString = new StringBuilder();
-            foreach (PropertyInfo propertyInfo in GetType().GetProperties())
-            {
-                var name = propertyInfo.GetCustomAttribute<DisplayNameAttribute>() != null
-                    ? propertyInfo.GetCustomAttribute<DisplayNameAttribute>().DisplayName
-                    : propertyInfo.Name;
-                connectionString.Append($"{name}={propertyInfo.GetValue(this).ToString()};");
-            }
-
-            return connectionString.ToString();
-        }
-
-        /// <summary>
         /// Return new instance of <see cref="PostgreSQLDataProvider"/>
         /// </summary>
         public IDataProvider GetDataProvider()
@@ -40,6 +21,7 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
         /// <summary>
         /// Server name
         /// </summary>
+        [Required]
         public string Server { get; set; }
 
         /// <summary>
@@ -50,23 +32,26 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
         /// <summary>
         /// Database name
         /// </summary>
+        [Required]
         public string Database { get; set; }
 
         /// <summary>
         /// Authorized user id
         /// </summary>
         [DisplayName("User Id")]
+        [Required]
         public string UserId { get; set; }
 
         /// <summary>
         /// User password
         /// </summary>
+        [Required]
         public string Password { get; set; }
 
         /// <summary>
         /// Is pooling enabled
         /// </summary>
-        public bool Pooling { get; set; }
+        public bool? Pooling { get; set; }
 
         /// <summary>
         /// pool size minimum
