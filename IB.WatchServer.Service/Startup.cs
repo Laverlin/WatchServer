@@ -1,10 +1,4 @@
-using App.Metrics;
-using App.Metrics.Formatters.Prometheus;
-using IB.WatchServer.Service.Entity;
-using IB.WatchServer.Service.Infrastructure;
-using IB.WatchServer.Service.Infrastructure.Linq2DB;
-using IB.WatchServer.Service.Service;
-
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -13,7 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using Serilog;
-using System.Linq;
+using App.Metrics;
+using App.Metrics.Formatters.Prometheus;
+
+using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Service.Infrastructure;
+using IB.WatchServer.Service.Infrastructure.Linq2DB;
+using IB.WatchServer.Service.Service;
 
 namespace IB.WatchServer.Service
 {

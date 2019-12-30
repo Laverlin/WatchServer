@@ -8,7 +8,8 @@ using Microsoft.Extensions.Logging;
 namespace IB.WatchServer.Service.Infrastructure
 {
     /// <summary>
-    /// Trottling attribute
+    /// Throttling attribute.
+    /// Prevent to request more that one request per "Second" from one "KeyField" client 
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class RequestRateLimit : ActionFilterAttribute

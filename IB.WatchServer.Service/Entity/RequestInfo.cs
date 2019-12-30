@@ -4,7 +4,7 @@ using LinqToDB.Mapping;
 namespace IB.WatchServer.Service.Entity
 {
     [Table("CityInfo")]
-    public class CityInfo
+    public class RequestInfo
     {
         [Column("id"), Identity]
         public int? Id { get; set; }
@@ -32,5 +32,29 @@ namespace IB.WatchServer.Service.Entity
 
         [Column("CIQVersion")]
         public string CiqVersion { get; set; }
+
+        [Column("RequestType")]
+        public RequestType RequestType { get; set; }
+
+        [Column("Temperature")]
+        public decimal Temperature { get; set; }
+
+        [Column("Wind")]
+        public decimal Wind { get; set; }
+
+        [Column("PrecipProbability")]
+        public decimal PrecipProbability { get; set; }
+    }
+
+    public enum RequestType
+    {
+        [MapValue("Location")]
+        Location = 0,
+
+        [MapValue("Weather")]
+        Weather = 1,
+
+        [MapValue("ExchangeRate")]
+        ExchangeRate = 2
     }
 }

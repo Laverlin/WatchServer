@@ -17,8 +17,8 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
         public IDataProvider GetDataProvider();
 
         /// <summary>
-        /// Build connection string by combining all public properties in string in format name=value;...
-        /// If property name needs to be diferent it is possible to use DisplayNameAttribute
+        /// Build connection string by combining all public properties in string in format "name=value;..."
+        /// If property name needs to be different you need to use the DisplayName Attribute
         /// </summary>
         /// <returns>Connection String</returns>
         public string BuildConnectionString()

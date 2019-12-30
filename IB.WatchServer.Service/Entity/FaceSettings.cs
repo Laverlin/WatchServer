@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 
 namespace IB.WatchServer.Service.Entity
@@ -20,5 +21,11 @@ namespace IB.WatchServer.Service.Entity
         [Required]
         [StringLength(maximumLength: 64, MinimumLength = 64)]
         public string ApiKey { get; set; }
+
+        [Required, Url]
+        public string WeatherBaseUrl { get; set; }
+
+        [Required]
+        public string WeatherApiKey { get; set; }
     }
 }

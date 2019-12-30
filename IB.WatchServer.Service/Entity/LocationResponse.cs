@@ -7,7 +7,6 @@ namespace IB.WatchServer.Service.Entity
     /// </summary>
     public class LocationResponse
     {
-
         public string Version
         {
             get

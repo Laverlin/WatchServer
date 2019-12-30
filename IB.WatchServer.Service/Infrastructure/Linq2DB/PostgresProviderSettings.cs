@@ -38,8 +38,8 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
         /// <summary>
         /// Authorized user id
         /// </summary>
-        [DisplayName("User Id")]
         [Required]
+        [DisplayName("User Id")]
         public string UserId { get; set; }
 
         /// <summary>

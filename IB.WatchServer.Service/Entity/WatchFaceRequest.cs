@@ -5,7 +5,7 @@ namespace IB.WatchServer.Service.Entity
     /// <summary>
     /// Location request info
     /// </summary>
-    public class LocationRequest
+    public class WatchFaceRequest
     {
         /// <summary>
         /// Latitude
