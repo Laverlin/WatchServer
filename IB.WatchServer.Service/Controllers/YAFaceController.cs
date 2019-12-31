@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -83,6 +84,7 @@ namespace IB.WatchServer.Service.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
+        [Authorize]
         public async Task<ActionResult<WeatherResponse>> Weather([FromQuery] WatchFaceRequest watchFaceRequest)
         {
             try

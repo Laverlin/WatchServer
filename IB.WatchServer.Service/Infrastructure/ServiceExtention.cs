@@ -13,8 +13,7 @@ namespace IB.WatchServer.Service.Infrastructure
         /// </summary>
         /// <typeparam name="TSettings">Type of settings class</typeparam>
         /// <param name="services">collection of services <see cref="IServiceCollection"/></param>
-        /// <param name="configuration">Configuration manager <see cref="IConfiguration"/></param>
-        public static void AddConfiguration<TSettings>(this IServiceCollection services)
+        public static TSettings AddConfiguration<TSettings>(this IServiceCollection services)
             => AddConfiguration<TSettings, TSettings>(services);
 
         /// <summary>
@@ -24,8 +23,8 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <typeparam name="ISettings">Contract of settings class</typeparam>
         /// <typeparam name="TSettings">Type of settings class</typeparam>
         /// <param name="services">collection of services <see cref="IServiceCollection"/></param>
-        /// <param name="configuration">Configuration manager <see cref="IConfiguration"/></param>
-        public static void AddConfiguration<ISettings, TSettings>(this IServiceCollection services) 
+        public static ISettings AddConfiguration<ISettings, TSettings>(this IServiceCollection services)
+            where TSettings : ISettings
         {
             var serviceProvider = services.BuildServiceProvider();
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
@@ -40,6 +39,7 @@ namespace IB.WatchServer.Service.Infrastructure
             TSettings settings = configuration.GetSection(typeof(TSettings).Name).Get<TSettings>();
             Validator.ValidateObject(settings, new ValidationContext(settings), validateAllProperties: true);
             services.AddSingleton(typeof(ISettings), settings);
+            return settings;
         }
     }
 }

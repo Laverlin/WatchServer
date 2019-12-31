@@ -31,7 +31,7 @@ namespace IB.WatchServer.Service
         {
             // configuration
             //
-            services.AddConfiguration<FaceSettings>();
+            var faceSettings = services.AddConfiguration<FaceSettings>();
             services.AddConfiguration<IConnectionSettings, PostgresProviderSettings>();
 
             // services
@@ -55,8 +55,22 @@ namespace IB.WatchServer.Service
 
             services.AddMetricsTrackingMiddleware();
             services.AddMetricsReportingHostedService();
-            services.AddMetricsEndpoints(options => options.MetricsEndpointOutputFormatter =
-                metrics.OutputMetricsFormatters.OfType<MetricsPrometheusTextOutputFormatter>().First());
+            services.AddMetricsEndpoints(
+                options => options.MetricsEndpointOutputFormatter = metrics.OutputMetricsFormatters
+                    .OfType<MetricsPrometheusTextOutputFormatter>().First());
+
+
+            services
+                .AddAuthentication(faceSettings.AuthSettings.Scheme)
+                .AddScheme<TokenAuthOptions, TokenAuthenticationHandler>(
+                    faceSettings.AuthSettings.Scheme, 
+                    options =>
+                    {
+                        options.ApiTokenName = faceSettings.AuthSettings.TokenName;
+                        options.Scheme = faceSettings.AuthSettings.Scheme;
+                        options.ApiToken = faceSettings.AuthSettings.Token;
+                    });
+            services.AddAuthorization();
 
             // for AppMetric prometheus endpoint
             //
@@ -79,6 +93,9 @@ namespace IB.WatchServer.Service
             app.UseSerilogRequestLogging();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseAppMetricsEndpointRoutesResolver();
 
