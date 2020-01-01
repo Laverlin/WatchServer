@@ -42,9 +42,9 @@ namespace IB.WatchServer.Service.Infrastructure
             string keyValue = context.HttpContext.Request.Query[KeyField];
             if (string.IsNullOrEmpty(keyValue))
                 return;
-
-            string memoryCacheKey = $"device-key-{keyValue}";
-            _logger.LogTrace("{memoryCacheKey}", memoryCacheKey);
+            string path = context.HttpContext.Request.Path;
+            string memoryCacheKey = $"device-key-{keyValue}-{path}";
+            _logger.LogInformation("{memoryCacheKey}", memoryCacheKey);
 
             if (!_memoryCache.TryGetValue(memoryCacheKey, out bool _))
             {

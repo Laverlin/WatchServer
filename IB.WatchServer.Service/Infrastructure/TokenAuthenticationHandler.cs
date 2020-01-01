@@ -29,24 +29,11 @@ namespace IB.WatchServer.Service.Infrastructure
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            /*
-            string[] allowAnonymous = {"/metrics", "/ping", "/location"};
-            if (allowAnonymous.Any(a => Request.Path.Value.EndsWith(a))  )
-            {
-                return Task.FromResult(AuthenticateResult.Success(
-                    new AuthenticationTicket(new ClaimsPrincipal(new GenericIdentity("anonymous")), Options.Scheme)));
-            }
-            */
-       
             if (!Request.Query.ContainsKey(Options.ApiTokenName))
-            {
                 return Task.FromResult(AuthenticateResult.NoResult());
-            }
 
             if (Options.ApiToken != Request.Query[Options.ApiTokenName])
-            {
                 return Task.FromResult(AuthenticateResult.Fail("Invalid auth token."));
-            }
 
             // Create authenticated user
             //
