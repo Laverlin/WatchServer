@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -27,23 +29,26 @@ namespace IB.WatchServer.Service.Infrastructure
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            string[] allowAnonymous = {"/metrics", "/ping", "/location"};
+            if (allowAnonymous.Any(a => Request.Path.Value.EndsWith(a))  )
+            {
+                return Task.FromResult(AuthenticateResult.Success(
+                    new AuthenticationTicket(new ClaimsPrincipal(new GenericIdentity("anonymous")), Options.Scheme)));
+            }
+       
             if (!Request.Query.ContainsKey(Options.ApiTokenName))
             {
-                _metrics.Measure.Counter.Increment(new CounterOptions { Name = "auth-notoken" });
-                Logger.LogInformation("{TokenName} has not been provided", Options.ApiTokenName);
                 return Task.FromResult(AuthenticateResult.Fail("Auth token has not been provided."));
             }
 
             if (Options.ApiToken != Request.Query[Options.ApiTokenName])
             {
-                _metrics.Measure.Counter.Increment(new CounterOptions { Name = "auth-invalid" });
-                Logger.LogInformation("{AuthToken} is invalid", Request.Query[Options.ApiTokenName]);
                 return Task.FromResult(AuthenticateResult.Fail("Invalid auth token."));
             }
 
             // Create authenticated user
             //
-            var identities = new List<ClaimsIdentity> { new ClaimsIdentity(Options.Scheme) };
+            var identities = new List<ClaimsIdentity> { new GenericIdentity("watch-face"), new ClaimsIdentity(Options.Scheme) };
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(identities), Options.Scheme);
 
             return Task.FromResult(AuthenticateResult.Success(ticket));
