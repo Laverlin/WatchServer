@@ -64,7 +64,7 @@ namespace IB.WatchServer.Service.Controllers
 
                 _logger.LogInformation(
                     new EventId(100, "LocationRequest"),
-                    "LocationRequest {@WatchFaceRequest}, CityName {CityName}", watchFaceRequest, locationResponse.CityName);
+                    "{@WatchFaceRequest}, {@LocationResponse}", watchFaceRequest, locationResponse);
 
                 return locationResponse;
             }
@@ -95,7 +95,7 @@ namespace IB.WatchServer.Service.Controllers
                 await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
                 _logger.LogInformation(
                     new EventId(101, "WeatherRequest"),
-                    "WatchFaceRequest {@WatchFaceRequest}, WeatherResponse {@WeatherResponse}", watchFaceRequest, weatherResponse);
+                    "{@WatchFaceRequest}, {@WeatherResponse}", watchFaceRequest, weatherResponse);
 
                 return weatherResponse;
             }

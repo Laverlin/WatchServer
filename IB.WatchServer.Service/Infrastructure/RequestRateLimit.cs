@@ -44,7 +44,7 @@ namespace IB.WatchServer.Service.Infrastructure
                 return;
             string path = context.HttpContext.Request.Path;
             string memoryCacheKey = $"device-key-{keyValue}-{path}";
-            _logger.LogTrace("{memoryCacheKey}", memoryCacheKey);
+            _logger.LogDebug("{memoryCacheKey}", memoryCacheKey);
 
             if (!_memoryCache.TryGetValue(memoryCacheKey, out bool _))
             {

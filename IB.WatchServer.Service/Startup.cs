@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 
 using Serilog;
 using App.Metrics;
+using App.Metrics.Extensions.Configuration;
 using App.Metrics.Formatters.Prometheus;
 
 using IB.WatchServer.Service.Entity;
@@ -48,6 +49,9 @@ namespace IB.WatchServer.Service
             // metrics
             //
             var metrics = AppMetrics.CreateDefaultBuilder()
+                .Configuration.Configure(
+                    options => options.GlobalTags.Add("version", SolutionInfo.GetVersion()))
+                .Configuration.ReadFrom(Configuration)
                 .OutputMetrics.AsPrometheusPlainText()
                 .Build();
 
