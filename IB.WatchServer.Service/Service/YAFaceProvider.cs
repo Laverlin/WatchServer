@@ -110,11 +110,11 @@ namespace IB.WatchServer.Service.Service
         public async Task<string> CheckLastLocation(string deviceId, decimal latitude, decimal longitude)
         {
             await using var db = _dbFactory.Create();
-            var city = await db.GetTable<RequestInfo>().Where(c=>c.RequestTime != null)
+            var city = await db.GetTable<RequestInfo>().Where(c => c.RequestTime != null)
                 .Join(db.GetTable<DeviceInfo>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
                     (c, d) => new {c.CityName, c.Lat, c.Lon, c.RequestTime})
                 .OrderByDescending(c => c.RequestTime).Take(1)
-                .Where(c=>c.Lat == latitude && c.Lon == longitude)
+                .Where(c => c.Lat == latitude && c.Lon == longitude)
                 .SingleOrDefaultAsync();
 
            return city?.CityName;

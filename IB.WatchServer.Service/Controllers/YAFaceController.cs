@@ -108,8 +108,8 @@ namespace IB.WatchServer.Service.Controllers
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {
-            var locationCounterTotal = new CounterOptions { Name = "locationRequest-total" };
-            var locationCounterRemote = new CounterOptions { Name = "locationRequest-remote" };
+            var locationCounterTotal = new CounterOptions {Name = "locationRequest-total", MeasurementUnit = Unit.Calls};
+            var locationCounterRemote = new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls};
 
             _metrics.Measure.Counter.Increment(locationCounterTotal, requestType.ToString());
             var cityName = await _yaFaceProvider.CheckLastLocation(
