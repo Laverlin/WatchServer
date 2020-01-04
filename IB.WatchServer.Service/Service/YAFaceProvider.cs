@@ -121,14 +121,16 @@ namespace IB.WatchServer.Service.Service
         }
 
         /// <summary>
-        /// Return weather info
+        /// Request weather info on DarkSky weather provider
         /// </summary>
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
+        /// <param name="token">ApiToken</param>
         /// <returns>Weather info <see cref="RequestWeather"/></returns>
-        public async Task<WeatherResponse> RequestWeather(string lat, string lon)
+        public async Task<WeatherResponse> RequestWeather(string lat, string lon, string token)
         {
-            var serviceUrl = string.Format(_faceSettings.WeatherBaseUrl, _faceSettings.WeatherApiKey, lat, lon);
+            string apiToken = token;
+            var serviceUrl = string.Format(_faceSettings.WeatherBaseUrl, apiToken, lat, lon);
             var client = _clientFactory.CreateClient();
             using var response = await client.GetAsync(serviceUrl);
             if (!response.IsSuccessStatusCode)
@@ -181,7 +183,6 @@ namespace IB.WatchServer.Service.Service
                 Wind = weatherResponse.WindSpeed,
                 PrecipProbability = weatherResponse.PrecipProbability
             };
-            requestInfo.DeviceInfoId = deviceInfo.Id;
             await db.GetTable<RequestInfo>().DataContext.InsertAsync(requestInfo);
 
             _logger.LogDebug("{@requestInfo}", requestInfo);

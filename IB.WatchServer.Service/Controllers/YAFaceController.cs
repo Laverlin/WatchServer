@@ -89,7 +89,8 @@ namespace IB.WatchServer.Service.Controllers
         {
             try
             {
-                var weatherResponse = await _yaFaceProvider.RequestWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                var weatherResponse = await _yaFaceProvider
+                    .RequestWeather(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey);
                 weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
                 
                 await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);

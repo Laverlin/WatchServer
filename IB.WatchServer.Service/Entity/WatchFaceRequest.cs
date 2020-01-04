@@ -48,5 +48,11 @@ namespace IB.WatchServer.Service.Entity
         /// </summary>
         [FromQuery(Name = "dname")]
         public string DeviceName { get; set; }
+
+        /// <summary>
+        /// api key for the Darksky service
+        /// </summary>
+        [FromQuery(Name = "wapikey")]
+        public string DarkskyKey { get; set; }
     }
 }
