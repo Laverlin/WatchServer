@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
@@ -16,6 +15,7 @@ namespace IB.WatchServer.Service.Infrastructure
     /// <summary>
     /// Authentication request handler
     /// </summary>
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class TokenAuthenticationHandler : AuthenticationHandler<TokenAuthOptions>
     {
         private readonly IMetrics _metrics;

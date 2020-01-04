@@ -92,7 +92,7 @@ namespace IB.WatchServer.Service.Controllers
                 var weatherResponse = await _yaFaceProvider
                     .RequestWeather(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey);
                 weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
-                
+
                 await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
                 _logger.LogInformation(
                     new EventId(101, "WeatherRequest"),
@@ -100,9 +100,14 @@ namespace IB.WatchServer.Service.Controllers
 
                 return weatherResponse;
             }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized weather service access");
+                return Forbid();
+            }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Weather request error");
+                _logger.LogWarning(ex, "Weather weather request error");
                 return BadRequest();
             }
         }

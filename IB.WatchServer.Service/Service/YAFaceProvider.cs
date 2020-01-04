@@ -4,6 +4,7 @@ using System.Text;
 using System.Net.Http;
 using System.Text.Json;
 using System.Globalization;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
@@ -134,7 +135,10 @@ namespace IB.WatchServer.Service.Service
             var client = _clientFactory.CreateClient();
             using var response = await client.GetAsync(serviceUrl);
             if (!response.IsSuccessStatusCode)
-            {
+            { 
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new UnauthorizedAccessException();
+
                 throw new HttpRequestException($"Error service request, status: {response.StatusCode.ToString()}");
             }
 
