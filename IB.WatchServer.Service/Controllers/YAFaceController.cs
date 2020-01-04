@@ -102,12 +102,12 @@ namespace IB.WatchServer.Service.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning(ex, "Unauthorized weather service access");
+                _logger.LogWarning(ex, "Unauthorized weather request");
                 return Forbid();
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Weather weather request error");
+                _logger.LogWarning(ex, "Weather request error");
                 return BadRequest();
             }
         }

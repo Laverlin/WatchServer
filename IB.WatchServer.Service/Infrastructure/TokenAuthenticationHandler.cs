@@ -8,12 +8,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using App.Metrics;
+using App.Metrics.Counter;
 
 
 namespace IB.WatchServer.Service.Infrastructure
 {
     /// <summary>
     /// Authentication request handler
+    /// Looking for a known token to authenticate request, no token is Ok, wrong token - frobidden
     /// </summary>
     // ReSharper disable once ClassNeverInstantiated.Global
     public class TokenAuthenticationHandler : AuthenticationHandler<TokenAuthOptions>
@@ -27,24 +29,37 @@ namespace IB.WatchServer.Service.Infrastructure
             _metrics = metrics;
         }
 
+        /// <summary>
+        /// Looking for a known token to authenticate request, no token is Ok, wrong token - frobidden
+        /// </summary>
+        /// <returns></returns>
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            var path = Request.Path.Value;
             if (!Request.Query.ContainsKey(Options.ApiTokenName))
+            {
+                _metrics.Measure.Counter.Increment(new CounterOptions{Name = "token_no_token", MeasurementUnit = Unit.Calls}, path);
                 return Task.FromResult(AuthenticateResult.NoResult());
+            }
 
             if (Options.ApiToken != Request.Query[Options.ApiTokenName])
+            {
+                _metrics.Measure.Counter.Increment(new CounterOptions { Name = "token_wrong_token", MeasurementUnit = Unit.Calls }, path);
                 return Task.FromResult(AuthenticateResult.Fail("Invalid auth token."));
+            }
 
             // Create authenticated user
             //
             var identities = new List<ClaimsIdentity> { new GenericIdentity("watch-face"), new ClaimsIdentity(Options.Scheme) };
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(identities), Options.Scheme);
 
+            _metrics.Measure.Counter.Increment(new CounterOptions { Name = "token_ok_token", MeasurementUnit = Unit.Calls }, path);
             return Task.FromResult(AuthenticateResult.Success(ticket));
         }
 
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            _metrics.Measure.Counter.Increment(new CounterOptions{Name = "token_forbidden", MeasurementUnit = Unit.Calls}, Request.Path.Value);
             await ForbidAsync(new AuthenticationProperties());
         }
     }
