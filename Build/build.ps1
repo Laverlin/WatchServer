@@ -16,25 +16,21 @@ Write-Host "version: $version" -ForegroundColor $consoleColor
 Write-Host "Full version: $fullVersion" -ForegroundColor $consoleColor
 
 $projFiles = Get-Childitem -Path $currentDir\.. -Include *.csproj -Recurse
-#$projFiles | ForEach-Object { Write-Host $_ -ForegroundColor $consoleColor }
 
 foreach($projFile in $projFiles)
 {
-    Write-Host "Writing version $version in $projFile" -ForegroundColor $consoleColor
+    Write-Host "Writing version $fullVersion in $projFile" -ForegroundColor $consoleColor
 
-    $xml.Load($projFile)
-	$versionNode = $xml.Project.PropertyGroup.Version
-    if ($null -eq $versionNode) 
-    {
-		$versionNode = $xml.CreateElement("Version")
-		$xml.Project.PropertyGroup.AppendChild($versionNode)
-		Write-Host "Version XML tag added to the csproj"
-	}
-	$xml.Project.PropertyGroup.Version = $fullVersion
-	$xml.Save($projFile)
+    [xml]$projXml = Get-Content -Path $projFile
+    $versionNode = $projXml.Project.PropertyGroup.AssemblyVersion
+    Write-Host "current $versionNode"
+	$projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
+    $projXml.Save($projFile)
+    git add $projFile
 }
 
-#git tag -a $fullVersion -m "publish $fullVersion"
-#git push origin $branch --follow-tags
+git commit -m "build to publish $fullVersion" 
+git tag -a $fullVersion -m "publish $fullVersion"
+git push origin $branch --follow-tags
 
 Set-Location $currentDir
