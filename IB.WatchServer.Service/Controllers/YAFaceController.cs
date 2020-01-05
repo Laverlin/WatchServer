@@ -10,6 +10,7 @@ using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Net.Http.Headers;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -102,7 +103,8 @@ namespace IB.WatchServer.Service.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning(ex, "Unauthorized weather request");
+                _logger.LogWarning(ex, "Unauthorized Darksky.net request: agent {agent} {@WatchFaceRequest}",
+                    Request.Headers[HeaderNames.UserAgent], watchFaceRequest);
                 return Forbid();
             }
             catch (Exception ex)

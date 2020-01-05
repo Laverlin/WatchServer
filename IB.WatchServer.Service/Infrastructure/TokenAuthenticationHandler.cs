@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,8 @@ using Microsoft.Extensions.Options;
 
 using App.Metrics;
 using App.Metrics.Counter;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 
 
 namespace IB.WatchServer.Service.Infrastructure
@@ -35,7 +38,7 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <returns></returns>
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var path = Request.Path.Value;
+            var path = Context.GetMetricsCurrentRouteName();//Request.Path.Value;
             if (!Request.Query.ContainsKey(Options.ApiTokenName))
             {
                 _metrics.Measure.Counter.Increment(new CounterOptions{Name = "token_no_token", MeasurementUnit = Unit.Calls}, path);
@@ -59,8 +62,27 @@ namespace IB.WatchServer.Service.Infrastructure
 
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            _metrics.Measure.Counter.Increment(new CounterOptions{Name = "token_forbidden", MeasurementUnit = Unit.Calls}, Request.Path.Value);
+            _metrics.Measure.Counter.Increment(
+                new CounterOptions{Name = "token_forbidden", MeasurementUnit = Unit.Calls}, 
+                Context.GetMetricsCurrentRouteName());
+            Logger.LogInformation("Token forbidden, agent {agent}, request {request}", 
+                Request.Headers[HeaderNames.UserAgent], Request.QueryString);
+            
             await ForbidAsync(new AuthenticationProperties());
+            await Response.WriteAsync(JsonSerializer.Serialize(new ErrorDescription(403, "Unauthorized access")));
         }
+    }
+
+    internal class ErrorDescription
+    {
+        public ErrorDescription(int code, string description)
+        {
+            Code = code;
+            Description = description;
+        }
+
+        public int Code { get; set; }
+        public string Description { get; set; }
+        
     }
 }
