@@ -32,7 +32,7 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
                     var name = propertyInfo.GetCustomAttribute<DisplayNameAttribute>() != null
                         ? propertyInfo.GetCustomAttribute<DisplayNameAttribute>().DisplayName
                         : propertyInfo.Name;
-                    connectionString.Append($"{name}={value.ToString()};");
+                    connectionString.Append($"{name}={value};");
                 }
             }
 

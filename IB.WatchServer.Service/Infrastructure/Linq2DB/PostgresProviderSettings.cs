@@ -27,7 +27,7 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
         /// <summary>
         /// Server port, default 5432 
         /// </summary>
-        public string Port { get; set; }
+        public string Port { get; set; } = "5432";
 
         /// <summary>
         /// Database name
@@ -51,16 +51,16 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
         /// <summary>
         /// Is pooling enabled
         /// </summary>
-        public bool? Pooling { get; set; }
+        public bool? Pooling { get; set; } = true;
 
         /// <summary>
         /// pool size minimum
         /// </summary>
-        public int MinPoolSize { get; set; }
+        public int MinPoolSize { get; set; } = 10;
 
         /// <summary>
         /// Pool size maximum
         /// </summary>
-        public int MaxPoolSize { get; set; }
+        public int MaxPoolSize { get; set; } = 100;
     }
 }

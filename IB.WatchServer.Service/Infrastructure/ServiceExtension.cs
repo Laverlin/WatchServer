@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IB.WatchServer.Service.Infrastructure
 {
-    public static class ServiceExtention
+    public static class ServiceExtension
     {
         /// <summary>
         /// Load config for class TSettings from appsettings.json, validating it and add to DI as singleton.
@@ -32,7 +32,7 @@ namespace IB.WatchServer.Service.Infrastructure
 
             if (loggerFactory != null)
             {
-                var logger = loggerFactory.CreateLogger(typeof(ServiceExtention));
+                var logger = loggerFactory.CreateLogger(typeof(ServiceExtension));
                 logger.LogInformation($"validate :: { typeof(TSettings).Name }");
             }
 

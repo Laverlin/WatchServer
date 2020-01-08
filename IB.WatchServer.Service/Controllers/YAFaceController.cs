@@ -61,7 +61,7 @@ namespace IB.WatchServer.Service.Controllers
             {
                 var city = await GetLocationName(watchFaceRequest, RequestType.Location);
                 await _yaFaceProvider.SaveRequestInfo(watchFaceRequest, city);
-                var locationResponse = new LocationResponse { CityName = _yaFaceProvider.RemoveDiacritics(city) };
+                var locationResponse = new LocationResponse { CityName = city.StripDiacritics() };
 
                 _logger.LogInformation(
                     new EventId(100, "LocationRequest"),
