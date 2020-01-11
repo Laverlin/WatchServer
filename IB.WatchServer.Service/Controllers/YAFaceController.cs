@@ -92,14 +92,15 @@ namespace IB.WatchServer.Service.Controllers
             {
                 var weatherResponse = await _yaFaceProvider
                     .RequestWeather(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey);
-                weatherResponse.CityName = //_yaFaceProvider.RemoveDiacritics(
-                    await GetLocationName(watchFaceRequest, RequestType.Weather);//);
+                weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
 
                 await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
+
+                weatherResponse.CityName = weatherResponse.CityName.StripDiacritics();
+
                 _logger.LogInformation(
                     new EventId(101, "WeatherRequest"),
                     "{@WatchFaceRequest}, {@WeatherResponse}", watchFaceRequest, weatherResponse);
-
                 return weatherResponse;
             }
             catch (UnauthorizedAccessException ex)

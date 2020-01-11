@@ -1,5 +1,5 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
+using System.Linq;
 using System.Text;
 using LinqToDB.Common;
 
@@ -14,7 +14,7 @@ namespace IB.WatchServer.Service.Infrastructure
         /// Removes any non spacing marks from unicode string. This will strip out diacritic marks but leave basic char in place.
         /// e.g. crème brûlée will become creme brulee
         /// </summary>
-        /// <param name="originalString">unicode string with diacritics</param>
+        /// <param name="diacriticString">unicode string with diacritics</param>
         /// <returns>Stripped string without diacritic symbols, and NULL if null has been passed</returns>
         /// <remarks>
         /// This method may not work properly in some linux docker environment, e. g. Alpine, as .NET Core gets the normalization behavior
@@ -22,24 +22,19 @@ namespace IB.WatchServer.Service.Infrastructure
         /// DOTNET_SYSTEM_GLOBALIZATION_INVARIANT enabled mode. As a result, calling this method has no effects, you'll get unchanged string back.
         /// more info here: https://github.com/dotnet/coreclr/issues/23831
         /// </remarks>
-        public static string StripDiacritics(this String originalString)
+        public static string StripDiacritics(this string diacriticString)
         {
-            if (originalString.IsNullOrEmpty())
-                return originalString;
+            if (diacriticString.IsNullOrEmpty())
+                return diacriticString;
 
-            var normalizedString = originalString.Normalize(NormalizationForm.FormD);
-            var stringBuilder = new StringBuilder();
+            var normalizedString = diacriticString.Normalize(NormalizationForm.FormD);
 
-            foreach (var c in normalizedString)
-            {
-                var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
-                if (unicodeCategory != UnicodeCategory.NonSpacingMark)
-                {
-                    stringBuilder.Append(c);
-                }
-            }
+            var preprocessed = from c in normalizedString
+                let unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c)
+                where unicodeCategory != UnicodeCategory.NonSpacingMark
+                select c;
 
-            return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+            return new string(preprocessed.ToArray()).Normalize(NormalizationForm.FormC);
         }
 
     }

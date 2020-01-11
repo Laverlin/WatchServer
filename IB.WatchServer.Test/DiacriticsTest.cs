@@ -13,10 +13,10 @@ namespace IB.WatchServer.Test
         [TestMethod]
         public void FrenchAcsonsShouldBeRemoved()
         {
-            var uCity = "Chênex, Haute-Savoie, France";
+            var uCity = "crème brûlée";
             var city = uCity.StripDiacritics();
 
-            Assert.AreEqual("Chenex, Haute-Savoie, France", city);
+            Assert.AreEqual("creme brulee", city);
         }
 
         [TestMethod]
