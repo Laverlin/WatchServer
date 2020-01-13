@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Net;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 
 using LinqToDB;
@@ -24,14 +25,17 @@ namespace IB.WatchServer.Service.Service
         private readonly FaceSettings _faceSettings;
         private readonly IHttpClientFactory _clientFactory;
         private readonly DataConnectionFactory _dbFactory;
+        private readonly IMapper _mapper;
 
         public YAFaceProvider(
-            ILogger<YAFaceProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, DataConnectionFactory dbFactory)
+            ILogger<YAFaceProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, DataConnectionFactory dbFactory,
+            IMapper mapper)
         {
             _logger = logger;
             _clientFactory = clientFactory;
             _faceSettings = faceSettings;
             _dbFactory = dbFactory;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -145,21 +149,12 @@ namespace IB.WatchServer.Service.Service
                     new DataParameter("device_name", watchFaceRequest.DeviceName))
                 .Single();
 
-            var requestInfo = new RequestInfo
-            {
-                DeviceInfoId = deviceInfo.Id,
-                CityName = weatherResponse.CityName,
-                Lat = Convert.ToDecimal(watchFaceRequest.Lat),
-                Lon = Convert.ToDecimal(watchFaceRequest.Lon),
-                RequestTime = DateTime.UtcNow,
-                Version = watchFaceRequest.Version,
-                Framework = watchFaceRequest.Framework,
-                CiqVersion = watchFaceRequest.CiqVersion,
-                RequestType = requestType,
-                Temperature = weatherResponse.Temperature,
-                Wind = weatherResponse.WindSpeed,
-                PrecipProbability = weatherResponse.PrecipProbability
-            };
+            var requestInfo = _mapper.Map<RequestInfo>(watchFaceRequest);
+            requestInfo = _mapper.Map(weatherResponse, requestInfo);
+            requestInfo.DeviceInfoId = deviceInfo.Id;
+            requestInfo.RequestTime = DateTime.UtcNow;
+            requestInfo.RequestType = requestType;
+
             await db.GetTable<RequestInfo>().DataContext.InsertAsync(requestInfo);
 
             _logger.LogDebug("{@requestInfo}", requestInfo);

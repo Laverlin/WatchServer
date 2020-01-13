@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -76,14 +77,16 @@ namespace IB.WatchServer.Service
                     });
             services.AddAuthorization();
 
+            // AutoMapper Configuration
+            //
             var mappingConfig = new MapperConfiguration(mc =>
             {
-                mc.CreateMap<WatchFaceRequest, RequestInfo>();
+                mc.CreateMap<WatchFaceRequest, RequestInfo>()
+                    .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
+                    .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
                 mc.CreateMap<WeatherResponse, RequestInfo>();
             });
-
-            IMapper mapper = mappingConfig.CreateMapper();
-            services.AddSingleton(mapper);
+            services.AddSingleton(mappingConfig.CreateMapper());
 
             // for AppMetric prometheus endpoint
             //
