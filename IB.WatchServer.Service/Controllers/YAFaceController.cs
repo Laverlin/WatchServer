@@ -71,7 +71,7 @@ namespace IB.WatchServer.Service.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Location request error");
+                _logger.LogWarning(ex, "Location request error, {@WatchFaceRequest}", watchFaceRequest);
                 return BadRequest();
             }
         }
@@ -105,30 +105,33 @@ namespace IB.WatchServer.Service.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning(ex, "Unauthorized Darksky.net request: agent {agent} {@WatchFaceRequest}",
+                _logger.LogWarning(ex, "Unauthorized darksky.net request: agent {agent} {@WatchFaceRequest}",
                     Request.Headers[HeaderNames.UserAgent], watchFaceRequest);
                 return Forbid();
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Weather request error");
+                _logger.LogWarning(ex, "Weather request error, {@WatchFaceRequest}", watchFaceRequest);
                 return BadRequest();
             }
         }
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {
-            var locationCounterTotal = new CounterOptions {Name = "locationRequest-total", MeasurementUnit = Unit.Calls};
-            var locationCounterRemote = new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls};
-
-            _metrics.Measure.Counter.Increment(locationCounterTotal, requestType.ToString());
+            _metrics.Measure.Counter.Increment(
+                new CounterOptions {Name = "locationRequest-total", MeasurementUnit = Unit.Calls}, 
+                requestType.ToString());
             var cityName = await _yaFaceProvider.CheckLastLocation(
                 watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon));
+
             if (cityName == null)
             {
-                _metrics.Measure.Counter.Increment(locationCounterRemote, requestType.ToString());
+                _metrics.Measure.Counter.Increment(
+                    new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls},
+                    requestType.ToString());
                 cityName = await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon);
             }
+
             return cityName;
         }
     }

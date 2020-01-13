@@ -10,7 +10,7 @@ using Serilog;
 using App.Metrics;
 using App.Metrics.Extensions.Configuration;
 using App.Metrics.Formatters.Prometheus;
-
+using AutoMapper;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Infrastructure.Linq2DB;
@@ -75,6 +75,15 @@ namespace IB.WatchServer.Service
                         options.ApiToken = faceSettings.AuthSettings.Token;
                     });
             services.AddAuthorization();
+
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.CreateMap<WatchFaceRequest, RequestInfo>();
+                mc.CreateMap<WeatherResponse, RequestInfo>();
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
 
             // for AppMetric prometheus endpoint
             //
