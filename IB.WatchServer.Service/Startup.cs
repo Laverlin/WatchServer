@@ -12,15 +12,21 @@ using App.Metrics;
 using App.Metrics.Extensions.Configuration;
 using App.Metrics.Formatters.Prometheus;
 using AutoMapper;
+
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Infrastructure.Linq2DB;
 using IB.WatchServer.Service.Service;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Extensions.Http;
 
 namespace IB.WatchServer.Service
 {
     public class Startup
     {
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -33,12 +39,13 @@ namespace IB.WatchServer.Service
         {
             // configuration
             //
-            var faceSettings = services.AddConfiguration<FaceSettings>();
-            services.AddConfiguration<IConnectionSettings, PostgresProviderSettings>();
+            var faceSettings = Configuration.LoadVerifiedConfiguration<FaceSettings>();
+            services.AddSingleton(faceSettings);
+            services.AddSingleton(
+                Configuration.LoadVerifiedConfiguration<IConnectionSettings, PostgresProviderSettings>());
 
             // services
             //
-            services.AddHttpClient();
             services.AddSingleton<DataConnectionFactory>();
             services.AddScoped<YAFaceProvider>();
             services.AddScoped<RequestRateLimit>();
@@ -64,7 +71,8 @@ namespace IB.WatchServer.Service
                 options => options.MetricsEndpointOutputFormatter = metrics.OutputMetricsFormatters
                     .OfType<MetricsPrometheusTextOutputFormatter>().First());
 
-
+            // Authentication
+            //
             services
                 .AddAuthentication(faceSettings.AuthSettings.Scheme)
                 .AddScheme<TokenAuthOptions, TokenAuthenticationHandler>(
@@ -76,6 +84,19 @@ namespace IB.WatchServer.Service
                         options.ApiToken = faceSettings.AuthSettings.Token;
                     });
             services.AddAuthorization();
+
+            // HttpClient
+            //
+            services.AddHttpClient(Options.DefaultName)
+                .AddPolicyHandler((serviceProvider, request) => HttpPolicyExtensions.HandleTransientHttpError()
+                    .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(attempt * 3),
+                        onRetry: (outcome, timespan, retryAttempt, context) =>
+                        {
+                            var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<YAFaceProvider>();
+                            logger.LogWarning("Delaying for {delay}ms, then making retry {retry}.",
+                                timespan.TotalMilliseconds, retryAttempt);
+                        }
+                    ));
 
             // AutoMapper Configuration
             //

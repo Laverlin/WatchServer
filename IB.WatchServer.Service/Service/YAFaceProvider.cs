@@ -12,6 +12,7 @@ using LinqToDB.Data;
 
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure.Linq2DB;
+using Microsoft.Extensions.Options;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -28,8 +29,8 @@ namespace IB.WatchServer.Service.Service
         private readonly IMapper _mapper;
 
         public YAFaceProvider(
-            ILogger<YAFaceProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, DataConnectionFactory dbFactory,
-            IMapper mapper)
+            ILogger<YAFaceProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, 
+            DataConnectionFactory dbFactory, IMapper mapper)
         {
             _logger = logger;
             _clientFactory = clientFactory;
@@ -57,7 +58,7 @@ namespace IB.WatchServer.Service.Service
         {
             var url = string.Format(_faceSettings.BaseUrl, lat, lon, _faceSettings.ApiKey);
 
-            var client = _clientFactory.CreateClient();
+            var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(url);
             if (!response.IsSuccessStatusCode)
             {
@@ -140,12 +141,10 @@ namespace IB.WatchServer.Service.Service
         /// <param name="weatherResponse">weather response</param>
         public async Task SaveRequestInfo(RequestType requestType, WatchFaceRequest watchFaceRequest, WeatherResponse weatherResponse)
         {
-            string deviceId = watchFaceRequest.DeviceId ?? "unknown";
-
             await using var db = _dbFactory.Create();
             var deviceInfo = db.QueryProc<DeviceInfo>(
                     "add_device",
-                    new DataParameter("device_id", deviceId),
+                    new DataParameter("device_id", watchFaceRequest.DeviceId ?? "unknown"),
                     new DataParameter("device_name", watchFaceRequest.DeviceName))
                 .Single();
 

@@ -24,7 +24,7 @@ namespace IB.WatchServer.Service.Infrastructure.Linq2DB
         public string BuildConnectionString()
         {
             var connectionString = new StringBuilder();
-            foreach (PropertyInfo propertyInfo in GetType().GetProperties())
+            foreach (var propertyInfo in GetType().GetProperties())
             {
                 var value = propertyInfo.GetValue(this);
                 if (value != null)

@@ -15,7 +15,8 @@ namespace IB.WatchServer.Service.Infrastructure
                 var endpointFeature = context.Features[typeof(IEndpointFeature)] as IEndpointFeature;
                 if (endpointFeature?.Endpoint is RouteEndpoint endpoint)
                 {
-                    var method = endpoint.Metadata.GetMetadata<HttpMethodMetadata>()?.HttpMethods
+                    var method = endpoint.Metadata.GetMetadata<HttpMethodMetadata>()
+                        ?.HttpMethods
                         ?.FirstOrDefault();
                     var routePattern = endpoint.RoutePattern?.RawText;
                     var templateRouteDetailed = $"{method} {routePattern} {endpoint.DisplayName}";

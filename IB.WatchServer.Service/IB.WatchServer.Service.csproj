@@ -8,7 +8,7 @@
     <Company>IB</Company>
     <Description>The server-side component for the Garmin watch applications</Description>
     <Copyright>Ivan Bodyagin (c) 2019</Copyright>
-    <AssemblyVersion>1.20.14.36</AssemblyVersion>
+    <AssemblyVersion>1.20.18.13</AssemblyVersion>
     <AssemblyName>IB.WatchServer</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
@@ -16,6 +16,7 @@
     <PackageReference Include="App.Metrics.Formatters.Prometheus" Version="3.2.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="linq2db.PostgreSQL" Version="2.9.4" />
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.5" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
