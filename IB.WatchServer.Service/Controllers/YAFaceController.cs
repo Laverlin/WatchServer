@@ -93,12 +93,12 @@ namespace IB.WatchServer.Service.Controllers
             try
             {
                 var keyLength = 32;
-                var weatherResponse = (watchFaceRequest.WeatherProvider == "darkSky" &&
+                var weatherResponse = (//watchFaceRequest.WeatherProvider == "darkSky" &&
                                        !watchFaceRequest.DarkskyKey.IsNullOrEmpty() &&
                                        watchFaceRequest.DarkskyKey.Length == keyLength)
                     ? await _yaFaceProvider
-                        .RequestWeather(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
-                    : await _yaFaceProvider.RequestOpenWeatherMap(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                        .RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
+                    : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
                 weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
                 await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);

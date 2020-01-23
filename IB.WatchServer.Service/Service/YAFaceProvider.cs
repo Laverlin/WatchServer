@@ -4,7 +4,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
+using App.Metrics;
+using App.Metrics.Counter;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 
@@ -29,16 +32,18 @@ namespace IB.WatchServer.Service.Service
         private readonly IHttpClientFactory _clientFactory;
         private readonly DataConnectionFactory _dbFactory;
         private readonly IMapper _mapper;
+        private readonly IMetrics _metrics;
 
         public YAFaceProvider(
             ILogger<YAFaceProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, 
-            DataConnectionFactory dbFactory, IMapper mapper)
+            DataConnectionFactory dbFactory, IMapper mapper, IMetrics metrics)
         {
             _logger = logger;
             _clientFactory = clientFactory;
             _faceSettings = faceSettings;
             _dbFactory = dbFactory;
             _mapper = mapper;
+            _metrics = metrics;
         }
 
         /// <summary>
@@ -107,9 +112,13 @@ namespace IB.WatchServer.Service.Service
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
         /// <param name="token">ApiToken</param>
-        /// <returns>Weather info <see cref="RequestWeather"/></returns>
-        public async Task<WeatherResponse> RequestWeather(string lat, string lon, string token)
+        /// <returns>Weather info <see cref="RequestDarkSky"/></returns>
+        public async Task<WeatherResponse> RequestDarkSky(string lat, string lon, string token)
         {
+            _metrics.Measure.Counter.Increment(
+                new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
+                "DarkSky");
+
             string apiToken = token;
             var serviceUrl = string.Format(_faceSettings.DarkSkyUrl, apiToken, lat, lon);
             var client = _clientFactory.CreateClient();
@@ -136,8 +145,12 @@ namespace IB.WatchServer.Service.Service
         /// <param name="lat">latitude</param>
         /// <param name="lon">longitude</param>
         /// <returns>Weather conditions for the specified coordinates <see cref="WeatherResponse"/></returns>
-        public async Task<WeatherResponse> RequestOpenWeatherMap(string lat, string lon)
+        public async Task<WeatherResponse> RequestOpenWeather(string lat, string lon)
         {
+            _metrics.Measure.Counter.Increment(
+                new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
+                "OpenWeather");
+
             var conditionIcons = new Dictionary<string, string>
             {
                 {"01d", "clear-day"}, {"01n", "clear-night"}, 
