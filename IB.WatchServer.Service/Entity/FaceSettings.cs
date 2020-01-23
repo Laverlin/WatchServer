@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-
 namespace IB.WatchServer.Service.Entity
 {
     /// <summary>
@@ -25,19 +24,25 @@ namespace IB.WatchServer.Service.Entity
         /// Url Template for the weather service request 
         /// </summary>
         [Required, Url]
-        public string WeatherBaseUrl { get; set; }
+        public string DarkSkyUrl { get; set; }
 
         /// <summary>
         /// Authentication key for weather api
         /// </summary>
         [Required]
-        public string WeatherApiKey { get; set; }
+        public string DarkSkyKey { get; set; }
 
         /// <summary>
         /// Authentication settings of the application
         /// </summary>
         [Required]
         public AuthSettings AuthSettings { get; set; }
+
+        [Required, Url]
+        public string OpenWeatherUrl { get; set; }
+
+        [Required]
+        public string OpenWeatherKey { get; set; }
     }
 
     /// <summary>

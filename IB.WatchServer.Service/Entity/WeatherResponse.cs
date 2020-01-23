@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using AutoMapper.Configuration.Annotations;
 
 namespace IB.WatchServer.Service.Entity
 {
@@ -15,6 +16,13 @@ namespace IB.WatchServer.Service.Entity
 
         [JsonPropertyName("windSpeed")]
         public decimal WindSpeed { get; set; }
+
+        [JsonPropertyName("humidity")]
+        public decimal Humidity { get; set; }
+
+        [JsonPropertyName("pressure")]
+        public decimal Pressure { get; set; }
+
         public string CityName { get; internal set; }
     }
 }

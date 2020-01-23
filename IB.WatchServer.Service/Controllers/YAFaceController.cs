@@ -92,12 +92,16 @@ namespace IB.WatchServer.Service.Controllers
         {
             try
             {
-                var weatherResponse = await _yaFaceProvider
-                    .RequestWeather(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey);
+                var keyLength = 32;
+                var weatherResponse = (watchFaceRequest.WeatherProvider == "darkSky" &&
+                                       !watchFaceRequest.DarkskyKey.IsNullOrEmpty() &&
+                                       watchFaceRequest.DarkskyKey.Length == keyLength)
+                    ? await _yaFaceProvider
+                        .RequestWeather(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
+                    : await _yaFaceProvider.RequestOpenWeatherMap(watchFaceRequest.Lat, watchFaceRequest.Lon);
+
                 weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
-
                 await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
-
                 weatherResponse.CityName = weatherResponse.CityName.StripDiacritics();
 
                 _logger.LogInformation(
@@ -107,7 +111,7 @@ namespace IB.WatchServer.Service.Controllers
             }
             catch (UnauthorizedAccessException ex)
             {
-                _logger.LogWarning(ex, "Unauthorized darksky.net request: agent {agent} {@WatchFaceRequest}",
+                _logger.LogWarning(ex, "Unauthorized weather request: agent {agent} {@WatchFaceRequest}",
                     Request.Headers[HeaderNames.UserAgent], watchFaceRequest);
                 return Forbid();
             }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -93,8 +94,8 @@ namespace IB.WatchServer.Service
                         onRetry: (outcome, timespan, retryAttempt, context) =>
                         {
                             var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<YAFaceProvider>();
-                            logger.LogWarning("Delaying for {delay}ms, then making retry {retry}.",
-                                timespan.TotalMilliseconds, retryAttempt);
+                            logger.LogWarning("Delaying for {delay}ms, then making retry {retry}. CorrelationId {correlationId}",
+                                timespan.TotalMilliseconds, retryAttempt, context.CorrelationId);
                         }
                     ));
 
@@ -106,6 +107,13 @@ namespace IB.WatchServer.Service
                     .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
                     .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
                 mc.CreateMap<WeatherResponse, RequestInfo>();
+                mc.CreateMap<Dictionary<string, object>, WeatherResponse>()
+                    .ForMember(d => d.Temperature, c => c.MapFrom(s => s.ContainsKey("temp") ? s["temp"] : 0))
+                    .ForMember(d => d.WindSpeed, c => c.MapFrom(s => s.ContainsKey("speed") ? s["speed"] : 0))
+                    .ForAllOtherMembers(o => o.MapFrom(s =>
+                        s.ContainsKey(o.DestinationMember.Name.ToLower())
+                            ? s[o.DestinationMember.Name.ToLower()]
+                            : null));
             });
             services.AddSingleton(mappingConfig.CreateMapper());
 

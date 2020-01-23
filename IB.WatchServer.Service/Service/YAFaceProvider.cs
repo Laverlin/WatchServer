@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -12,6 +13,7 @@ using LinqToDB.Data;
 
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure.Linq2DB;
+using LinqToDB.Tools;
 using Microsoft.Extensions.Options;
 
 namespace IB.WatchServer.Service.Service
@@ -109,7 +111,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<WeatherResponse> RequestWeather(string lat, string lon, string token)
         {
             string apiToken = token;
-            var serviceUrl = string.Format(_faceSettings.WeatherBaseUrl, apiToken, lat, lon);
+            var serviceUrl = string.Format(_faceSettings.DarkSkyUrl, apiToken, lat, lon);
             var client = _clientFactory.CreateClient();
             using var response = await client.GetAsync(serviceUrl);
             if (!response.IsSuccessStatusCode)
@@ -126,6 +128,49 @@ namespace IB.WatchServer.Service.Service
                 json.RootElement.GetProperty("currently").GetRawText());
             
             return weatherResponse;
+        }
+
+        /// <summary>
+        /// Request weather conditions from OpenWeather service
+        /// </summary>
+        /// <param name="lat">latitude</param>
+        /// <param name="lon">longitude</param>
+        /// <returns>Weather conditions for the specified coordinates <see cref="WeatherResponse"/></returns>
+        public async Task<WeatherResponse> RequestOpenWeatherMap(string lat, string lon)
+        {
+            var conditionIcons = new Dictionary<string, string>
+            {
+                {"01d", "clear-day"}, {"01n", "clear-night"}, 
+                {"10d", "rain"}, {"10n", "rain"}, {"09d", "rain"}, {"09n", "rain"},  {"11d", "rain"}, {"11n", "rain"},
+                {"13d", "snow"}, {"13n", "snow"},  
+                {"50d", "fog"}, {"50n", "fog"},
+                {"03d","cloudy"}, {"03n","cloudy"}, 
+                {"02d", "partly-cloudy-day"}, {"02n", "partly-cloudy-night"}, {"04d", "partly-cloudy-day"}, {"04n", "partly-cloudy-night"}
+            };
+
+            var serviceUrl = string.Format(_faceSettings.OpenWeatherUrl, lat, lon, _faceSettings.OpenWeatherKey);
+            var client = _clientFactory.CreateClient();
+            using var response = await client.GetAsync(serviceUrl);
+            if (!response.IsSuccessStatusCode)
+            { 
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new UnauthorizedAccessException();
+
+                throw new HttpRequestException($"Error OpenWeather request, status: {response.StatusCode.ToString()}");
+            }
+
+            await using var content = await response.Content.ReadAsStreamAsync();
+            using var json = await JsonDocument.ParseAsync(content);
+
+            var elements = json.RootElement.EnumerateObject()
+                .Where(e => e.Name.In("main", "weather", "wind"))
+                .SelectMany(e => (e.Value.ValueKind == JsonValueKind.Array ? e.Value[0] : e.Value).EnumerateObject())
+                .Where(e => e.Name.In("temp", "humidity", "pressure", "speed", "icon"))
+                .ToDictionary(e => e.Name, v => v.Name == "icon" 
+                    ? (object) (conditionIcons.ContainsKey(v.Value.GetString()) ? conditionIcons[v.Value.GetString()] : "clear-day") 
+                    : v.Value.GetDecimal());
+
+            return _mapper.Map<WeatherResponse>(elements);
         }
 
         public async Task SaveRequestInfo(

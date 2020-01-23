@@ -54,5 +54,11 @@ namespace IB.WatchServer.Service.Entity
         /// </summary>
         [FromQuery(Name = "wapikey")]
         public string DarkskyKey { get; set; }
+
+        /// <summary>
+        /// Name of the weather provider
+        /// </summary>
+        [FromQuery(Name = "wp")]
+        public string WeatherProvider { get; set; }
     }
 }
