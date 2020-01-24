@@ -34,7 +34,7 @@ namespace IB.WatchServer.Service.Infrastructure
                 where unicodeCategory != UnicodeCategory.NonSpacingMark
                 select c;
 
-            return new string(preprocessed.ToArray()).Normalize(NormalizationForm.FormC);
+            return new string(preprocessed.ToArray()).Normalize(NormalizationForm.FormC).Replace('’', '\'');
         }
 
     }
