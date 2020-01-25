@@ -15,6 +15,7 @@ using LinqToDB;
 using LinqToDB.Data;
 
 using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Infrastructure.Linq2DB;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Options;
@@ -115,9 +116,10 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Weather info <see cref="RequestDarkSky"/></returns>
         public async Task<WeatherResponse> RequestDarkSky(string lat, string lon, string token)
         {
+            const string providerName = "DarkSky";
             _metrics.Measure.Counter.Increment(
                 new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
-                "DarkSky");
+                providerName);
 
             string apiToken = token;
             var serviceUrl = string.Format(_faceSettings.DarkSkyUrl, apiToken, lat, lon);
@@ -135,7 +137,8 @@ namespace IB.WatchServer.Service.Service
             using var json = await JsonDocument.ParseAsync(content);
             var weatherResponse = JsonSerializer.Deserialize<WeatherResponse>(
                 json.RootElement.GetProperty("currently").GetRawText());
-            
+            weatherResponse.WeatherProvider = providerName;
+
             return weatherResponse;
         }
 
@@ -147,9 +150,10 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Weather conditions for the specified coordinates <see cref="WeatherResponse"/></returns>
         public async Task<WeatherResponse> RequestOpenWeather(string lat, string lon)
         {
+            var providerName = "OpenWeather";
             _metrics.Measure.Counter.Increment(
                 new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
-                "OpenWeather");
+                providerName);
 
             var conditionIcons = new Dictionary<string, string>
             {
@@ -183,7 +187,10 @@ namespace IB.WatchServer.Service.Service
                     ? (object) (conditionIcons.ContainsKey(v.Value.GetString()) ? conditionIcons[v.Value.GetString()] : "clear-day") 
                     : v.Value.GetDecimal());
 
-            return _mapper.Map<WeatherResponse>(elements);
+            var weatherResponse = _mapper.Map<WeatherResponse>(elements);
+            weatherResponse.WeatherProvider = providerName;
+
+            return weatherResponse;
         }
 
         public async Task SaveRequestInfo(

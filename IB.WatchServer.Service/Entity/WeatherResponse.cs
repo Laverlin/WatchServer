@@ -1,10 +1,17 @@
 ﻿using System.Text.Json.Serialization;
 using AutoMapper.Configuration.Annotations;
+using IB.WatchServer.Service.Infrastructure;
 
 namespace IB.WatchServer.Service.Entity
 {
     public class WeatherResponse
     {
+        [JsonPropertyName("version")]
+        public string Version => SolutionInfo.GetVersion();
+
+        [JsonPropertyName("weatherProvider")]
+        public string WeatherProvider { get; set; }
+
         [JsonPropertyName("icon")]
         public string Icon { get; set; }
 
@@ -23,6 +30,6 @@ namespace IB.WatchServer.Service.Entity
         [JsonPropertyName("pressure")]
         public decimal Pressure { get; set; }
 
-        public string CityName { get; internal set; }
+        public string CityName { get; set; }
     }
 }

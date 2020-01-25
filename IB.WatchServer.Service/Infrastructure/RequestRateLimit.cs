@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using IB.WatchServer.Service.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;
@@ -54,7 +55,14 @@ namespace IB.WatchServer.Service.Infrastructure
             }
             else
             {
-                context.Result = new ContentResult { Content = "Too many requests" };
+                context.Result = new ObjectResult(
+                    new ErrorResponse
+                    {
+                        Code = (int) HttpStatusCode.TooManyRequests,
+                        Message = $"Too many requests, retry after {Seconds}"
+                    });
+
+                context.HttpContext.Response.Headers.Add("Retry-After", Seconds.ToString());
                 context.HttpContext.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
                 _logger.LogWarning("Too many requests from {KeyValue}", keyValue);
             }

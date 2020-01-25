@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using App.Metrics;
 using App.Metrics.Counter;
@@ -92,10 +93,7 @@ namespace IB.WatchServer.Service.Controllers
         {
             try
             {
-                var keyLength = 32;
-                var weatherResponse = (//watchFaceRequest.WeatherProvider == "darkSky" &&
-                                       !watchFaceRequest.DarkskyKey.IsNullOrEmpty() &&
-                                       watchFaceRequest.DarkskyKey.Length == keyLength)
+                var weatherResponse = (watchFaceRequest.WeatherProvider?.ToLower() == "darksky")
                     ? await _yaFaceProvider
                         .RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
                     : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
@@ -118,7 +116,7 @@ namespace IB.WatchServer.Service.Controllers
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Weather request error, {@WatchFaceRequest}", watchFaceRequest);
-                return BadRequest();
+                return BadRequest(new ErrorResponse {Code = (int) HttpStatusCode.BadRequest, Message = "Bad request"});
             }
         }
 
