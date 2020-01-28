@@ -12,7 +12,8 @@ using App.Metrics;
 using App.Metrics.Counter;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
-
+using IB.WatchServer.Service.Entity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IB.WatchServer.Service.Infrastructure
 {
@@ -60,7 +61,7 @@ namespace IB.WatchServer.Service.Infrastructure
             return Task.FromResult(AuthenticateResult.Success(ticket));
         }
 
-        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties authProperties)
         {
             _metrics.Measure.Counter.Increment(
                 new CounterOptions{Name = "token_forbidden", MeasurementUnit = Unit.Calls}, 
@@ -68,21 +69,9 @@ namespace IB.WatchServer.Service.Infrastructure
             Logger.LogInformation("Token forbidden, agent {agent}, request {request}", 
                 Request.Headers[HeaderNames.UserAgent], Request.QueryString);
             
-            await ForbidAsync(new AuthenticationProperties());
-            await Response.WriteAsync(JsonSerializer.Serialize(new ErrorDescription(403, "Unauthorized access")));
+            await ForbidAsync(authProperties);
+            await Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse(){ Code = 403, Message = "Unauthorized access" }));
         }
     }
 
-    internal class ErrorDescription
-    {
-        public ErrorDescription(int code, string description)
-        {
-            Code = code;
-            Description = description;
-        }
-
-        public int Code { get; set; }
-        public string Description { get; set; }
-        
-    }
 }

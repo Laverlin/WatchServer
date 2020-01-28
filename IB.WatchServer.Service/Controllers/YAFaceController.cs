@@ -93,9 +93,9 @@ namespace IB.WatchServer.Service.Controllers
         {
             try
             {
-                var weatherResponse = (watchFaceRequest.WeatherProvider?.ToLower() == "darksky")
-                    ? await _yaFaceProvider
-                        .RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
+                var weatherResponse = (watchFaceRequest.WeatherProvider?.ToLower() == "darksky"
+                    || watchFaceRequest.DarkskyKey?.Length == 32)
+                    ? await _yaFaceProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
                     : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
                 weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
@@ -111,7 +111,7 @@ namespace IB.WatchServer.Service.Controllers
             {
                 _logger.LogWarning(ex, "Unauthorized weather request: agent {agent} {@WatchFaceRequest}",
                     Request.Headers[HeaderNames.UserAgent], watchFaceRequest);
-                return Forbid();
+                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse(){ Code = (int)HttpStatusCode.Forbidden, Message="Forbidden" });
             }
             catch (Exception ex)
             {
