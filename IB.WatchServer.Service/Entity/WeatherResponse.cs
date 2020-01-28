@@ -6,8 +6,8 @@ namespace IB.WatchServer.Service.Entity
 {
     public class WeatherResponse
     {
-        [JsonPropertyName("version")]
-        public string Version => SolutionInfo.GetVersion();
+        [JsonPropertyName("apiVersion")]
+        public string ApiVersion => SolutionInfo.GetVersion();
 
         [JsonPropertyName("weatherProvider")]
         public string WeatherProvider { get; set; }
