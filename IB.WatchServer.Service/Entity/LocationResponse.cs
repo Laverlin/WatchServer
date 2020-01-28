@@ -5,16 +5,8 @@ namespace IB.WatchServer.Service.Entity
     /// <summary>
     /// Represents the location description
     /// </summary>
-    public class LocationResponse
+    public class LocationResponse : BaseApiResponse
     {
-        public string Version
-        {
-            get
-            {
-                return SolutionInfo.GetVersion();
-            }
-        }
-
         /// <summary>
         /// The Name of the plase 
         /// </summary>

@@ -93,8 +93,8 @@ namespace IB.WatchServer.Service.Controllers
         {
             try
             {
-                var weatherResponse = (watchFaceRequest.WeatherProvider?.ToLower() == "darksky"
-                    || watchFaceRequest.DarkskyKey?.Length == 32)
+                Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
+                var weatherResponse = (weatherProvider == WeatherProvider.DarkSky || watchFaceRequest.DarkskyKey?.Length == 32)
                     ? await _yaFaceProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
                     : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 

@@ -116,7 +116,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Weather info <see cref="RequestDarkSky"/></returns>
         public async Task<WeatherResponse> RequestDarkSky(string lat, string lon, string token)
         {
-            const string providerName = "DarkSky";
+            string providerName = WeatherProvider.DarkSky.ToString();
             _metrics.Measure.Counter.Increment(
                 new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
                 providerName);
@@ -150,7 +150,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Weather conditions for the specified coordinates <see cref="WeatherResponse"/></returns>
         public async Task<WeatherResponse> RequestOpenWeather(string lat, string lon)
         {
-            var providerName = "OpenWeather";
+            var providerName = WeatherProvider.OpenWeather.ToString();
             _metrics.Measure.Counter.Increment(
                 new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
                 providerName);

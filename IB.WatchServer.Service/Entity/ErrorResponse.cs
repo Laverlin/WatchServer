@@ -1,6 +1,6 @@
 ﻿namespace IB.WatchServer.Service.Entity
 {
-    public class ErrorResponse
+    public class ErrorResponse : BaseApiResponse
     {
         public string Message { get; set; }
 
