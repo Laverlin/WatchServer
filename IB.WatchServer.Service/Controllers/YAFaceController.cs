@@ -83,7 +83,7 @@ namespace IB.WatchServer.Service.Controllers
         /// Provide weather info
         /// </summary>
         /// <param name="watchFaceRequest"></param>
-        /// <returns></returns>
+        /// <returns>The <see cref="WeatherResponse"/> data of current weather in given location</returns>
         [HttpGet("weather")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -119,6 +119,7 @@ namespace IB.WatchServer.Service.Controllers
                 return BadRequest(new ErrorResponse {Code = (int) HttpStatusCode.BadRequest, Message = "Bad request"});
             }
         }
+
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {

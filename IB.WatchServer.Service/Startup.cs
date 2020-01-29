@@ -22,6 +22,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
+using Telegram.Bot;
 
 namespace IB.WatchServer.Service
 {
@@ -125,6 +126,12 @@ namespace IB.WatchServer.Service
             {
                 options.AllowSynchronousIO = true;
             });
+
+            // Add telegram bot
+            //
+            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(faceSettings.TelegramKey));
+            services.AddSingleton<TelegramService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

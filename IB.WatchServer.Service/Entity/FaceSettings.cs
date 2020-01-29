@@ -43,6 +43,9 @@ namespace IB.WatchServer.Service.Entity
 
         [Required]
         public string OpenWeatherKey { get; set; }
+       
+        [Required]
+        public string TelegramKey { get; set; }
     }
 
     /// <summary>
