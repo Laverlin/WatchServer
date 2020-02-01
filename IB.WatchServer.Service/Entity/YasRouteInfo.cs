@@ -12,7 +12,7 @@ namespace IB.WatchServer.Service.Entity
     [Table("yas_route_info")]
     public class YasRouteInfo
     {
-        [Column("route_id")]
+        [Column("route_id", IsIdentity = true)]
         public long RouteId { get; set; } 
 
         [Column("user_id")]

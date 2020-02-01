@@ -10,7 +10,7 @@ namespace IB.WatchServer.Service.Entity
     [Table(Name = "yas_user_info")]
     public class YasUserInfo
     {
-        [Column("user_id")]
+        [Column("user_id", IsIdentity = true)]
         public long UserId {get;set;}
 
         [Column("public_id")]
