@@ -1,8 +1,7 @@
-﻿using LinqToDB.Mapping;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
+using LinqToDB.Mapping;
 
 namespace IB.WatchServer.Service.Entity
 {
@@ -19,9 +18,14 @@ namespace IB.WatchServer.Service.Entity
         public long UserId { get; set; }
 
         [Column("route_name")]
+        [JsonPropertyName("RouteName")]
         public string RouteName { get; set; }
 
         [Column("upload_time")]
+        [JsonPropertyName("RouteDate")]
         public DateTime UploadTime { get; set; }
+
+        [JsonPropertyName("WayPoints")]
+        public IOrderedEnumerable<YasWaypointInfo> Waypoints { get; set; }
     }
 }

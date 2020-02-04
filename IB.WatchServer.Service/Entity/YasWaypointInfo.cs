@@ -1,4 +1,5 @@
 ﻿using LinqToDB.Mapping;
+using System.Text.Json.Serialization;
 
 namespace IB.WatchServer.Service.Entity
 {
@@ -18,9 +19,11 @@ namespace IB.WatchServer.Service.Entity
         public string Name {get;set;}
 
         [Column("lat")]
+        [JsonPropertyName("Lat")]
         public decimal Latitude {get;set;}
 
         [Column("lon")]
+         [JsonPropertyName("Lon")]
         public decimal Longitude {get;set;}
 
         [Column("order_id")]

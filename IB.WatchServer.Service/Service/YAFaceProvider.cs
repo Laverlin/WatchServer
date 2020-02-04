@@ -27,7 +27,6 @@ namespace IB.WatchServer.Service.Service
     /// </summary>
     public class YAFaceProvider
     {
-        //private readonly PostgresSettings _postgresSettings;
         private readonly ILogger<YAFaceProvider> _logger;
         private readonly FaceSettings _faceSettings;
         private readonly IHttpClientFactory _clientFactory;
