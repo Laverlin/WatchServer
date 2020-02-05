@@ -7,8 +7,8 @@ namespace IB.WatchServer.Service.Entity
     /// <summary>
     /// YAS User info
     /// </summary>
-    [Table(Name = "yas_user_info")]
-    public class YasUserInfo
+    [Table(Name = "yas_user")]
+    public class YasUser
     {
         [Column("user_id", IsIdentity = true)]
         public long UserId {get;set;}

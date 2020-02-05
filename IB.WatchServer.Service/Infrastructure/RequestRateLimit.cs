@@ -11,6 +11,7 @@ namespace IB.WatchServer.Service.Infrastructure
     /// <summary>
     /// Throttling attribute.
     /// Prevent to request more that one request per "Second" from one "KeyField" client 
+    /// KeyField could be in a query string or action parameter
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
     public class RequestRateLimit : ActionFilterAttribute
@@ -40,9 +41,14 @@ namespace IB.WatchServer.Service.Infrastructure
         {
             base.OnActionExecuting(context);
             
-            string keyValue = context.HttpContext.Request.Query[KeyField];
+            string keyValue = String.Empty;
+            if (context.ActionArguments.ContainsKey(KeyField))
+                keyValue = context.ActionArguments[KeyField].ToString();
+            else if (context.HttpContext.Request.Query.ContainsKey(KeyField))
+                keyValue = context.HttpContext.Request.Query[KeyField];
             if (string.IsNullOrEmpty(keyValue))
                 return;
+
             string path = context.HttpContext.Request.Path;
             string memoryCacheKey = $"device-key-{keyValue}-{path}";
             _logger.LogDebug("{memoryCacheKey}", memoryCacheKey);

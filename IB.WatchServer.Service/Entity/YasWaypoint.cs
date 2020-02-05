@@ -7,7 +7,7 @@ namespace IB.WatchServer.Service.Entity
     /// Way point data
     /// </summary>
     [Table("yas_waypoint")]
-    public class YasWaypointInfo
+    public class YasWaypoint
     {
         [Column("waypoint_id", IsIdentity = true)]
         public long WaypointId {get;set;}
@@ -23,10 +23,11 @@ namespace IB.WatchServer.Service.Entity
         public decimal Latitude {get;set;}
 
         [Column("lon")]
-         [JsonPropertyName("Lon")]
+        [JsonPropertyName("Lon")]
         public decimal Longitude {get;set;}
 
         [Column("order_id")]
+        [JsonIgnore]
         public int OrderId {get;set;}
     }
 }
