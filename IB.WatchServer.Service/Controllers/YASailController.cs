@@ -28,19 +28,22 @@ namespace IB.WatchServer.Service.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [RequestRateFactory(KeyField ="publicId", Seconds = 5)]
+        [RequestRateFactory(KeyField ="publicId", Seconds = 2)]
         public async Task<ActionResult<IEnumerable<YasRoute>>> RouteList([FromRoute] string publicId)
         {
             await using var db = _dbFactory.Create();
-            var routes = db.GetTable<YasRoute>()
-                .Join(db.GetTable<YasUser>().Where(u => u.PublicId == publicId), r => r.UserId, u => u.UserId, (r, u) => r)
+            var yasUser = db.GetTable<YasUser>().SingleOrDefault(u => u.PublicId == publicId);
+            if (yasUser == null)
+                return NotFound(new ErrorResponse(){Code = StatusCodes.Status404NotFound, Message = "User not found"});
+
+            var routes = db.GetTable<YasRoute>().Where(r => r.UserId == yasUser.UserId)
                 .OrderByDescending(r => r.UploadTime);
             var waypoints  = routes.Join(db.GetTable<YasWaypoint>(), r => r.RouteId, w => w.RouteId, (r, w) => w).ToArray();
             var routesArray = routes.ToArray();
             foreach(var route in routesArray)
                 route.Waypoints = waypoints.Where(w => w.RouteId == route.RouteId).OrderBy(w => w.OrderId);
 
-            _logger.LogInformation("Watch app request from User {PublicUserId}, {RoutesCount} routes found", publicId, routesArray.Length);
+            _logger.LogInformation("Watch app request from User {@YasUser}, {RoutesCount} routes found", yasUser, routesArray.Length);
             return routesArray;
         }
 
