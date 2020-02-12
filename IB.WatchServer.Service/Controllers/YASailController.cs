@@ -34,7 +34,7 @@ namespace IB.WatchServer.Service.Controllers
             await using var db = _dbFactory.Create();
             var yasUser = db.GetTable<YasUser>().SingleOrDefault(u => u.PublicId == publicId);
             if (yasUser == null)
-                return NotFound(new ErrorResponse(){Code = StatusCodes.Status404NotFound, Message = "User not found"});
+                return NotFound(new ErrorResponse(){ Code = StatusCodes.Status404NotFound, Message = "User not found" });
 
             var routes = db.GetTable<YasRoute>().Where(r => r.UserId == yasUser.UserId)
                 .OrderByDescending(r => r.UploadTime);

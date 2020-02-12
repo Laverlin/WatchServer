@@ -43,10 +43,8 @@ namespace IB.WatchServer.Service.Service
                 {
                     await ProcessMessage(telegramUser, message, ProcessGpx);
                 }
-                else
-                if (message.Text != null)
+                else if (message.Text != null)
                 {
-                
                     switch (message.Text.ToLower())
                     {
                         case "/myid":

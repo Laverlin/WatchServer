@@ -11,9 +11,7 @@ using Microsoft.Extensions.Options;
 using App.Metrics;
 using App.Metrics.Counter;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
 using IB.WatchServer.Service.Entity;
-using Microsoft.AspNetCore.Mvc;
 
 namespace IB.WatchServer.Service.Infrastructure
 {
@@ -66,8 +64,7 @@ namespace IB.WatchServer.Service.Infrastructure
             _metrics.Measure.Counter.Increment(
                 new CounterOptions{Name = "token_forbidden", MeasurementUnit = Unit.Calls}, 
                 Context.GetMetricsCurrentRouteName());
-            Logger.LogInformation("Token forbidden, agent {agent}, request {request}", 
-                Request.Headers[HeaderNames.UserAgent], Request.QueryString);
+            Logger.LogInformation("Token forbidden, request {request}", Request.QueryString);
             
             await ForbidAsync(authProperties);
             await Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse(){ Code = 403, Message = "Unauthorized access" }));

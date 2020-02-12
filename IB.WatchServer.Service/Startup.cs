@@ -23,6 +23,8 @@ using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Extensions.Http;
 using Telegram.Bot;
+using Serilog.Context;
+using Microsoft.Net.Http.Headers;
 
 namespace IB.WatchServer.Service
 {
@@ -137,14 +139,28 @@ namespace IB.WatchServer.Service
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseSerilogRequestLogging();
+
+            // Add some request info to each log entry
+            //
+            app.Use(async (context, next) =>
+            {
+                LogContext.PushProperty("UserName", context.User.Identity.Name);
+                LogContext.PushProperty("RequestedHost", context.Request.Host);
+                LogContext.PushProperty("RemoteIP", context.Connection.RemoteIpAddress);
+
+                if (context.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgent))
+                    LogContext.PushProperty("UserAgent", userAgent);
+
+                await next.Invoke();
+            });
+
             app.UseMetricsAllMiddleware();
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseSerilogRequestLogging();
 
             app.UseRouting();
 
@@ -158,7 +174,6 @@ namespace IB.WatchServer.Service
                 endpoints.MapControllers();
             });
             app.UseMetricsEndpoint();
-
         }
     }
 }
