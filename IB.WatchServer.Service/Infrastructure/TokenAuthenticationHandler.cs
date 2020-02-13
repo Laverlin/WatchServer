@@ -37,7 +37,7 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <returns></returns>
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var path = Context.GetMetricsCurrentRouteName();//Request.Path.Value;
+            var path = Context.GetMetricsCurrentRouteName();
             if (!Request.Query.ContainsKey(Options.ApiTokenName))
             {
                 _metrics.Measure.Counter.Increment(new CounterOptions{Name = "token_no_token", MeasurementUnit = Unit.Calls}, path);
