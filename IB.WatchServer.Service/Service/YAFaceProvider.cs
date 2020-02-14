@@ -63,10 +63,8 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Location name</returns>
         public async Task<string> RequestLocationName(string lat, string lon)
         {
-            var url = string.Format(_faceSettings.BaseUrl, lat, lon, _faceSettings.ApiKey);
-
             var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(url);
+            using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat, lon));
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"Error service request, status: {response.StatusCode.ToString()}");
@@ -120,10 +118,8 @@ namespace IB.WatchServer.Service.Service
                 new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
                 providerName);
 
-            string apiToken = token;
-            var serviceUrl = string.Format(_faceSettings.DarkSkyUrl, apiToken, lat, lon);
             var client = _clientFactory.CreateClient();
-            using var response = await client.GetAsync(serviceUrl);
+            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token));
             if (!response.IsSuccessStatusCode)
             { 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -164,9 +160,8 @@ namespace IB.WatchServer.Service.Service
                 {"02d", "partly-cloudy-day"}, {"02n", "partly-cloudy-night"}, {"04d", "partly-cloudy-day"}, {"04n", "partly-cloudy-night"}
             };
 
-            var serviceUrl = string.Format(_faceSettings.OpenWeatherUrl, lat, lon, _faceSettings.OpenWeatherKey);
             var client = _clientFactory.CreateClient();
-            using var response = await client.GetAsync(serviceUrl);
+            using var response = await client.GetAsync(_faceSettings.BuildOpenWeatherUrl(lat, lon));
             if (!response.IsSuccessStatusCode)
             { 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)

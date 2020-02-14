@@ -51,9 +51,9 @@ namespace IB.WatchServer.Service
             // configuration
             //
             var faceSettings = Configuration.LoadVerifiedConfiguration<FaceSettings>();
+            var pgSettings = Configuration.LoadVerifiedConfiguration<IConnectionSettings, PostgresProviderSettings>();
             services.AddSingleton(faceSettings);
-            services.AddSingleton(
-                Configuration.LoadVerifiedConfiguration<IConnectionSettings, PostgresProviderSettings>());
+            services.AddSingleton(pgSettings);
 
             // services
             //
@@ -140,29 +140,21 @@ namespace IB.WatchServer.Service
             //
             services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(faceSettings.TelegramKey));
             services.AddSingleton<TelegramService>();
-            services.AddHealthChecks();
-                
 
+            // Add the health check
+            //
+            services.AddHealthChecks()
+                .AddNpgSql(pgSettings.BuildConnectionString(), name: "database")
+                .AddUrlGroup(new Uri(faceSettings.BuildLocationUrl("0", "0")), "location")
+                .AddUrlGroup(new Uri("https://api.darksky.net/v1/status.txt"), "darkSky")
+                .AddUrlGroup(new Uri(faceSettings.BuildOpenWeatherUrl("0", "0")), "openWeather");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        //
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSerilogRequestLogging();
-
-            // Add some request info to each log entry
-            //
-            app.Use(async (context, next) =>
-            {
-                LogContext.PushProperty("UserName", context.User.Identity.Name);
-                LogContext.PushProperty("RequestedHost", context.Request.Host);
-                LogContext.PushProperty("RemoteIP", context.Connection.RemoteIpAddress);
-
-                if (context.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgent))
-                    LogContext.PushProperty("UserAgent", userAgent);
-
-                await next.Invoke();
-            });
 
             app.UseMetricsAllMiddleware();
 
@@ -175,6 +167,21 @@ namespace IB.WatchServer.Service
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // Add some request info to each log entry
+            //
+            app.Use(async (context, next) =>
+            {
+                LogContext.PushProperty("UserName", context.User.Identity.Name);
+                LogContext.PushProperty("RemoteIP", context.Connection.RemoteIpAddress);
+
+                if (context.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgent))
+                    LogContext.PushProperty("UserAgent", userAgent);
+
+                LogContext.PushProperty("AllHeaders", context.Request.Headers.ToDictionary(h => h.Key, h=>h.Value.ToString()));
+
+                await next.Invoke();
+            });
 
             app.UseAppMetricsEndpointRoutesResolver();
 

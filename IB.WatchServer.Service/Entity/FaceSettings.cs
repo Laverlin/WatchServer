@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Runtime.Serialization;
 
 namespace IB.WatchServer.Service.Entity
 {
@@ -46,6 +48,7 @@ namespace IB.WatchServer.Service.Entity
        
         [Required]
         public string TelegramKey { get; set; }
+
     }
 
     /// <summary>
@@ -67,5 +70,49 @@ namespace IB.WatchServer.Service.Entity
         /// Token value
         /// </summary>
         public string Token { get; set; }
+    }
+
+    /// <summary>
+    /// Helper class to get data from configuration object
+    /// </summary>
+    public static class FaceSettingsExtensions
+    {
+        /// <summary>
+        /// Build url string to request location info
+        /// </summary>
+        /// <param name="settings">Configuration object</param>
+        /// <param name="lat">Latitude of location</param>
+        /// <param name="lon">Longitude of location</param>
+        /// <returns>url with parameters to get location name</returns>
+        public static string BuildLocationUrl(this FaceSettings settings, string lat, string lon)
+        {
+            return string.Format(settings.BaseUrl, lat, lon, settings.ApiKey);
+        }
+
+        /// <summary>
+        /// Build url string to request DarkSky service
+        /// </summary>
+        /// <param name="settings">Configuration object</param>
+        /// <param name="lat">Location latitude</param>
+        /// <param name="lon">Location longitude</param>
+        /// <param name="dsToken">DarkSky authentication token</param>
+        /// <returns>String to request the weather from DarkSky</returns>
+        public static string BuildDarkSkyUrl(this FaceSettings settings, string lat, string lon, string dsToken)
+        {
+            return string.Format(settings.DarkSkyUrl, dsToken, lat, lon);
+        }
+
+        /// <summary>
+        /// Build url string to request the weather from OpenWeather
+        /// </summary>
+        /// <param name="settings">Configuration object</param>
+        /// <param name="lat">Latitude of location</param>
+        /// <param name="lon">Longitude of location</param>
+        /// <returns>url with parameters to get the weather from OpenWeather</returns>
+        public static string BuildOpenWeatherUrl(this FaceSettings settings, string lat, string lon)
+        {
+            return string.Format(settings.OpenWeatherUrl, lat, lon, settings.OpenWeatherKey);
+        }
+
     }
 }
