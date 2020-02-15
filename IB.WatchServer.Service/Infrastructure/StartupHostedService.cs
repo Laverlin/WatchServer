@@ -29,8 +29,8 @@ namespace IB.WatchServer.Service.Infrastructure
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Start: {app}, version: {version}",
-                SolutionInfo.GetName(),
-                SolutionInfo.GetVersion());
+                SolutionInfo.Name,
+                SolutionInfo.Version);
 
 
             _telegramClient.OnMessage += (sender, e) => _telegramService.OnBotMessage(e.Message);

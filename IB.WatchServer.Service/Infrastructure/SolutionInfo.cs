@@ -10,15 +10,11 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <summary>
         /// Assembly version info
         /// </summary>
-        /// <returns>string with assembly version</returns>
-        public static string GetVersion()
-        {
-            return Assembly.GetExecutingAssembly().GetName().Version.ToString();
-        }
+        public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-        internal static string GetName()
-        {
-            return Assembly.GetExecutingAssembly().GetName().Name;
-        }
+        /// <summary>
+        /// Assembly name
+        /// </summary>
+        public static string Name => Assembly.GetExecutingAssembly().GetName().Name;
     }
 }

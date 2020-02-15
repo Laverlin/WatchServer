@@ -84,9 +84,9 @@ namespace IB.WatchServer.Service.Entity
         /// <param name="lat">Latitude of location</param>
         /// <param name="lon">Longitude of location</param>
         /// <returns>url with parameters to get location name</returns>
-        public static string BuildLocationUrl(this FaceSettings settings, string lat, string lon)
+        public static Uri BuildLocationUrl(this FaceSettings settings, string lat, string lon)
         {
-            return string.Format(settings.BaseUrl, lat, lon, settings.ApiKey);
+            return new Uri(string.Format(settings.BaseUrl, lat, lon, settings.ApiKey));
         }
 
         /// <summary>
@@ -96,10 +96,10 @@ namespace IB.WatchServer.Service.Entity
         /// <param name="lat">Location latitude</param>
         /// <param name="lon">Location longitude</param>
         /// <param name="dsToken">DarkSky authentication token</param>
-        /// <returns>String to request the weather from DarkSky</returns>
-        public static string BuildDarkSkyUrl(this FaceSettings settings, string lat, string lon, string dsToken)
+        /// <returns>Url to request the weather from DarkSky</returns>
+        public static Uri BuildDarkSkyUrl(this FaceSettings settings, string lat, string lon, string dsToken)
         {
-            return string.Format(settings.DarkSkyUrl, dsToken, lat, lon);
+            return new Uri(string.Format(settings.DarkSkyUrl, dsToken, lat, lon));
         }
 
         /// <summary>
@@ -109,9 +109,9 @@ namespace IB.WatchServer.Service.Entity
         /// <param name="lat">Latitude of location</param>
         /// <param name="lon">Longitude of location</param>
         /// <returns>url with parameters to get the weather from OpenWeather</returns>
-        public static string BuildOpenWeatherUrl(this FaceSettings settings, string lat, string lon)
+        public static Uri BuildOpenWeatherUrl(this FaceSettings settings, string lat, string lon)
         {
-            return string.Format(settings.OpenWeatherUrl, lat, lon, settings.OpenWeatherKey);
+            return new Uri(string.Format(settings.OpenWeatherUrl, lat, lon, settings.OpenWeatherKey));
         }
 
     }

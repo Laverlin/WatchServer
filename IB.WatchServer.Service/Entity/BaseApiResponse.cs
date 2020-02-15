@@ -12,6 +12,6 @@ namespace IB.WatchServer.Service.Entity
         /// API Version number
         /// </summary>
         [JsonPropertyName("apiVersion")]
-        public string ApiVersion => SolutionInfo.GetVersion();
+        public string ApiVersion => SolutionInfo.Version;
     }
 }

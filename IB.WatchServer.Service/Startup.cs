@@ -24,7 +24,6 @@ using Polly;
 using Polly.Extensions.Http;
 using Telegram.Bot;
 using Serilog.Context;
-using Microsoft.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -69,7 +68,7 @@ namespace IB.WatchServer.Service
             //
             var metrics = AppMetrics.CreateDefaultBuilder()
                 .Configuration.Configure(
-                    options => options.GlobalTags.Add("version", SolutionInfo.GetVersion()))
+                    options => options.GlobalTags.Add("version", SolutionInfo.Version))
                 .Configuration.ReadFrom(Configuration)
                 .OutputMetrics.AsPrometheusPlainText()
                 .Build();
@@ -145,9 +144,9 @@ namespace IB.WatchServer.Service
             //
             services.AddHealthChecks()
                 .AddNpgSql(pgSettings.BuildConnectionString(), name: "database")
-                .AddUrlGroup(new Uri(faceSettings.BuildLocationUrl("0", "0")), "location")
+                .AddUrlGroup(faceSettings.BuildLocationUrl("0", "0"), "location")
                 .AddUrlGroup(new Uri("https://api.darksky.net/v1/status.txt"), "darkSky")
-                .AddUrlGroup(new Uri(faceSettings.BuildOpenWeatherUrl("0", "0")), "openWeather");
+                .AddUrlGroup(faceSettings.BuildOpenWeatherUrl("0", "0"), "openWeather");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -173,13 +172,7 @@ namespace IB.WatchServer.Service
             app.Use(async (context, next) =>
             {
                 LogContext.PushProperty("UserName", context.User.Identity.Name);
-                LogContext.PushProperty("RemoteIP", context.Connection.RemoteIpAddress);
-
-                if (context.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var userAgent))
-                    LogContext.PushProperty("UserAgent", userAgent);
-
-                LogContext.PushProperty("AllHeaders", context.Request.Headers.ToDictionary(h => h.Key, h=>h.Value.ToString()));
-
+                LogContext.PushProperty("Headers", context.Request.Headers.ToDictionary(h => h.Key, h=>h.Value.ToString()));
                 await next.Invoke();
             });
 
@@ -188,13 +181,15 @@ namespace IB.WatchServer.Service
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHealthChecks("/health", new HealthCheckOptions(){ ResponseWriter = WriteResponse });
+                endpoints.MapHealthChecks("/health", new HealthCheckOptions(){ ResponseWriter = WriteHealthResultResponse });
             });
             app.UseMetricsEndpoint();
         }
 
-
-        private static Task WriteResponse(HttpContext context, HealthReport result)
+        /// <summary>
+        /// Custom JSON output for HealthReport
+        /// </summary>
+        private static Task WriteHealthResultResponse(HttpContext context, HealthReport result)
         {
             context.Response.ContentType = "application/json; charset=utf-8";
 
@@ -208,8 +203,9 @@ namespace IB.WatchServer.Service
                 using (var writer = new Utf8JsonWriter(stream, options))
                 {
                     writer.WriteStartObject();
-                    writer.WriteString("apiVersion", SolutionInfo.GetVersion());
+                    writer.WriteString("apiVersion", SolutionInfo.Version);
                     writer.WriteString("status", result.Status.ToString());
+                    writer.WriteNumber("totalDuration", result.TotalDuration.TotalMilliseconds);
                     writer.WriteStartObject("results");
                     foreach (var entry in result.Entries)
                     {
