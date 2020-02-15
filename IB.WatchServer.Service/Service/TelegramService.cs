@@ -47,6 +47,10 @@ namespace IB.WatchServer.Service.Service
                 {
                     switch (message.Text.ToLower())
                     {
+                        case "/start":
+                            await ProcessMessage(telegramUser, message, MessageStart);
+                            break;
+
                         case "/myid":
                             await ProcessMessage(telegramUser, message, MessageMyid);
                             break;
@@ -194,6 +198,16 @@ namespace IB.WatchServer.Service.Service
         private async Task<string> MessageMyid(Message message, YasUser yasUser)
         {
             return await Task.FromResult(yasUser.PublicId);
+        }
+
+        private async Task<string> MessageStart(Message message, YasUser yasUser)
+        {
+            var output = "/myid `- return ID-string to identify your routes`\n\n" +
+                "/list `- route list `\n\n" + "" +
+                "/renamelast <new name> `- rename last uploaded route`\n\n " + 
+                "/rename:<id> <new name> `- set <new name> to route with <id>`\n\n" + 
+                "/delete:<id> `delete route with <id>`";
+            return await Task.FromResult(output);
         }
 
         private async Task ProcessMessage(TelegramUserInfo telegramUser, Message message, Func<Message, YasUser, Task<string>> processAction)
