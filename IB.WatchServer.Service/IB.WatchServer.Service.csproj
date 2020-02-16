@@ -8,13 +8,14 @@
     <Company>IB</Company>
     <Description>The server-side component for the Garmin watch applications</Description>
     <Copyright>Ivan Bodyagin (c) 2019</Copyright>
-    <AssemblyVersion>1.20.46.0</AssemblyVersion>
+    <AssemblyVersion>1.20.47.5</AssemblyVersion>
     <AssemblyName>IB.WatchServer</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="App.Metrics.AspNetCore" Version="3.2.0" />
     <PackageReference Include="App.Metrics.Formatters.Prometheus" Version="3.2.0" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="3.0.0" />
+    <PackageReference Include="AspNetCore.HealthChecks.Publisher.Prometheus" Version="3.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="3.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="linq2db.PostgreSQL" Version="2.9.6" />

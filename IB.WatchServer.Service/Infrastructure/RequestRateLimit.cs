@@ -64,8 +64,8 @@ namespace IB.WatchServer.Service.Infrastructure
                 context.Result = new ObjectResult(
                     new ErrorResponse
                     {
-                        Code = (int) HttpStatusCode.TooManyRequests,
-                        Message = $"Too many requests, retry after {Seconds}"
+                        StatusCode = (int) HttpStatusCode.TooManyRequests,
+                        Description = $"Too many requests, retry after {Seconds}"
                     });
 
                 context.HttpContext.Response.Headers.Add("Retry-After", Seconds.ToString());

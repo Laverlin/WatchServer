@@ -16,9 +16,9 @@ using LinqToDB.Data;
 
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
-using IB.WatchServer.Service.Infrastructure.Linq2DB;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Options;
+using IB.WatchServer.Service.Entity.Settings;
 
 namespace IB.WatchServer.Service.Service
 {

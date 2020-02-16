@@ -1,9 +1,18 @@
 ﻿namespace IB.WatchServer.Service.Entity
 {
+    /// <summary>
+    /// All error responses should be described by this class
+    /// </summary>
     public class ErrorResponse : BaseApiResponse
     {
-        public string Message { get; set; }
+        /// <summary>
+        /// Error Description
+        /// </summary>
+        public string Description { get; set; }
 
-        public int Code { get; set; }
+        /// <summary>
+        /// Status Code
+        /// </summary>
+        public int StatusCode { get; set; }
     }
 }

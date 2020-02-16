@@ -36,6 +36,5 @@ namespace IB.WatchServer.Service.Infrastructure
 
             return new string(preprocessed.ToArray()).Normalize(NormalizationForm.FormC).Replace('’', '\'');
         }
-
     }
 }

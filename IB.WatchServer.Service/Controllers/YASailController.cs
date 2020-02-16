@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
-using IB.WatchServer.Service.Infrastructure.Linq2DB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,6 +23,11 @@ namespace IB.WatchServer.Service.Controllers
             _dbFactory = dbFactory;
         }
 
+        /// <summary>
+        /// Process route list request. 
+        /// </summary>
+        /// <param name="publicId">public user ID</param>
+        /// <returns>JSON with all user's routes</returns>
         [HttpGet("RouteList/{publicId:length(7, 14)}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -34,7 +38,7 @@ namespace IB.WatchServer.Service.Controllers
             await using var db = _dbFactory.Create();
             var yasUser = db.GetTable<YasUser>().SingleOrDefault(u => u.PublicId == publicId);
             if (yasUser == null)
-                return NotFound(new ErrorResponse(){ Code = StatusCodes.Status404NotFound, Message = "User not found" });
+                return NotFound(new ErrorResponse(){ StatusCode = StatusCodes.Status404NotFound, Description = "User not found" });
 
             var routes = db.GetTable<YasRoute>().Where(r => r.UserId == yasUser.UserId)
                 .OrderByDescending(r => r.UploadTime);
@@ -46,6 +50,5 @@ namespace IB.WatchServer.Service.Controllers
             _logger.LogInformation("Watch app request from User {@YasUser}, {RoutesCount} routes found", yasUser, routesArray.Length);
             return routesArray;
         }
-
     }
 }

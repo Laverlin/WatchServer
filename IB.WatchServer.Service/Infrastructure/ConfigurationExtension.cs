@@ -28,19 +28,17 @@ namespace IB.WatchServer.Service.Infrastructure
         {
             var logger = Log.Logger.ForContext<Startup>();
             logger.Information($"validate :: { typeof(TSettings).Name }");
-            TSettings settings;
             try
             {
-                settings = configuration.GetSection(typeof(TSettings).Name).Get<TSettings>();
+                var settings = configuration.GetSection(typeof(TSettings).Name).Get<TSettings>();
                 Validator.ValidateObject(settings, new ValidationContext(settings), validateAllProperties: true);
+                return settings;
             }
             catch (Exception e)
             {
                 logger.Error(e, $"{typeof(TSettings).Name} validation error");
                 throw;
             }
-
-            return settings;
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using LinqToDB.Data;
 using LinqToDB.DataProvider;
+using IB.WatchServer.Service.Entity.Settings;
 
-namespace IB.WatchServer.Service.Infrastructure.Linq2DB
+namespace IB.WatchServer.Service.Infrastructure
 {
     /// <summary>
     /// Factory to work with Data Connection from DI 

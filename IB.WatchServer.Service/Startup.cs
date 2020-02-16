@@ -16,7 +16,6 @@ using AutoMapper;
 
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
-using IB.WatchServer.Service.Infrastructure.Linq2DB;
 using IB.WatchServer.Service.Service;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -31,6 +30,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.IO;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using IB.WatchServer.Service.Entity.Settings;
 
 namespace IB.WatchServer.Service
 {
@@ -205,7 +205,7 @@ namespace IB.WatchServer.Service
                     writer.WriteStartObject();
                     writer.WriteString("apiVersion", SolutionInfo.Version);
                     writer.WriteString("status", result.Status.ToString());
-                    writer.WriteNumber("totalDuration", result.TotalDuration.TotalMilliseconds);
+                    writer.WriteString("totalDuration", result.TotalDuration.ToString());
                     writer.WriteStartObject("results");
                     foreach (var entry in result.Entries)
                     {

@@ -8,7 +8,7 @@ using Telegram.Bot;
 namespace IB.WatchServer.Service.Infrastructure
 {
     /// <summary>
-    /// Helper class to put some info in log output
+    /// Helper class to put some info in log output and startup additional services (Telegram bot)
     /// </summary>
     public class StartupHostedService : IHostedService
     {
@@ -31,7 +31,6 @@ namespace IB.WatchServer.Service.Infrastructure
             _logger.LogInformation("Start: {app}, version: {version}",
                 SolutionInfo.Name,
                 SolutionInfo.Version);
-
 
             _telegramClient.OnMessage += (sender, e) => _telegramService.OnBotMessage(e.Message);
             _telegramClient.StartReceiving();

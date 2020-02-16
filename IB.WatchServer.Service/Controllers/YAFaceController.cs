@@ -7,13 +7,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Net.Http.Headers;
 
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
-
-
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -110,12 +107,12 @@ namespace IB.WatchServer.Service.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning(ex, "Unauthorized weather request: {@WatchFaceRequest}", watchFaceRequest);
-                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse(){ Code = (int)HttpStatusCode.Forbidden, Message="Forbidden" });
+                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse(){ StatusCode = (int)HttpStatusCode.Forbidden, Description="Forbidden" });
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Weather request error, {@WatchFaceRequest}", watchFaceRequest);
-                return BadRequest(new ErrorResponse {Code = (int) HttpStatusCode.BadRequest, Message = "Bad request"});
+                return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
         }
 

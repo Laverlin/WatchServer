@@ -34,7 +34,6 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <summary>
         /// Looking for a known token to authenticate request, no token is Ok, wrong token - frobidden
         /// </summary>
-        /// <returns></returns>
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             var path = Context.GetMetricsCurrentRouteName();
@@ -67,8 +66,7 @@ namespace IB.WatchServer.Service.Infrastructure
             Logger.LogInformation("Token forbidden, request {request}", Request.QueryString);
             
             await ForbidAsync(authProperties);
-            await Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse(){ Code = 403, Message = "Unauthorized access" }));
+            await Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse(){ StatusCode = 403, Description = "Unauthorized access" }));
         }
     }
-
 }

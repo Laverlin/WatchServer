@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using LinqToDB.DataProvider;
 using LinqToDB.DataProvider.PostgreSQL;
 
-namespace IB.WatchServer.Service.Infrastructure.Linq2DB
+namespace IB.WatchServer.Service.Entity.Settings
 {
     /// <summary>
     /// Implementation of <see cref="IConnectionSettings"/> for Postgres 

@@ -13,7 +13,7 @@ using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Common;
 using IB.WatchServer.Service.Entity;
-using IB.WatchServer.Service.Infrastructure.Linq2DB;
+using IB.WatchServer.Service.Infrastructure;
 
 namespace IB.WatchServer.Service.Service
 {
