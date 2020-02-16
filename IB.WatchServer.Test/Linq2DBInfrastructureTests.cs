@@ -1,4 +1,4 @@
-using IB.WatchServer.Service.Infrastructure.Linq2DB;
+using IB.WatchServer.Service.Entity.Settings;
 using LinqToDB.DataProvider;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.ComponentModel;
