@@ -36,7 +36,6 @@ namespace IB.WatchServer.Service
 {
     public class Startup
     {
-
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -150,6 +149,7 @@ namespace IB.WatchServer.Service
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // ReSharper disable once UnusedMember.Global
         //
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -181,7 +181,7 @@ namespace IB.WatchServer.Service
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHealthChecks("/health", new HealthCheckOptions(){ ResponseWriter = WriteHealthResultResponse });
+                endpoints.MapHealthChecks("/health", new HealthCheckOptions {ResponseWriter = WriteHealthResultResponse});
             });
             app.UseMetricsEndpoint();
         }
@@ -198,39 +198,37 @@ namespace IB.WatchServer.Service
                 Indented = true
             };
 
-            using (var stream = new MemoryStream())
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream, options))
             {
-                using (var writer = new Utf8JsonWriter(stream, options))
+                writer.WriteStartObject();
+                writer.WriteString("serverVersion", SolutionInfo.Version);
+                writer.WriteString("status", result.Status.ToString());
+                writer.WriteString("totalDuration", result.TotalDuration.ToString());
+                writer.WriteStartObject("results");
+                foreach (var entry in result.Entries)
                 {
-                    writer.WriteStartObject();
-                    writer.WriteString("apiVersion", SolutionInfo.Version);
-                    writer.WriteString("status", result.Status.ToString());
-                    writer.WriteString("totalDuration", result.TotalDuration.ToString());
-                    writer.WriteStartObject("results");
-                    foreach (var entry in result.Entries)
+                    writer.WriteStartObject(entry.Key);
+                    writer.WriteString("status", entry.Value.Status.ToString());
+                    writer.WriteString("description", entry.Value.Description);
+                    writer.WriteStartObject("data");
+                    foreach (var item in entry.Value.Data)
                     {
-                        writer.WriteStartObject(entry.Key);
-                        writer.WriteString("status", entry.Value.Status.ToString());
-                        writer.WriteString("description", entry.Value.Description);
-                        writer.WriteStartObject("data");
-                        foreach (var item in entry.Value.Data)
-                        {
-                            writer.WritePropertyName(item.Key);
-                            JsonSerializer.Serialize(
-                                writer, item.Value, item.Value?.GetType() ?? 
-                                typeof(object));
-                        }
-                        writer.WriteEndObject();
-                        writer.WriteEndObject();
+                        writer.WritePropertyName(item.Key);
+                        JsonSerializer.Serialize(writer, item.Value, item.Value?.GetType() ?? typeof(object));
                     }
+
                     writer.WriteEndObject();
                     writer.WriteEndObject();
                 }
 
-                var json = Encoding.UTF8.GetString(stream.ToArray());
-
-                return context.Response.WriteAsync(json);
+                writer.WriteEndObject();
+                writer.WriteEndObject();
             }
+
+            var json = Encoding.UTF8.GetString(stream.ToArray());
+
+            return context.Response.WriteAsync(json);
         }
     }
 }

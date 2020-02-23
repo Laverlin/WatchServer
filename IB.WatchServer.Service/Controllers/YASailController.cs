@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using IB.WatchServer.Service.Entity;
+﻿using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -42,10 +42,10 @@ namespace IB.WatchServer.Service.Controllers
 
             var routes = db.GetTable<YasRoute>().Where(r => r.UserId == yasUser.UserId)
                 .OrderByDescending(r => r.UploadTime);
-            var waypoints  = routes.Join(db.GetTable<YasWaypoint>(), r => r.RouteId, w => w.RouteId, (r, w) => w).ToArray();
+            var wayPoints  = routes.Join(db.GetTable<YasWaypoint>(), r => r.RouteId, w => w.RouteId, (r, w) => w).ToArray();
             var routesArray = routes.ToArray();
             foreach(var route in routesArray)
-                route.Waypoints = waypoints.Where(w => w.RouteId == route.RouteId).OrderBy(w => w.OrderId);
+                route.Waypoints = wayPoints.Where(w => w.RouteId == route.RouteId).OrderBy(w => w.OrderId);
 
             _logger.LogInformation("Watch app request from User {@YasUser}, {RoutesCount} routes found", yasUser, routesArray.Length);
             return routesArray;

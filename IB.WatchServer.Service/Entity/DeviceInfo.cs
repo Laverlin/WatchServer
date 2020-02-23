@@ -16,7 +16,7 @@ namespace IB.WatchServer.Service.Entity
         public int? Id { get; set; }
 
         /// <summary>
-        /// garmmin device unique id
+        /// Garmin device unique id
         /// </summary>
         [Column(Name = "DeviceId")]
         public string DeviceId { get; set; }

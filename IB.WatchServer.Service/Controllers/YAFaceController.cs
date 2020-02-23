@@ -107,7 +107,8 @@ namespace IB.WatchServer.Service.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning(ex, "Unauthorized weather request: {@WatchFaceRequest}", watchFaceRequest);
-                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse(){ StatusCode = (int)HttpStatusCode.Forbidden, Description="Forbidden" });
+                return StatusCode((int) HttpStatusCode.Forbidden,
+                    new ErrorResponse() {StatusCode = (int) HttpStatusCode.Forbidden, Description = "Forbidden"});
             }
             catch (Exception ex)
             {

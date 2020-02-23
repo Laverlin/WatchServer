@@ -1,19 +1,18 @@
-﻿using System;
+﻿using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Service.Infrastructure;
+using LinqToDB;
+using LinqToDB.Common;
+using LinqToDB.Data;
+using Microsoft.Extensions.Logging;
+using System;
 using System.IO;
 using System.Linq;
-using System.Xml.Linq;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Logging;
-
+using System.Threading.Tasks;
+using System.Xml.Linq;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using LinqToDB;
-using LinqToDB.Data;
-using LinqToDB.Common;
-using IB.WatchServer.Service.Entity;
-using IB.WatchServer.Service.Infrastructure;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -72,7 +71,7 @@ namespace IB.WatchServer.Service.Service
                             break;
 
                         default:
-                            await _telegramBot.SendTextMessageAsync(message.Chat, "Unknown commad");
+                            await _telegramBot.SendTextMessageAsync(message.Chat, "Unknown command");
                             _logger.LogInformation("Unprocessed. From {@TelegramUser} has been received {Message}", telegramUser, message.Text);
                             break;
                     }
@@ -80,7 +79,7 @@ namespace IB.WatchServer.Service.Service
             }
             catch(Exception ex)
             {
-                _logger.LogWarning(ex, "Error processsing {@Message}, {@User}, {@Document}", message.Text, message.From, message.Document);
+                _logger.LogWarning(ex, "Error processing {@Message}, {@User}, {@Document}", message.Text, message.From, message.Document);
                 await _telegramBot.SendTextMessageAsync(message.Chat, "Error, unable to process");
             }
         }
@@ -90,26 +89,26 @@ namespace IB.WatchServer.Service.Service
             var fileId = message.Document.FileId;
             var fileName = message.Document.FileName;
 
-            using var memoryStream = new MemoryStream();  
-            var file = await _telegramBot.GetInfoAndDownloadFileAsync(fileId, memoryStream);
+            await using var memoryStream = new MemoryStream();  
+            await _telegramBot.GetInfoAndDownloadFileAsync(fileId, memoryStream);
             memoryStream.Position = 0;
             XNamespace ns = "http://www.topografix.com/GPX/1/1"; 
-            XElement root = XElement.Load(memoryStream);
-            int orderId = 0;
+            var root = XElement.Load(memoryStream);
+            var orderId = 0;
             var points = root.Elements(ns + "rte").Elements(ns + "rtept")
                 .Union(root.Elements(ns + "wpt"))
                 .Select(w => new YasWaypoint()
                 { 
                     Name = w.Element(ns + "name")?.Value,
-                    Latitude = Convert.ToDecimal(w.Attribute("lat").Value),
-                    Longitude = Convert.ToDecimal(w.Attribute("lon").Value),
+                    Latitude = Convert.ToDecimal(w.Attribute("lat")?.Value),
+                    Longitude = Convert.ToDecimal(w.Attribute("lon")?.Value),
                     OrderId = orderId++
                 }).ToList();
             
-            if (points == null || points.Count == 0)
-                return $"No route or waypoints were found in {fileName} ";
+            if (points.Count == 0)
+                return $"No route or way points were found in {fileName} ";
 
-            var route = new YasRoute()
+            var route = new YasRoute
             {
                 UserId = yasUser.UserId,
                 UploadTime = DateTime.UtcNow,
@@ -185,7 +184,7 @@ namespace IB.WatchServer.Service.Service
             var routes = db.GetTable<YasRoute>()
                 .Where(u => u.UserId == yasUser.UserId).OrderByDescending(r=>r.RouteId).ToArray();
 
-            return (routes != null && routes.Length > 0)
+            return (routes.Length > 0)
                 ? routes.Aggregate("", (o, r) => o + $"* {r.RouteId} * : ` {r.RouteName} \n({r.UploadTime})`\n\n")
                 : "No routes found";
         }
@@ -237,7 +236,7 @@ namespace IB.WatchServer.Service.Service
                     UserName = telegramUser.UserName,
                     RegisterTime = DateTime.UtcNow
                 };
-                await db.GetTable<YasUser>().DataContext.InsertAsync(yasUserInfo);
+                yasUserInfo.UserId = await db.GetTable<YasUser>().DataContext.InsertWithInt64IdentityAsync(yasUserInfo);
             }
             return yasUserInfo;
         }
@@ -251,8 +250,10 @@ namespace IB.WatchServer.Service.Service
             UserId = telegramMessage.From.Id;
             UserName = $"{telegramMessage.From.FirstName} {telegramMessage.From.LastName}  {username}".Trim();
         }
-        public long UserId {get;set;}
-        public string UserName {get;set;}
+
+        public long UserId { get; set; }
+
+        public string UserName { get; set; }
     }
 
 }
