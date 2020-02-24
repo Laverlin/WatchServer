@@ -10,5 +10,7 @@ namespace IB.WatchServer.Service.Entity
         /// Total amount of the device in db
         /// </summary>
         public long DeviceCount { get; set; }
+
+        public string ApiVersion { get; set; }
     }
 }

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace IB.WatchServer.Service.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [Produces("application/json")]
     public class YASailController : ControllerBase
     {

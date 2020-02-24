@@ -31,6 +31,8 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.IO;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using IB.WatchServer.Service.Entity.Settings;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
 
 namespace IB.WatchServer.Service
 {
@@ -146,6 +148,14 @@ namespace IB.WatchServer.Service
                 .AddUrlGroup(faceSettings.BuildLocationUrl("0", "0"), "location")
                 .AddUrlGroup(new Uri("https://api.darksky.net/v1/status.txt"), "darkSky")
                 .AddUrlGroup(faceSettings.BuildOpenWeatherUrl("0", "0"), "openWeather");
+
+            services.AddApiVersioning(options =>
+            {
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.ReportApiVersions = true;
+                options.ErrorResponses = new ErrorResponse();
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
