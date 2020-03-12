@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using IB.WatchServer.Service.Infrastructure;
-using IB.WatchServer.Service.Service;
+﻿using IB.WatchServer.Service.Infrastructure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IB.WatchServer.Test

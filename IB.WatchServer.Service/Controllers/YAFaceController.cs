@@ -17,9 +17,10 @@ namespace IB.WatchServer.Service.Controllers
     /// <summary>
     /// Controller for the watch face requests
     /// </summary>
-    [Route("api/[controller]")]
-    [Produces("application/json")]
     [ApiController]
+    [Produces("application/json")]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0", Deprecated = true), ApiVersion("2.0")]
     public class YAFaceController : ControllerBase
     {
         private readonly ILogger<YAFaceController> _logger;
@@ -39,10 +40,15 @@ namespace IB.WatchServer.Service.Controllers
         /// </summary>
         /// <returns><see cref="Pong"/>The number of registered devices</returns>
         [HttpGet("Ping")]
-        public async Task<Pong> Ping()
+        [MapToApiVersion("1.0")]
+        public async Task<Pong> Ping(ApiVersion apiVersion)
         {
             var deviceCount = await _yaFaceProvider.GetDeviceCount();
-            return new Pong { DeviceCount = deviceCount };
+            return new Pong
+            {
+                DeviceCount = deviceCount,
+                ApiVersion = apiVersion.ToString()
+            };
         }
 
 
@@ -51,7 +57,7 @@ namespace IB.WatchServer.Service.Controllers
         /// </summary>
         /// <param name="watchFaceRequest"></param>
         /// <returns></returns>
-        [HttpGet("location")]
+        [HttpGet("location"), MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField ="did", Seconds = 5)]
@@ -81,7 +87,7 @@ namespace IB.WatchServer.Service.Controllers
         /// </summary>
         /// <param name="watchFaceRequest"></param>
         /// <returns>The <see cref="WeatherResponse"/> data of current weather in given location</returns>
-        [HttpGet("weather")]
+        [HttpGet("weather"), MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
@@ -107,7 +113,8 @@ namespace IB.WatchServer.Service.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning(ex, "Unauthorized weather request: {@WatchFaceRequest}", watchFaceRequest);
-                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse(){ StatusCode = (int)HttpStatusCode.Forbidden, Description="Forbidden" });
+                return StatusCode((int) HttpStatusCode.Forbidden,
+                    new ErrorResponse {StatusCode = (int) HttpStatusCode.Forbidden, Description = "Forbidden"});
             }
             catch (Exception ex)
             {

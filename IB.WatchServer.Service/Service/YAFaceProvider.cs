@@ -187,8 +187,7 @@ namespace IB.WatchServer.Service.Service
             return weatherResponse;
         }
 
-        public async Task SaveRequestInfo(
-            WatchFaceRequest watchFaceRequest, string cityName)
+        public async Task SaveRequestInfo(WatchFaceRequest watchFaceRequest, string cityName)
             => await SaveRequestInfo(RequestType.Location, watchFaceRequest, new WeatherResponse {CityName = cityName});
 
 

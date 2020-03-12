@@ -12,6 +12,5 @@ namespace IB.WatchServer.Service.Entity.Settings
         /// </summary>
         /// <returns>The instance of <see cref="IDataProvider"/></returns>
         public IDataProvider GetDataProvider();
-
     }
 }
