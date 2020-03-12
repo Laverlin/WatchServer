@@ -29,10 +29,11 @@ using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.IO;
+using System.Net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using IB.WatchServer.Service.Entity.Settings;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
+using MihaZupan;
 
 namespace IB.WatchServer.Service
 {
@@ -138,7 +139,10 @@ namespace IB.WatchServer.Service
 
             // Add telegram bot
             //
-            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(faceSettings.TelegramKey));
+            var proxy = (faceSettings.ProxySettings != null)
+                ? new HttpToSocks5Proxy(faceSettings.ProxySettings.Host, faceSettings.ProxySettings.Port)
+                : null;
+            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(faceSettings.TelegramKey, proxy));
             services.AddSingleton<TelegramService>();
 
             // Add the health check
