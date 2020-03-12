@@ -9,8 +9,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 
 using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
+using AutoMapper;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -26,13 +28,15 @@ namespace IB.WatchServer.Service.Controllers
         private readonly ILogger<YAFaceController> _logger;
         private readonly YAFaceProvider _yaFaceProvider;
         private readonly IMetrics _metrics;
+        private readonly IMapper _mapper;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, IMetrics metrics)
+            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, IMetrics metrics, IMapper mapper)
         {
             _logger = logger;
             _yaFaceProvider = yaFaceProvider;
             _metrics = metrics;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -89,6 +93,7 @@ namespace IB.WatchServer.Service.Controllers
         /// <returns>The <see cref="WeatherResponse"/> data of current weather in given location</returns>
         [HttpGet("weather"), MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
         [Authorize]
@@ -123,6 +128,53 @@ namespace IB.WatchServer.Service.Controllers
             }
         }
 
+
+        [HttpGet, MapToApiVersion("2.0")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [RequestRateFactory(KeyField = "did", Seconds = 5)]
+        [Authorize]
+        public async Task<ActionResult<WatchResponse>> Get([FromQuery] WatchFaceRequest watchFaceRequest)
+        {
+            try
+            {
+                Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
+                var weatherResponse = (weatherProvider == WeatherProvider.DarkSky || watchFaceRequest.DarkskyKey?.Length == 32)
+                    ? await _yaFaceProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
+                    : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
+
+                var locationInfo = await GetLocationName(watchFaceRequest);
+                await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
+                locationInfo.CityName = locationInfo.CityName.StripDiacritics();
+
+                var watchResponse = new WatchResponse
+                {
+                    LocationInfo = locationInfo,
+                    WeatherInfo = _mapper.Map<WeatherInfo>(weatherResponse)
+                };
+                _logger.LogInformation(
+                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchFaceRequest, watchResponse);
+                return watchResponse;
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                _logger.LogWarning(ex, "Unauthorized request: {@WatchFaceRequest}", watchFaceRequest);
+                return StatusCode((int) HttpStatusCode.Forbidden,
+                    new ErrorResponse {StatusCode = (int) HttpStatusCode.Forbidden, Description = "Forbidden"});
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Request error, {@WatchFaceRequest}", watchFaceRequest);
+                return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
+            }
+        }
+
+
+        private async Task<LocationInfo> GetLocationName(WatchFaceRequest watchFaceRequest)
+        {
+            return new LocationInfo {CityName = await GetLocationName(watchFaceRequest, RequestType.ExchangeRate)};
+        }
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {

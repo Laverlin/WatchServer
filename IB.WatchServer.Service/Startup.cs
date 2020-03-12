@@ -29,9 +29,9 @@ using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.IO;
-using System.Net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Service.Entity.WatchFace;
 using Microsoft.AspNetCore.Mvc;
 using MihaZupan;
 
@@ -114,6 +114,7 @@ namespace IB.WatchServer.Service
             //
             var mappingConfig = new MapperConfiguration(mc =>
             {
+                mc.CreateMap<WeatherResponse, WeatherInfo>();
                 mc.CreateMap<WatchFaceRequest, RequestInfo>()
                     .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
                     .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
@@ -186,7 +187,7 @@ namespace IB.WatchServer.Service
             app.Use(async (context, next) =>
             {
                 LogContext.PushProperty("UserName", context.User.Identity.Name);
-                LogContext.PushProperty("Headers", context.Request.Headers.ToDictionary(h => h.Key, h=>h.Value.ToString()));
+                LogContext.PushProperty("Headers", context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()));
                 await next.Invoke();
             });
 
