@@ -47,6 +47,8 @@ namespace IB.WatchServer.Service.Entity.Settings
         [Required]
         public string TelegramKey { get; set; }
 
+        public ProxySettings ProxySettings { get; set; }
+
     }
 
     /// <summary>
@@ -68,5 +70,12 @@ namespace IB.WatchServer.Service.Entity.Settings
         /// Token value
         /// </summary>
         public string Token { get; set; }
+    }
+
+    public class ProxySettings
+    {
+        public string Host { get; set; }
+
+        public int Port { get; set; }
     }
 }

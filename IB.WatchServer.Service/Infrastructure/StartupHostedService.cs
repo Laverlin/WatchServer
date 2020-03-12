@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Service;
 using Microsoft.Extensions.Hosting;
@@ -16,7 +17,8 @@ namespace IB.WatchServer.Service.Infrastructure
         private readonly ITelegramBotClient _telegramClient;
         private readonly TelegramService _telegramService;
 
-        public StartupHostedService(ILogger<StartupHostedService> logger, ITelegramBotClient telegramClient, TelegramService telegramService)
+        public StartupHostedService(
+            ILogger<StartupHostedService> logger, ITelegramBotClient telegramClient, TelegramService telegramService)
         {
             _logger = logger;
             _telegramClient = telegramClient;
@@ -29,14 +31,20 @@ namespace IB.WatchServer.Service.Infrastructure
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Start: {app}, version: {version}",
-                SolutionInfo.Name,
-                SolutionInfo.Version);
+                SolutionInfo.Name, SolutionInfo.Version);
 
-            _telegramClient.OnMessage += (sender, e) => _telegramService.OnBotMessage(e.Message);
-            _telegramClient.StartReceiving();
+            try
+            {
+                _telegramClient.OnMessage += (s, e) => _telegramService.OnBotMessage(e.Message);
+                _telegramClient.StartReceiving(cancellationToken:cancellationToken);
 
-            var me = await _telegramClient.GetMeAsync();
-            _logger.LogInformation("The bot {BotId} has been started, name is {BotName}", me.Id, me.FirstName);
+                var me = await _telegramClient.GetMeAsync(cancellationToken);
+                _logger.LogInformation("The bot {BotId} has been started, name is {BotName}", me.Id, me.FirstName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Telegram service has not been started");
+            }
 
             await Task.CompletedTask;
         }
