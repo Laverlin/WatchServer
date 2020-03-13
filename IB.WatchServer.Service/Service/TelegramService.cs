@@ -80,8 +80,9 @@ namespace IB.WatchServer.Service.Service
             }
             catch(Exception ex)
             {
-                _logger.LogWarning(ex, "Error processsing {@Message}, {@User}, {@Document}", message.Text, message.From, message.Document);
-                await _telegramBot.SendTextMessageAsync(message.Chat, "Error, unable to process");
+                var output = $"Error, unable to process.\n {ex.Message}";
+                _logger.LogWarning(ex, "Error processing {@Message}, {@User}, {@Document}, {Output}", message.Text, message.From, message.Document, output);
+                await _telegramBot.SendTextMessageAsync(message.Chat, output);
             }
         }
 
@@ -210,7 +211,8 @@ namespace IB.WatchServer.Service.Service
             return await Task.FromResult(output);
         }
 
-        private async Task ProcessMessage(TelegramUserInfo telegramUser, Message message, Func<Message, YasUser, Task<string>> processAction)
+        private async Task ProcessMessage(
+            TelegramUserInfo telegramUser, Message message, Func<Message, YasUser, Task<string>> processAction)
         {
             var yasUser = await LoadOrCreateYasUser(telegramUser);
 
