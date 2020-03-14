@@ -144,7 +144,12 @@ namespace IB.WatchServer.Service.Controllers
                     ? await _yaFaceProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
                     : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
-                var locationInfo = await GetLocationName(watchFaceRequest);
+                var locationInfo = new LocationInfo
+                {
+                    CityName = await _yaFaceProvider.CheckLastLocation(watchFaceRequest.DeviceId,
+                                   Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon))
+                               ?? await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon)
+                };
                 await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
                 locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
@@ -171,10 +176,6 @@ namespace IB.WatchServer.Service.Controllers
         }
 
 
-        private async Task<LocationInfo> GetLocationName(WatchFaceRequest watchFaceRequest)
-        {
-            return new LocationInfo {CityName = await GetLocationName(watchFaceRequest, RequestType.ExchangeRate)};
-        }
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {
