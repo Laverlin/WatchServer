@@ -9,5 +9,8 @@ namespace IB.WatchServer.Service.Entity.WatchFace
 
         [JsonPropertyName("weather")]
         public WeatherInfo WeatherInfo { get; set; }
+
+        [JsonPropertyName("exchangeRateInfo")]
+        public ExchangeRateInfo ExchangeRateInfo { get; set; }
     }
 }

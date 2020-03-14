@@ -133,10 +133,13 @@ namespace IB.WatchServer.Service.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Process request from the watchface and returns all requested data 
+        /// </summary>
+        /// <param name="watchFaceRequest">watchface data</param>
+        /// <returns>weather, location and exchange rate info</returns>
         [HttpGet, MapToApiVersion("2.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
         [Authorize]
@@ -156,13 +159,17 @@ namespace IB.WatchServer.Service.Controllers
                                ?? await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon)
                 };
 
+                var exchangeRateInfo = await _webRequestsProvider.RequestCachedExchangeRate(
+                    watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestExchangeRate);
+
                 await _dataProvider.SaveRequestInfo(watchFaceRequest, weatherInfo, locationInfo);
                 locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
                 var watchResponse = new WatchResponse
                 {
                     LocationInfo = locationInfo,
-                    WeatherInfo = weatherInfo
+                    WeatherInfo = weatherInfo,
+                    ExchangeRateInfo = exchangeRateInfo
                 };
                 _logger.LogInformation(
                     new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchFaceRequest, watchResponse);

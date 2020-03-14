@@ -16,16 +16,14 @@ namespace IB.WatchServer.Service.Service
     public class DataProvider
     {
         private readonly ILogger<DataProvider> _logger;
-        private readonly FaceSettings _faceSettings;
         private readonly DataConnectionFactory _dbFactory;
         private readonly IMapper _mapper;
         private readonly IMetrics _metrics;
 
         public DataProvider(
-            ILogger<DataProvider> logger, FaceSettings faceSettings, DataConnectionFactory dbFactory, IMapper mapper, IMetrics metrics)
+            ILogger<DataProvider> logger, DataConnectionFactory dbFactory, IMapper mapper, IMetrics metrics)
         {
             _logger = logger;
-            _faceSettings = faceSettings;
             _dbFactory = dbFactory;
             _mapper = mapper;
             _metrics = metrics;

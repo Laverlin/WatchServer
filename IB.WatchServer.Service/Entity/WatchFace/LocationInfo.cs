@@ -2,7 +2,7 @@
 
 namespace IB.WatchServer.Service.Entity.WatchFace
 {
-    public class LocationInfo
+    public class LocationInfo : BaseResponseInfo
     {
         [JsonPropertyName("cityName")]
         public string CityName { get; set;}

@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using App.Metrics;
 using App.Metrics.Counter;
 using AutoMapper;
@@ -12,6 +12,7 @@ using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.WatchFace;
 using LinqToDB.Tools;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service
@@ -23,6 +24,7 @@ namespace IB.WatchServer.Service.Service
         private readonly FaceSettings _faceSettings;
         private readonly IMetrics _metrics;
         private readonly IMapper _mapper;
+        private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
 
         public WebRequestsProvider(
             ILogger<WebRequestsProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, IMetrics metrics, IMapper mapper)
@@ -113,6 +115,59 @@ namespace IB.WatchServer.Service.Service
             weatherInfo.HttpStatusCode = (int) response.StatusCode;
 
             return weatherInfo;
+        }
+
+        /// <summary>
+        /// Request current Exchange rate on  currencyconverterapi.com
+        /// </summary>
+        /// <param name="baseCurrency">the currency from which convert</param>
+        /// <param name="targetCurrency">the currency to which convert</param>
+        /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
+        public async Task<ExchangeRateInfo> RequestExchangeRate(string baseCurrency, string targetCurrency)
+        {
+            var client = _clientFactory.CreateClient();
+            using var response = await client.GetAsync(_faceSettings.BuildCurrencyConverterUrl(baseCurrency, targetCurrency));
+            if (!response.IsSuccessStatusCode)
+            { 
+                _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
+                    ? $"Unauthorized access to currencyconverterapi.com"
+                    : $"Error currencyconverterapi.com request, status: {response.StatusCode.ToString()}");
+                return new ExchangeRateInfo {IsError = true, HttpStatusCode = (int)response.StatusCode};
+            }
+
+            await using var content = await response.Content.ReadAsStreamAsync();
+            using var json = await JsonDocument.ParseAsync(content);
+
+            return new ExchangeRateInfo
+            {
+                ExchangeRate = json.RootElement.TryGetProperty($"{baseCurrency}_{targetCurrency}", out var rate) 
+                    ? rate.GetDecimal() : 0,
+                HttpStatusCode = (int)response.StatusCode
+            };
+        }
+
+        /// <summary>
+        /// Request current Exchange rate in local cache
+        /// </summary>
+        /// <param name="baseCurrency">the currency from which convert</param>
+        /// <param name="targetCurrency">the currency to which convert</param>
+        /// <param name="exchangeRateFunc">function to get exchange rate</param>
+        /// <returns>Returns exchange rate, if cache is missed returns null</returns>
+        public async Task<ExchangeRateInfo> RequestCachedExchangeRate(
+            string baseCurrency, string targetCurrency, Func<string, string, Task<ExchangeRateInfo>> exchangeRateFunc)
+        {
+            string cacheKey = $"er-{baseCurrency}-{targetCurrency}";
+            if (_memoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
+            {
+                _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-cache"});
+                return exchangeRateInfo;
+            }
+
+            _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-request"});
+            exchangeRateInfo = await exchangeRateFunc(baseCurrency, targetCurrency);
+            if (!exchangeRateInfo.IsError && exchangeRateInfo.ExchangeRate != 0)
+                _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
+            return exchangeRateInfo;
         }
     }
 }
