@@ -27,14 +27,19 @@ namespace IB.WatchServer.Service.Controllers
     {
         private readonly ILogger<YAFaceController> _logger;
         private readonly YAFaceProvider _yaFaceProvider;
+        private readonly DataProvider _dataProvider;
+        private readonly WebRequestsProvider _webRequestsProvider;
         private readonly IMetrics _metrics;
         private readonly IMapper _mapper;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, IMetrics metrics, IMapper mapper)
+            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, 
+            DataProvider dataProvider, WebRequestsProvider webRequestsProvider, IMetrics metrics, IMapper mapper)
         {
             _logger = logger;
             _yaFaceProvider = yaFaceProvider;
+            _dataProvider = dataProvider;
+            _webRequestsProvider = webRequestsProvider;
             _metrics = metrics;
             _mapper = mapper;
         }
@@ -140,9 +145,9 @@ namespace IB.WatchServer.Service.Controllers
             try
             {
                 Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
-                var weatherResponse = (weatherProvider == WeatherProvider.DarkSky || watchFaceRequest.DarkskyKey?.Length == 32)
-                    ? await _yaFaceProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
-                    : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                var weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
+                    ? await _webRequestsProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
+                    : await _webRequestsProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
                 var locationInfo = new LocationInfo
                 {
@@ -150,23 +155,18 @@ namespace IB.WatchServer.Service.Controllers
                                    Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon))
                                ?? await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon)
                 };
-                await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
+
+                await _dataProvider.SaveRequestInfo(watchFaceRequest, weatherInfo, locationInfo);
                 locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
                 var watchResponse = new WatchResponse
                 {
                     LocationInfo = locationInfo,
-                    WeatherInfo = _mapper.Map<WeatherInfo>(weatherResponse)
+                    WeatherInfo = _mapper.Map<WeatherInfo>(weatherInfo)
                 };
                 _logger.LogInformation(
                     new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchFaceRequest, watchResponse);
                 return watchResponse;
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                _logger.LogWarning(ex, "Unauthorized request: {@WatchFaceRequest}", watchFaceRequest);
-                return StatusCode((int) HttpStatusCode.Forbidden,
-                    new ErrorResponse {StatusCode = (int) HttpStatusCode.Forbidden, Description = "Forbidden"});
             }
             catch (Exception ex)
             {

@@ -53,5 +53,6 @@ namespace IB.WatchServer.Service.Entity
         /// Location name
         /// </summary>
         public string CityName { get; set; }
+
     }
 }

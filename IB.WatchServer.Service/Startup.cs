@@ -60,6 +60,8 @@ namespace IB.WatchServer.Service
             //
             services.AddSingleton<DataConnectionFactory>();
             services.AddScoped<YAFaceProvider>();
+            services.AddScoped<DataProvider>();
+            services.AddScoped<WebRequestsProvider>();
             services.AddScoped<RequestRateLimit>();
 
             services.AddControllers();
@@ -119,6 +121,8 @@ namespace IB.WatchServer.Service
                     .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
                     .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
                 mc.CreateMap<WeatherResponse, RequestInfo>();
+                mc.CreateMap<WeatherInfo, RequestInfo>();
+                mc.CreateMap<LocationInfo, RequestInfo>();
                 mc.CreateMap<Dictionary<string, object>, WeatherResponse>()
                     .ForMember(d => d.Temperature, c => c.MapFrom(s => s.ContainsKey("temp") ? s["temp"] : 0))
                     .ForMember(d => d.WindSpeed, c => c.MapFrom(s => s.ContainsKey("speed") ? s["speed"] : 0))

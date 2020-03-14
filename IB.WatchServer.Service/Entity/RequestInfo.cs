@@ -40,7 +40,7 @@ namespace IB.WatchServer.Service.Entity
         public decimal Temperature { get; set; }
 
         [Column("Wind")]
-        public decimal Wind { get; set; }
+        public decimal WindSpeed { get; set; }
 
         [Column("PrecipProbability")]
         public decimal PrecipProbability { get; set; }

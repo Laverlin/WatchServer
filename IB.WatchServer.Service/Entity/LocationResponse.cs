@@ -1,5 +1,4 @@
-﻿using IB.WatchServer.Service.Infrastructure;
-
+﻿
 namespace IB.WatchServer.Service.Entity
 {
     /// <summary>
