@@ -162,7 +162,7 @@ namespace IB.WatchServer.Service.Controllers
                 var watchResponse = new WatchResponse
                 {
                     LocationInfo = locationInfo,
-                    WeatherInfo = _mapper.Map<WeatherInfo>(weatherInfo)
+                    WeatherInfo = weatherInfo
                 };
                 _logger.LogInformation(
                     new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchFaceRequest, watchResponse);
