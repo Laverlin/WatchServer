@@ -55,7 +55,7 @@ namespace IB.WatchServer.Service.Service
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to {providerName}"
                     : $"Error {providerName} request, status: {response.StatusCode.ToString()}");
-                return new WeatherInfo {IsError = true, HttpStatusCode = (int)response.StatusCode};
+                return new WeatherInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
             }
 
             await using var content = await response.Content.ReadAsStreamAsync();
@@ -63,7 +63,6 @@ namespace IB.WatchServer.Service.Service
             var weatherInfo = JsonSerializer.Deserialize<WeatherInfo>(
                 json.RootElement.GetProperty("currently").GetRawText());
             weatherInfo.WeatherProvider = providerName;
-            weatherInfo.HttpStatusCode = (int) response.StatusCode;
 
             return weatherInfo;
         }
@@ -96,7 +95,7 @@ namespace IB.WatchServer.Service.Service
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to {providerName}"
                     : $"Error {providerName} request, status: {response.StatusCode.ToString()}");
-                return new WeatherInfo {IsError = true, HttpStatusCode = (int)response.StatusCode};
+                return new WeatherInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
             }
 
             await using var content = await response.Content.ReadAsStreamAsync();
@@ -112,7 +111,6 @@ namespace IB.WatchServer.Service.Service
 
             var weatherInfo = _mapper.Map<WeatherInfo>(_mapper.Map<WeatherResponse>(elements));
             weatherInfo.WeatherProvider = providerName;
-            weatherInfo.HttpStatusCode = (int) response.StatusCode;
 
             return weatherInfo;
         }
@@ -132,7 +130,7 @@ namespace IB.WatchServer.Service.Service
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to currencyconverterapi.com"
                     : $"Error currencyconverterapi.com request, status: {response.StatusCode.ToString()}");
-                return new ExchangeRateInfo {IsError = true, HttpStatusCode = (int)response.StatusCode};
+                return new ExchangeRateInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
             }
 
             await using var content = await response.Content.ReadAsStreamAsync();
@@ -141,8 +139,7 @@ namespace IB.WatchServer.Service.Service
             return new ExchangeRateInfo
             {
                 ExchangeRate = json.RootElement.TryGetProperty($"{baseCurrency}_{targetCurrency}", out var rate) 
-                    ? rate.GetDecimal() : 0,
-                HttpStatusCode = (int)response.StatusCode
+                    ? rate.GetDecimal() : 0
             };
         }
 
@@ -165,7 +162,7 @@ namespace IB.WatchServer.Service.Service
 
             _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-request"}, $"{baseCurrency}-{targetCurrency}");
             exchangeRateInfo = await exchangeRateFunc(baseCurrency, targetCurrency);
-            if (!exchangeRateInfo.IsError && exchangeRateInfo.ExchangeRate != 0)
+            if (exchangeRateInfo.ErrorInfo == null && exchangeRateInfo.ExchangeRate != 0)
                 _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
             return exchangeRateInfo;
         }

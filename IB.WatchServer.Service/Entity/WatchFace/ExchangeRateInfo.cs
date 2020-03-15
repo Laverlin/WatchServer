@@ -2,7 +2,7 @@
 
 namespace IB.WatchServer.Service.Entity.WatchFace
 {
-    public class ExchangeRateInfo : BaseResponseInfo
+    public class ExchangeRateInfo 
     {
  //       [JsonPropertyName("baseCurrency")]
 //        public string BaseCurrency { get; set; }
@@ -13,5 +13,7 @@ namespace IB.WatchServer.Service.Entity.WatchFace
         [JsonPropertyName("exchangeRate")]
         public decimal ExchangeRate { get; set; }
 
+        [JsonPropertyName("errorInfo")]
+        public ErrorInfo ErrorInfo { get; set; }
     }
 }

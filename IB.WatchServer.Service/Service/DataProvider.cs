@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using App.Metrics;
 using AutoMapper;
 using IB.WatchServer.Service.Entity;
-using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
 using LinqToDB;
