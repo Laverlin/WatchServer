@@ -49,7 +49,7 @@ namespace IB.WatchServer.Service.Service
             _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
 
             var client = _clientFactory.CreateClient();
-            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token));
+            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token+"a"));
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
