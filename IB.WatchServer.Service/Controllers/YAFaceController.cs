@@ -9,8 +9,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 
 using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
+using AutoMapper;
+using LinqToDB.Common;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -25,14 +28,21 @@ namespace IB.WatchServer.Service.Controllers
     {
         private readonly ILogger<YAFaceController> _logger;
         private readonly YAFaceProvider _yaFaceProvider;
+        private readonly DataProvider _dataProvider;
+        private readonly WebRequestsProvider _webRequestsProvider;
         private readonly IMetrics _metrics;
+        private readonly IMapper _mapper;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, IMetrics metrics)
+            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, 
+            DataProvider dataProvider, WebRequestsProvider webRequestsProvider, IMetrics metrics, IMapper mapper)
         {
             _logger = logger;
             _yaFaceProvider = yaFaceProvider;
+            _dataProvider = dataProvider;
+            _webRequestsProvider = webRequestsProvider;
             _metrics = metrics;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -89,6 +99,7 @@ namespace IB.WatchServer.Service.Controllers
         /// <returns>The <see cref="WeatherResponse"/> data of current weather in given location</returns>
         [HttpGet("weather"), MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
         [Authorize]
@@ -123,6 +134,56 @@ namespace IB.WatchServer.Service.Controllers
             }
         }
 
+        /// <summary>
+        /// Process request from the watchface and returns all requested data 
+        /// </summary>
+        /// <param name="watchFaceRequest">watchface data</param>
+        /// <returns>weather, location and exchange rate info</returns>
+        [HttpGet, MapToApiVersion("2.0")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [RequestRateFactory(KeyField = "did", Seconds = 5)]
+        [Authorize]
+        public async Task<ActionResult<WatchResponse>> Get([FromQuery] WatchFaceRequest watchFaceRequest)
+        {
+            try
+            {
+                Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
+                var weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
+                    ? await _webRequestsProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
+                    : await _webRequestsProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
+
+                var locationInfo = new LocationInfo
+                {
+                    CityName = await _yaFaceProvider.CheckLastLocation(watchFaceRequest.DeviceId,
+                                   Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon))
+                               ?? await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon)
+                };
+
+                var exchangeRateInfo = (!watchFaceRequest.BaseCurrency.IsNullOrEmpty() && !watchFaceRequest.TargetCurrency.IsNullOrEmpty())
+                    ? await _webRequestsProvider.RequestCacheExchangeRate(
+                        watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestExchangeRate)
+                    : null;
+
+                await _dataProvider.SaveRequestInfo(watchFaceRequest, weatherInfo, locationInfo, exchangeRateInfo);
+                locationInfo.CityName = locationInfo.CityName.StripDiacritics();
+
+                var watchResponse = new WatchResponse
+                {
+                    LocationInfo = locationInfo,
+                    WeatherInfo = weatherInfo,
+                    ExchangeRateInfo = exchangeRateInfo
+                };
+                _logger.LogInformation(
+                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchFaceRequest, watchResponse);
+                return watchResponse;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Request error, {@WatchFaceRequest}", watchFaceRequest);
+                return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
+            }
+        }
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {

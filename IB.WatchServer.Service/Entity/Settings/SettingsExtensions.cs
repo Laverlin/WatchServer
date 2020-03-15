@@ -48,6 +48,18 @@ namespace IB.WatchServer.Service.Entity.Settings
         }
 
         /// <summary>
+        /// Build url string to request the weather from OpenWeather
+        /// </summary>
+        /// <param name="settings">Configuration object</param>
+        /// <param name="baseCurrency">base currency for exchange rate</param>
+        /// <param name="targetCurrency">target currency for exchange rate</param>
+        /// <returns>url with parameters to get exchange rate from free.currencyconverter.com</returns>
+        public static Uri BuildCurrencyConverterUrl(this FaceSettings settings, string baseCurrency, string targetCurrency)
+        {
+            return new Uri(string.Format(settings.CurrencyConverterUrl, settings.CurrencyConverterKey, baseCurrency, targetCurrency));
+        }
+
+        /// <summary>
         /// Build connection string by combining all public properties in string in format "name=value;..."
         /// If property name needs to be different you need to use the DisplayName Attribute
         /// </summary>

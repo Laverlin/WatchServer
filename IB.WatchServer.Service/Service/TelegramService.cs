@@ -79,7 +79,7 @@ namespace IB.WatchServer.Service.Service
             }
             catch(Exception ex)
             {
-                var output = $"Error, unable to process.\n {ex.Message}";
+                var output = $"Error, unable to process. \n{ex.Message}";
                 _logger.LogWarning(ex, "Error processing {@Message}, {@User}, {@Document}, {Output}", message.Text, message.From, message.Document, output);
                 await _telegramBot.SendTextMessageAsync(message.Chat, output);
             }

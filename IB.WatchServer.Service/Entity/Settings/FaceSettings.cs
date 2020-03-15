@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace IB.WatchServer.Service.Entity.Settings
 {
@@ -49,6 +50,11 @@ namespace IB.WatchServer.Service.Entity.Settings
 
         public ProxySettings ProxySettings { get; set; }
 
+        [Required, Url]
+        public string CurrencyConverterUrl { get; set; }
+
+        [Required]
+        public string CurrencyConverterKey { get; set; }
     }
 
     /// <summary>

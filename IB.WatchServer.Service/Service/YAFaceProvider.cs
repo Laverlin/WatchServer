@@ -63,6 +63,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Location name</returns>
         public async Task<string> RequestLocationName(string lat, string lon)
         {
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls});
             var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat, lon));
             if (!response.IsSuccessStatusCode)
@@ -93,6 +94,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>City name or null</returns>
         public async Task<string> CheckLastLocation(string deviceId, decimal latitude, decimal longitude)
         {
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-db", MeasurementUnit = Unit.Calls});
             await using var db = _dbFactory.Create();
             var city = await db.GetTable<RequestInfo>().Where(c => c.RequestTime != null)
                 .Join(db.GetTable<DeviceInfo>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
@@ -114,9 +116,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<WeatherResponse> RequestDarkSky(string lat, string lon, string token)
         {
             string providerName = WeatherProvider.DarkSky.ToString();
-            _metrics.Measure.Counter.Increment(
-                new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
-                providerName);
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
 
             var client = _clientFactory.CreateClient();
             using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token));
@@ -146,9 +146,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<WeatherResponse> RequestOpenWeather(string lat, string lon)
         {
             var providerName = WeatherProvider.OpenWeather.ToString();
-            _metrics.Measure.Counter.Increment(
-                new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, 
-                providerName);
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
 
             var conditionIcons = new Dictionary<string, string>
             {

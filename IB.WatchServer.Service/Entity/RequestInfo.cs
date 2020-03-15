@@ -40,10 +40,19 @@ namespace IB.WatchServer.Service.Entity
         public decimal Temperature { get; set; }
 
         [Column("Wind")]
-        public decimal Wind { get; set; }
+        public decimal WindSpeed { get; set; }
 
         [Column("PrecipProbability")]
         public decimal PrecipProbability { get; set; }
+
+        [Column("BaseCurrency")]
+        public string BaseCurrency { get; set; }
+
+        [Column("TargetCurrency")]
+        public string TargetCurrency { get; set; }
+
+        [Column("ExchangeRate")]
+        public decimal ExchangeRate { get; set; }
     }
 
     public enum RequestType

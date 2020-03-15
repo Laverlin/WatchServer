@@ -29,9 +29,9 @@ using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.IO;
-using System.Net;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Service.Entity.WatchFace;
 using Microsoft.AspNetCore.Mvc;
 using MihaZupan;
 
@@ -60,6 +60,8 @@ namespace IB.WatchServer.Service
             //
             services.AddSingleton<DataConnectionFactory>();
             services.AddScoped<YAFaceProvider>();
+            services.AddScoped<DataProvider>();
+            services.AddScoped<WebRequestsProvider>();
             services.AddScoped<RequestRateLimit>();
 
             services.AddControllers();
@@ -114,10 +116,14 @@ namespace IB.WatchServer.Service
             //
             var mappingConfig = new MapperConfiguration(mc =>
             {
+                mc.CreateMap<WeatherResponse, WeatherInfo>();
                 mc.CreateMap<WatchFaceRequest, RequestInfo>()
                     .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
                     .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
                 mc.CreateMap<WeatherResponse, RequestInfo>();
+                mc.CreateMap<WeatherInfo, RequestInfo>();
+                mc.CreateMap<LocationInfo, RequestInfo>();
+                mc.CreateMap<ExchangeRateInfo, RequestInfo>();
                 mc.CreateMap<Dictionary<string, object>, WeatherResponse>()
                     .ForMember(d => d.Temperature, c => c.MapFrom(s => s.ContainsKey("temp") ? s["temp"] : 0))
                     .ForMember(d => d.WindSpeed, c => c.MapFrom(s => s.ContainsKey("speed") ? s["speed"] : 0))
@@ -186,7 +192,7 @@ namespace IB.WatchServer.Service
             app.Use(async (context, next) =>
             {
                 LogContext.PushProperty("UserName", context.User.Identity.Name);
-                LogContext.PushProperty("Headers", context.Request.Headers.ToDictionary(h => h.Key, h=>h.Value.ToString()));
+                LogContext.PushProperty("Headers", context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()));
                 await next.Invoke();
             });
 

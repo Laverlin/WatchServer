@@ -60,5 +60,11 @@ namespace IB.WatchServer.Service.Entity
         /// </summary>
         [FromQuery(Name = "wp")]
         public string WeatherProvider { get; set; }
+
+        [FromQuery(Name = "bc")]
+        public string BaseCurrency { get; set; }
+
+        [FromQuery(Name = "tc")]
+        public string TargetCurrency { get; set; }
     }
 }

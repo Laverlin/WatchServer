@@ -1,11 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.WatchFace
 {
-    /// <summary>
-    /// Response with the current weather condition and city name 
-    /// </summary>
-    public class WeatherResponse : BaseApiResponse
+    public class WeatherInfo 
     {
         /// <summary>
         /// The weather provider that actually processed the request
@@ -49,10 +46,8 @@ namespace IB.WatchServer.Service.Entity
         [JsonPropertyName("pressure")]
         public decimal Pressure { get; set; }
 
-        /// <summary>
-        /// Location name
-        /// </summary>
-        public string CityName { get; set; }
 
+        [JsonPropertyName("errorInfo")]
+        public ErrorInfo ErrorInfo { get; set; }
     }
 }
