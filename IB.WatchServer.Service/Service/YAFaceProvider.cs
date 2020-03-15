@@ -63,7 +63,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Location name</returns>
         public async Task<string> RequestLocationName(string lat, string lon)
         {
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-external", MeasurementUnit = Unit.Calls});
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls});
             var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat, lon));
             if (!response.IsSuccessStatusCode)
@@ -94,7 +94,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>City name or null</returns>
         public async Task<string> CheckLastLocation(string deviceId, decimal latitude, decimal longitude)
         {
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-cache-db", MeasurementUnit = Unit.Calls});
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-db", MeasurementUnit = Unit.Calls});
             await using var db = _dbFactory.Create();
             var city = await db.GetTable<RequestInfo>().Where(c => c.RequestTime != null)
                 .Join(db.GetTable<DeviceInfo>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,

@@ -153,17 +153,17 @@ namespace IB.WatchServer.Service.Service
         /// <param name="targetCurrency">the currency to which convert</param>
         /// <param name="exchangeRateFunc">function to get exchange rate</param>
         /// <returns>Returns exchange rate, if cache is missed returns null</returns>
-        public async Task<ExchangeRateInfo> RequestCachedExchangeRate(
+        public async Task<ExchangeRateInfo> RequestCacheExchangeRate(
             string baseCurrency, string targetCurrency, Func<string, string, Task<ExchangeRateInfo>> exchangeRateFunc)
         {
             string cacheKey = $"er-{baseCurrency}-{targetCurrency}";
             if (_memoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
             {
-                _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-cache"});
+                _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-cache"}, $"{baseCurrency}-{targetCurrency}");
                 return exchangeRateInfo;
             }
 
-            _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-request"});
+            _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-request"}, $"{baseCurrency}-{targetCurrency}");
             exchangeRateInfo = await exchangeRateFunc(baseCurrency, targetCurrency);
             if (!exchangeRateInfo.IsError && exchangeRateInfo.ExchangeRate != 0)
                 _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));

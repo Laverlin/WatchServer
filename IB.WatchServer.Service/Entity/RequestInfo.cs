@@ -44,6 +44,15 @@ namespace IB.WatchServer.Service.Entity
 
         [Column("PrecipProbability")]
         public decimal PrecipProbability { get; set; }
+
+        [Column("BaseCurrency")]
+        public string BaseCurrency { get; set; }
+
+        [Column("TargetCurrency")]
+        public string TargetCurrency { get; set; }
+
+        [Column("ExchangeRate")]
+        public decimal ExchangeRate { get; set; }
     }
 
     public enum RequestType

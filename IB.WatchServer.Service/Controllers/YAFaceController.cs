@@ -13,6 +13,7 @@ using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
 using AutoMapper;
+using LinqToDB.Common;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -159,10 +160,12 @@ namespace IB.WatchServer.Service.Controllers
                                ?? await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon)
                 };
 
-                var exchangeRateInfo = await _webRequestsProvider.RequestCachedExchangeRate(
-                    watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestExchangeRate);
+                var exchangeRateInfo = (!watchFaceRequest.BaseCurrency.IsNullOrEmpty() && !watchFaceRequest.TargetCurrency.IsNullOrEmpty())
+                    ? await _webRequestsProvider.RequestCacheExchangeRate(
+                        watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestExchangeRate)
+                    : null;
 
-                await _dataProvider.SaveRequestInfo(watchFaceRequest, weatherInfo, locationInfo);
+                await _dataProvider.SaveRequestInfo(watchFaceRequest, weatherInfo, locationInfo, exchangeRateInfo);
                 locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
                 var watchResponse = new WatchResponse
@@ -181,8 +184,6 @@ namespace IB.WatchServer.Service.Controllers
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
         }
-
-
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {

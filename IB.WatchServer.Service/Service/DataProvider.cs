@@ -35,7 +35,9 @@ namespace IB.WatchServer.Service.Service
         /// <param name="watchFaceRequest">Watch request data</param>
         /// <param name="weatherInfo">Weather data</param>
         /// <param name="locationInfo">Location data</param>
-        public async Task SaveRequestInfo(WatchFaceRequest watchFaceRequest, WeatherInfo weatherInfo, LocationInfo locationInfo)
+        /// <param name="exchangeRateInfo">Exchange rate data</param>
+        public async Task SaveRequestInfo(
+            WatchFaceRequest watchFaceRequest, WeatherInfo weatherInfo, LocationInfo locationInfo, ExchangeRateInfo exchangeRateInfo)
         {
             await using var db = _dbFactory.Create();
             var deviceInfo = db.QueryProc<DeviceInfo>(
@@ -47,6 +49,8 @@ namespace IB.WatchServer.Service.Service
             var requestInfo = _mapper.Map<RequestInfo>(watchFaceRequest);
             requestInfo = _mapper.Map(weatherInfo, requestInfo);
             requestInfo = _mapper.Map(locationInfo, requestInfo);
+            if (exchangeRateInfo != null)
+                requestInfo = _mapper.Map(exchangeRateInfo, requestInfo);
             requestInfo.DeviceInfoId = deviceInfo.Id;
             requestInfo.RequestTime = DateTime.UtcNow;
 

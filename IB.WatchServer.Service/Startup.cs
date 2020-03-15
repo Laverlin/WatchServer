@@ -123,6 +123,7 @@ namespace IB.WatchServer.Service
                 mc.CreateMap<WeatherResponse, RequestInfo>();
                 mc.CreateMap<WeatherInfo, RequestInfo>();
                 mc.CreateMap<LocationInfo, RequestInfo>();
+                mc.CreateMap<ExchangeRateInfo, RequestInfo>();
                 mc.CreateMap<Dictionary<string, object>, WeatherResponse>()
                     .ForMember(d => d.Temperature, c => c.MapFrom(s => s.ContainsKey("temp") ? s["temp"] : 0))
                     .ForMember(d => d.WindSpeed, c => c.MapFrom(s => s.ContainsKey("speed") ? s["speed"] : 0))
