@@ -14,6 +14,7 @@ using IB.WatchServer.Service.Entity.WatchFace;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -37,6 +38,38 @@ namespace IB.WatchServer.Service.Service
         }
 
         /// <summary>
+        /// Return location name from geocode provider
+        /// </summary>
+        /// <param name="lat">Latitude</param>
+        /// <param name="lon">Longitude</param>
+        /// <returns>Location name</returns>
+        public async Task<LocationInfo> RequestVirtualearth(string lat, string lon)
+        {
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls});
+            var client = _clientFactory.CreateClient(Options.DefaultName);
+            using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat, lon));
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
+                    ? $"Unauthorized access to virtualearth"
+                    : $"Error virtualearth request, status: {response.StatusCode.ToString()}");
+                return new LocationInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            using var document = JsonDocument.Parse(content);
+            var resource = document.RootElement
+                .GetProperty("resourceSets")[0]
+                .GetProperty("resources");
+
+            var city = (resource.GetArrayLength() > 0)
+                ? resource[0].GetProperty("name").GetString()
+                : null;
+
+            return new LocationInfo{CityName = city};
+        }
+
+        /// <summary>
         /// Request weather info on DarkSky weather provider
         /// </summary>
         /// <param name="lat">Latitude</param>
@@ -48,8 +81,8 @@ namespace IB.WatchServer.Service.Service
             string providerName = WeatherProvider.DarkSky.ToString();
             _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
 
-            var client = _clientFactory.CreateClient();
-            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token+"a"));
+            var client = _clientFactory.CreateClient(Options.DefaultName);
+            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token));
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
@@ -88,7 +121,7 @@ namespace IB.WatchServer.Service.Service
                 {"02d", "partly-cloudy-day"}, {"02n", "partly-cloudy-night"}, {"04d", "partly-cloudy-day"}, {"04n", "partly-cloudy-night"}
             };
 
-            var client = _clientFactory.CreateClient();
+            var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildOpenWeatherUrl(lat, lon));
             if (!response.IsSuccessStatusCode)
             { 
@@ -121,9 +154,9 @@ namespace IB.WatchServer.Service.Service
         /// <param name="baseCurrency">the currency from which convert</param>
         /// <param name="targetCurrency">the currency to which convert</param>
         /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
-        public async Task<ExchangeRateInfo> RequestExchangeRate(string baseCurrency, string targetCurrency)
+        public async Task<ExchangeRateInfo> RequestCurrencyConverter(string baseCurrency, string targetCurrency)
         {
-            var client = _clientFactory.CreateClient();
+            var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildCurrencyConverterUrl(baseCurrency, targetCurrency));
             if (!response.IsSuccessStatusCode)
             { 

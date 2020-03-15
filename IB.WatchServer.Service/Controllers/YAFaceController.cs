@@ -148,23 +148,29 @@ namespace IB.WatchServer.Service.Controllers
         {
             try
             {
+                // Get weather info
+                //
                 Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
                 var weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
                     ? await _webRequestsProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
                     : await _webRequestsProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
-                var locationInfo = new LocationInfo
-                {
-                    CityName = await _yaFaceProvider.CheckLastLocation(watchFaceRequest.DeviceId,
-                                   Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon))
-                               ?? await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon)
-                };
+                // Get location info
+                //
+                var locationInfo =
+                    await _dataProvider.LoadLastLocation(
+                        watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon)) ??
+                    await _webRequestsProvider.RequestVirtualearth(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
+                // Get Exchange Rate info
+                //
                 var exchangeRateInfo = (!watchFaceRequest.BaseCurrency.IsNullOrEmpty() && !watchFaceRequest.TargetCurrency.IsNullOrEmpty())
                     ? await _webRequestsProvider.RequestCacheExchangeRate(
-                        watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestExchangeRate)
+                        watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestCurrencyConverter)
                     : null;
 
+                // Save all requested data
+                //
                 await _dataProvider.SaveRequestInfo(watchFaceRequest, weatherInfo, locationInfo, exchangeRateInfo);
                 locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
