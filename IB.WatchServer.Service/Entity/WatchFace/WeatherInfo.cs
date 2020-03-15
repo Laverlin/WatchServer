@@ -2,7 +2,7 @@
 
 namespace IB.WatchServer.Service.Entity.WatchFace
 {
-    public class WeatherInfo : BaseResponseInfo
+    public class WeatherInfo 
     {
         /// <summary>
         /// The weather provider that actually processed the request
@@ -46,5 +46,8 @@ namespace IB.WatchServer.Service.Entity.WatchFace
         [JsonPropertyName("pressure")]
         public decimal Pressure { get; set; }
 
+
+        [JsonPropertyName("errorInfo")]
+        public ErrorInfo ErrorInfo { get; set; }
     }
 }
