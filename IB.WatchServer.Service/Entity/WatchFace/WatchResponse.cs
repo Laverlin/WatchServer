@@ -5,12 +5,12 @@ namespace IB.WatchServer.Service.Entity.WatchFace
     public class WatchResponse : BaseApiResponse
     {
         [JsonPropertyName("location")]
-        public LocationInfo LocationInfo { get; set; }
+        public LocationInfo LocationInfo { get; set; } = new LocationInfo();
 
         [JsonPropertyName("weather")]
-        public WeatherInfo WeatherInfo { get; set; }
+        public WeatherInfo WeatherInfo { get; set; } = new WeatherInfo();
 
-        [JsonPropertyName("exchangeRateInfo")]
-        public ExchangeRateInfo ExchangeRateInfo { get; set; }
+        [JsonPropertyName("exchange")]
+        public ExchangeRateInfo ExchangeRateInfo { get; set; } = new ExchangeRateInfo();
     }
 }

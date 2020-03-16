@@ -13,7 +13,7 @@ namespace IB.WatchServer.Service.Entity.WatchFace
         [JsonPropertyName("exchangeRate")]
         public decimal ExchangeRate { get; set; }
 
-        [JsonPropertyName("errorInfo")]
-        public ErrorInfo ErrorInfo { get; set; }
+        [JsonPropertyName("status")]
+        public RequestStatus RequestStatus { get; set; } = new RequestStatus();
     }
 }

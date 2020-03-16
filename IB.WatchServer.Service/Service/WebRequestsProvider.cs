@@ -53,7 +53,7 @@ namespace IB.WatchServer.Service.Service
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to virtualearth"
                     : $"Error virtualearth request, status: {response.StatusCode.ToString()}");
-                return new LocationInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
+                return new LocationInfo {RequestStatus = new RequestStatus(response.StatusCode)};
             }
 
             var content = await response.Content.ReadAsStringAsync();
@@ -66,7 +66,7 @@ namespace IB.WatchServer.Service.Service
                 ? resource[0].GetProperty("name").GetString()
                 : null;
 
-            return new LocationInfo{CityName = city};
+            return new LocationInfo(city);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace IB.WatchServer.Service.Service
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to {providerName}"
                     : $"Error {providerName} request, status: {response.StatusCode.ToString()}");
-                return new WeatherInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
+                return new WeatherInfo {RequestStatus = new RequestStatus(response.StatusCode)};
             }
 
             await using var content = await response.Content.ReadAsStreamAsync();
@@ -96,6 +96,7 @@ namespace IB.WatchServer.Service.Service
             var weatherInfo = JsonSerializer.Deserialize<WeatherInfo>(
                 json.RootElement.GetProperty("currently").GetRawText());
             weatherInfo.WeatherProvider = providerName;
+            weatherInfo.RequestStatus = new RequestStatus(RequestStatusCode.Ok);
 
             return weatherInfo;
         }
@@ -128,7 +129,7 @@ namespace IB.WatchServer.Service.Service
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to {providerName}"
                     : $"Error {providerName} request, status: {response.StatusCode.ToString()}");
-                return new WeatherInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
+                return new WeatherInfo {RequestStatus = new RequestStatus(response.StatusCode)};
             }
 
             await using var content = await response.Content.ReadAsStreamAsync();
@@ -144,6 +145,7 @@ namespace IB.WatchServer.Service.Service
 
             var weatherInfo = _mapper.Map<WeatherInfo>(_mapper.Map<WeatherResponse>(elements));
             weatherInfo.WeatherProvider = providerName;
+            weatherInfo.RequestStatus = new RequestStatus(RequestStatusCode.Ok);
 
             return weatherInfo;
         }
@@ -163,7 +165,7 @@ namespace IB.WatchServer.Service.Service
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to currencyconverterapi.com"
                     : $"Error currencyconverterapi.com request, status: {response.StatusCode.ToString()}");
-                return new ExchangeRateInfo {ErrorInfo = new ErrorInfo(response.StatusCode)};
+                return new ExchangeRateInfo {RequestStatus = new RequestStatus(response.StatusCode)};
             }
 
             await using var content = await response.Content.ReadAsStreamAsync();
@@ -172,7 +174,8 @@ namespace IB.WatchServer.Service.Service
             return new ExchangeRateInfo
             {
                 ExchangeRate = json.RootElement.TryGetProperty($"{baseCurrency}_{targetCurrency}", out var rate) 
-                    ? rate.GetDecimal() : 0
+                    ? rate.GetDecimal() : 0,
+                RequestStatus = new RequestStatus(RequestStatusCode.Ok)
             };
         }
 
@@ -195,7 +198,7 @@ namespace IB.WatchServer.Service.Service
 
             _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-request"}, $"{baseCurrency}-{targetCurrency}");
             exchangeRateInfo = await exchangeRateFunc(baseCurrency, targetCurrency);
-            if (exchangeRateInfo.ErrorInfo == null && exchangeRateInfo.ExchangeRate != 0)
+            if (exchangeRateInfo.RequestStatus == null && exchangeRateInfo.ExchangeRate != 0)
                 _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
             return exchangeRateInfo;
         }

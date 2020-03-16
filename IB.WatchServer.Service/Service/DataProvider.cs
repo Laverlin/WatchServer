@@ -78,7 +78,7 @@ namespace IB.WatchServer.Service.Service
                 .Where(c => c.Lat == latitude && c.Lon == longitude)
                 .SingleOrDefaultAsync();
 
-            return city != null ? new LocationInfo {CityName = city.CityName} : null;
+            return city != null ? new LocationInfo(city.CityName) : null;
         }
     }
 }

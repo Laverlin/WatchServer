@@ -148,26 +148,34 @@ namespace IB.WatchServer.Service.Controllers
         {
             try
             {
-                // Get weather info
-                //
-                Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
-                var weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
-                    ? await _webRequestsProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
-                    : await _webRequestsProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                var weatherInfo = new WeatherInfo();
+                var locationInfo = new LocationInfo();
+                var exchangeRateInfo = new ExchangeRateInfo();
 
-                // Get location info
-                //
-                var locationInfo =
-                    await _dataProvider.LoadLastLocation(
-                        watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon)) ??
-                    await _webRequestsProvider.RequestVirtualearth(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                if (!watchFaceRequest.Lat.IsNullOrEmpty() && !watchFaceRequest.Lon.IsNullOrEmpty())
+                {
+                    // Get weather info
+                    //
+                    Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
+                    weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
+                        ? await _webRequestsProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
+                        : await _webRequestsProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
+
+                    // Get location info
+                    //
+                    locationInfo =
+                        await _dataProvider.LoadLastLocation(
+                            watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon)) ??
+                        await _webRequestsProvider.RequestVirtualearth(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                }
 
                 // Get Exchange Rate info
                 //
-                var exchangeRateInfo = (!watchFaceRequest.BaseCurrency.IsNullOrEmpty() && !watchFaceRequest.TargetCurrency.IsNullOrEmpty())
-                    ? await _webRequestsProvider.RequestCacheExchangeRate(
-                        watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestCurrencyConverter)
-                    : null;
+                if (!watchFaceRequest.BaseCurrency.IsNullOrEmpty() && !watchFaceRequest.TargetCurrency.IsNullOrEmpty())
+                {
+                    exchangeRateInfo = await _webRequestsProvider.RequestCacheExchangeRate(
+                        watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestCurrencyConverter);
+                }
 
                 // Save all requested data
                 //

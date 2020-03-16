@@ -4,22 +4,28 @@ using System.Text.Json.Serialization;
 namespace IB.WatchServer.Service.Entity.WatchFace
 {
     /// <summary>
-    /// Description of error during request to an external service
+    /// Description of result of the request to an external service
     /// </summary>
-    public class ErrorInfo
+    public class RequestStatus
     {
-        public ErrorInfo(HttpStatusCode httpStatusCode)
+        public RequestStatus()
         {
-            IsError = true;
+        }
+
+        public RequestStatus(RequestStatusCode statusCode)
+        {
+            StatusCode = statusCode;
+        }
+
+        public RequestStatus(HttpStatusCode httpStatusCode)
+        {
+            StatusCode = RequestStatusCode.Error;
             ErrorDescription = httpStatusCode.ToString();
             ErrorCode = (int) httpStatusCode;
         }
 
-        /// <summary>
-        /// Is there any error
-        /// </summary>
-        [JsonPropertyName("isError")]
-        public bool IsError { get; set; } = false;
+        [JsonPropertyName("statusCode")]
+        public RequestStatusCode StatusCode { get; set; } = RequestStatusCode.HasNotBeenRequested;
 
         /// <summary>
         /// Text description of the error
@@ -32,5 +38,12 @@ namespace IB.WatchServer.Service.Entity.WatchFace
         /// </summary>
         [JsonPropertyName("errorCode")]
         public int ErrorCode { get; set; }
+    }
+
+    public enum RequestStatusCode
+    {
+        Error = -1,
+        HasNotBeenRequested = 0,
+        Ok = 1
     }
 }
