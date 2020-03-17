@@ -43,11 +43,11 @@ namespace IB.WatchServer.Service.Service
         /// <param name="lat">Latitude</param>
         /// <param name="lon">Longitude</param>
         /// <returns>Location name</returns>
-        public async Task<LocationInfo> RequestVirtualearth(string lat, string lon)
+        public async Task<LocationInfo> RequestVirtualearth(decimal lat, decimal lon)
         {
             _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls});
             var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat, lon));
+            using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat.ToString("F"), lon.ToString("F")));
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
@@ -76,13 +76,13 @@ namespace IB.WatchServer.Service.Service
         /// <param name="lon">Longitude</param>
         /// <param name="token">ApiToken</param>
         /// <returns>Weather info <see cref="RequestDarkSky"/></returns>
-        public async Task<WeatherInfo> RequestDarkSky(string lat, string lon, string token)
+        public async Task<WeatherInfo> RequestDarkSky(decimal lat, decimal lon, string token)
         {
             string providerName = WeatherProvider.DarkSky.ToString();
             _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token));
+            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat.ToString("F"), lon.ToString("F"), token));
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
@@ -107,7 +107,7 @@ namespace IB.WatchServer.Service.Service
         /// <param name="lat">latitude</param>
         /// <param name="lon">longitude</param>
         /// <returns>Weather conditions for the specified coordinates <see cref="WeatherResponse"/></returns>
-        public async Task<WeatherInfo> RequestOpenWeather(string lat, string lon)
+        public async Task<WeatherInfo> RequestOpenWeather(decimal lat, decimal lon)
         {
             var providerName = WeatherProvider.OpenWeather.ToString();
             _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
@@ -123,7 +123,7 @@ namespace IB.WatchServer.Service.Service
             };
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(_faceSettings.BuildOpenWeatherUrl(lat, lon));
+            using var response = await client.GetAsync(_faceSettings.BuildOpenWeatherUrl(lat.ToString("F"), lon.ToString("F")));
             if (!response.IsSuccessStatusCode)
             { 
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized

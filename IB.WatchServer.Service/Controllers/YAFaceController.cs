@@ -137,14 +137,14 @@ namespace IB.WatchServer.Service.Controllers
         /// <summary>
         /// Process request from the watchface and returns all requested data 
         /// </summary>
-        /// <param name="watchFaceRequest">watchface data</param>
+        /// <param name="watchRequest">watchface data</param>
         /// <returns>weather, location and exchange rate info</returns>
         [HttpGet, MapToApiVersion("2.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
         [Authorize]
-        public async Task<ActionResult<WatchResponse>> Get([FromQuery] WatchFaceRequest watchFaceRequest)
+        public async Task<ActionResult<WatchResponse>> Get([FromQuery] WatchRequest watchRequest)
         {
             try
             {
@@ -152,34 +152,33 @@ namespace IB.WatchServer.Service.Controllers
                 var locationInfo = new LocationInfo();
                 var exchangeRateInfo = new ExchangeRateInfo();
 
-                if (!watchFaceRequest.Lat.IsNullOrEmpty() && !watchFaceRequest.Lon.IsNullOrEmpty())
+                if (watchRequest.Lat != null && watchRequest.Lon != null)
                 {
                     // Get weather info
                     //
-                    Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
+                    Enum.TryParse<WeatherProvider>(watchRequest.WeatherProvider, true, out var weatherProvider);
                     weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
-                        ? await _webRequestsProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
-                        : await _webRequestsProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                        ? await _webRequestsProvider.RequestDarkSky(watchRequest.Lat.Value, watchRequest.Lon.Value, watchRequest.DarkskyKey)
+                        : await _webRequestsProvider.RequestOpenWeather(watchRequest.Lat.Value, watchRequest.Lon.Value);
 
                     // Get location info
                     //
                     locationInfo =
-                        await _dataProvider.LoadLastLocation(
-                            watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon)) ??
-                        await _webRequestsProvider.RequestVirtualearth(watchFaceRequest.Lat, watchFaceRequest.Lon);
+                        await _dataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
+                        await _webRequestsProvider.RequestVirtualearth(watchRequest.Lat.Value, watchRequest.Lon.Value);
                 }
 
                 // Get Exchange Rate info
                 //
-                if (!watchFaceRequest.BaseCurrency.IsNullOrEmpty() && !watchFaceRequest.TargetCurrency.IsNullOrEmpty())
+                if (!watchRequest.BaseCurrency.IsNullOrEmpty() && !watchRequest.TargetCurrency.IsNullOrEmpty())
                 {
                     exchangeRateInfo = await _webRequestsProvider.RequestCacheExchangeRate(
-                        watchFaceRequest.BaseCurrency, watchFaceRequest.TargetCurrency, _webRequestsProvider.RequestCurrencyConverter);
+                        watchRequest.BaseCurrency, watchRequest.TargetCurrency, _webRequestsProvider.RequestCurrencyConverter);
                 }
 
                 // Save all requested data
                 //
-                await _dataProvider.SaveRequestInfo(watchFaceRequest, weatherInfo, locationInfo, exchangeRateInfo);
+                await _dataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
                 locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
                 var watchResponse = new WatchResponse
@@ -189,12 +188,12 @@ namespace IB.WatchServer.Service.Controllers
                     ExchangeRateInfo = exchangeRateInfo
                 };
                 _logger.LogInformation(
-                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchFaceRequest, watchResponse);
+                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchRequest, watchResponse);
                 return watchResponse;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Request error, {@WatchFaceRequest}", watchFaceRequest);
+                _logger.LogWarning(ex, "Request error, {@WatchFaceRequest}", watchRequest);
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
         }

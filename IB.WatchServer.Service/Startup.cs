@@ -120,6 +120,7 @@ namespace IB.WatchServer.Service
                 mc.CreateMap<WatchFaceRequest, RequestInfo>()
                     .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
                     .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
+                mc.CreateMap<WatchRequest, RequestInfo>();
                 mc.CreateMap<WeatherResponse, RequestInfo>();
                 mc.CreateMap<WeatherInfo, RequestInfo>();
                 mc.CreateMap<LocationInfo, RequestInfo>();
