@@ -19,10 +19,10 @@ namespace IB.WatchServer.Service.Entity
         public string CityName { get; set; }
 
         [Column("Lat")]
-        public decimal Lat { get; set; }
+        public decimal? Lat { get; set; }
 
         [Column("Lon")]
-        public decimal Lon { get; set; }
+        public decimal? Lon { get; set; }
 
         [Column("FaceVersion")]
         public string Version { get; set; }
