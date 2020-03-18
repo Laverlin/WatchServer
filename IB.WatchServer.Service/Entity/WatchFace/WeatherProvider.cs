@@ -1,7 +1,7 @@
-﻿namespace IB.WatchServer.Service.Entity
+﻿namespace IB.WatchServer.Service.Entity.WatchFace
 {
     /// <summary>
-    /// Availabe weather providers
+    /// Available weather providers
     /// </summary>
     public enum WeatherProvider
     {

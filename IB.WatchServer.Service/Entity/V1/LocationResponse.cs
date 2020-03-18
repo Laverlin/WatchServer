@@ -1,5 +1,5 @@
 ﻿
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.V1
 {
     /// <summary>
     /// Represents the location description

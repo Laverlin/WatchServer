@@ -17,6 +17,10 @@ namespace IB.WatchServer.Service.Entity.WatchFace
             StatusCode = statusCode;
         }
 
+        /// <summary>
+        /// Use this constructor to create error status based on HttpStatusCode
+        /// </summary>
+        /// <param name="httpStatusCode">HttpStatusCode with error</param>
         public RequestStatus(HttpStatusCode httpStatusCode)
         {
             StatusCode = RequestStatusCode.Error;
@@ -24,6 +28,9 @@ namespace IB.WatchServer.Service.Entity.WatchFace
             ErrorCode = (int) httpStatusCode;
         }
 
+        /// <summary>
+        /// Request status code. By default the status is request has not been done yet.
+        /// </summary>
         [JsonPropertyName("statusCode")]
         public RequestStatusCode StatusCode { get; set; } = RequestStatusCode.HasNotBeenRequested;
 
@@ -42,8 +49,19 @@ namespace IB.WatchServer.Service.Entity.WatchFace
 
     public enum RequestStatusCode
     {
+        /// <summary>
+        /// Unsuccessful
+        /// </summary>
         Error = -1,
+
+        /// <summary>
+        /// The request has not been done yet
+        /// </summary>
         HasNotBeenRequested = 0,
+
+        /// <summary>
+        /// The request was successful
+        /// </summary>
         Ok = 1
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.V1
 {
     /// <summary>
     /// Location request info

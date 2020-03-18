@@ -2,6 +2,9 @@
 
 namespace IB.WatchServer.Service.Entity.WatchFace
 {
+    /// <summary>
+    /// Request parameters from a watch
+    /// </summary>
     public class WatchRequest
     {
         /// <summary>

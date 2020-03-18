@@ -1,4 +1,4 @@
-﻿using IB.WatchServer.Service.Entity;
+﻿using IB.WatchServer.Service.Entity.SailingApp;
 using IB.WatchServer.Service.Infrastructure;
 using LinqToDB;
 using LinqToDB.Common;
@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.V1
 {
     /// <summary>
     /// Response with the current weather condition and city name 

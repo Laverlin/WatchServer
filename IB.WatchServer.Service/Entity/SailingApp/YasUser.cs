@@ -1,8 +1,7 @@
-﻿using LinqToDB.Mapping;
-using System;
+﻿using System;
+using LinqToDB.Mapping;
 
-
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.SailingApp
 {
     /// <summary>
     /// YAS User info

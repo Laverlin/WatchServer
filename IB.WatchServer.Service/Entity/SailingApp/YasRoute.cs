@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using LinqToDB.Mapping;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.SailingApp
 {
     /// <summary>
     /// Route Information
