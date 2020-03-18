@@ -1,39 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-
-using Serilog;
 using App.Metrics;
 using App.Metrics.Extensions.Configuration;
 using App.Metrics.Formatters.Prometheus;
 using AutoMapper;
-
 using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Service.Entity.V1;
+using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MihaZupan;
 using Polly;
 using Polly.Extensions.Http;
-using Telegram.Bot;
+using Serilog;
 using Serilog.Context;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System;
+using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.WatchFace;
-using Microsoft.AspNetCore.Mvc;
-using MihaZupan;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Telegram.Bot;
 
 namespace IB.WatchServer.Service
 {
@@ -117,14 +116,14 @@ namespace IB.WatchServer.Service
             var mappingConfig = new MapperConfiguration(mc =>
             {
                 mc.CreateMap<WeatherResponse, WeatherInfo>();
-                mc.CreateMap<WatchFaceRequest, RequestInfo>()
+                mc.CreateMap<WatchFaceRequest, RequestData>()
                     .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
                     .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
-                mc.CreateMap<WatchRequest, RequestInfo>();
-                mc.CreateMap<WeatherResponse, RequestInfo>();
-                mc.CreateMap<WeatherInfo, RequestInfo>();
-                mc.CreateMap<LocationInfo, RequestInfo>();
-                mc.CreateMap<ExchangeRateInfo, RequestInfo>();
+                mc.CreateMap<WatchRequest, RequestData>();
+                mc.CreateMap<WeatherResponse, RequestData>();
+                mc.CreateMap<WeatherInfo, RequestData>();
+                mc.CreateMap<LocationInfo, RequestData>();
+                mc.CreateMap<ExchangeRateInfo, RequestData>();
                 mc.CreateMap<Dictionary<string, object>, WeatherResponse>()
                     .ForMember(d => d.Temperature, c => c.MapFrom(s => s.ContainsKey("temp") ? s["temp"] : 0))
                     .ForMember(d => d.WindSpeed, c => c.MapFrom(s => s.ContainsKey("speed") ? s["speed"] : 0))

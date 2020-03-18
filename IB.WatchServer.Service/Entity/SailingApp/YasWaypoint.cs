@@ -1,7 +1,7 @@
 ﻿using LinqToDB.Mapping;
 using System.Text.Json.Serialization;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.SailingApp
 {
     /// <summary>
     /// Way point data

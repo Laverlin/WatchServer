@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using App.Metrics;
 using App.Metrics.Counter;
@@ -14,11 +13,12 @@ using Microsoft.Extensions.Logging;
 using LinqToDB;
 using LinqToDB.Data;
 
-using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Infrastructure;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Options;
 using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Service.Entity.V1;
+using IB.WatchServer.Service.Entity.WatchFace;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -46,14 +46,6 @@ namespace IB.WatchServer.Service.Service
             _metrics = metrics;
         }
 
-        /// <summary>
-        /// Get count of unique devices fixed in DB
-        /// </summary>
-        public async Task<long> GetDeviceCount()
-        {
-            await using var db = _dbFactory.Create();
-            return await db.GetTable<DeviceInfo>().CountAsync();
-        }
 
         /// <summary>
         /// Return location name from geocode provider
@@ -96,8 +88,8 @@ namespace IB.WatchServer.Service.Service
         {
             _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-db", MeasurementUnit = Unit.Calls});
             await using var db = _dbFactory.Create();
-            var city = await db.GetTable<RequestInfo>().Where(c => c.RequestTime != null)
-                .Join(db.GetTable<DeviceInfo>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
+            var city = await db.GetTable<RequestData>().Where(c => c.RequestTime != null)
+                .Join(db.GetTable<DeviceData>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
                     (c, d) => new {c.CityName, c.Lat, c.Lon, c.RequestTime})
                 .OrderByDescending(c => c.RequestTime).Take(1)
                 .Where(c => c.Lat == latitude && c.Lon == longitude)
@@ -198,19 +190,19 @@ namespace IB.WatchServer.Service.Service
         public async Task SaveRequestInfo(RequestType requestType, WatchFaceRequest watchFaceRequest, WeatherResponse weatherResponse)
         {
             await using var db = _dbFactory.Create();
-            var deviceInfo = db.QueryProc<DeviceInfo>(
+            var deviceInfo = db.QueryProc<DeviceData>(
                     "add_device",
                     new DataParameter("device_id", watchFaceRequest.DeviceId ?? "unknown"),
                     new DataParameter("device_name", watchFaceRequest.DeviceName))
                 .Single();
 
-            var requestInfo = _mapper.Map<RequestInfo>(watchFaceRequest);
+            var requestInfo = _mapper.Map<RequestData>(watchFaceRequest);
             requestInfo = _mapper.Map(weatherResponse, requestInfo);
             requestInfo.DeviceInfoId = deviceInfo.Id;
             requestInfo.RequestTime = DateTime.UtcNow;
             requestInfo.RequestType = requestType;
 
-            await db.GetTable<RequestInfo>().DataContext.InsertAsync(requestInfo);
+            await db.GetTable<RequestData>().DataContext.InsertAsync(requestInfo);
 
             _logger.LogDebug("{@requestInfo}", requestInfo);
         }

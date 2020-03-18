@@ -2,6 +2,9 @@
 
 namespace IB.WatchServer.Service.Entity.WatchFace
 {
+    /// <summary>
+    /// Weather data
+    /// </summary>
     public class WeatherInfo 
     {
         /// <summary>
@@ -46,7 +49,9 @@ namespace IB.WatchServer.Service.Entity.WatchFace
         [JsonPropertyName("pressure")]
         public decimal Pressure { get; set; }
 
-
+        /// <summary>
+        /// Status of request to the remote server
+        /// </summary>
         [JsonPropertyName("status")]
         public RequestStatus RequestStatus { get; set; } = new RequestStatus();
     }

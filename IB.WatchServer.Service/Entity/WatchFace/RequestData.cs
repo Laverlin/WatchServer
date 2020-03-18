@@ -1,10 +1,13 @@
 ﻿using System;
 using LinqToDB.Mapping;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.WatchFace
 {
+    /// <summary>
+    /// Represents request and response data for the storage
+    /// </summary>
     [Table("CityInfo")]
-    public class RequestInfo
+    public class RequestData
     {
         [Column("id"), Identity]
         public int? Id { get; set; }

@@ -1,13 +1,13 @@
 ﻿using System;
 using LinqToDB.Mapping;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Service.Entity.WatchFace
 {
     /// <summary>
     /// Information about the device
     /// </summary>
     [Table(Name = "DeviceInfo")]
-    public class DeviceInfo
+    public class DeviceData
     {
         /// <summary>
         /// Unique id

@@ -8,8 +8,9 @@ using System.Collections.Generic;
 using App.Metrics;
 using App.Metrics.Counter;
 using AutoMapper;
-using IB.WatchServer.Service.Entity;
+
 using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Service.Entity.V1;
 using IB.WatchServer.Service.Entity.WatchFace;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Caching.Memory;

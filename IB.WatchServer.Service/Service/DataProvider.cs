@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using App.Metrics;
 using App.Metrics.Counter;
 using AutoMapper;
-using IB.WatchServer.Service.Entity;
+
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
 using LinqToDB;
@@ -40,13 +40,13 @@ namespace IB.WatchServer.Service.Service
             WatchRequest watchRequest, WeatherInfo weatherInfo, LocationInfo locationInfo, ExchangeRateInfo exchangeRateInfo)
         {
             await using var db = _dbFactory.Create();
-            var deviceInfo = db.QueryProc<DeviceInfo>(
+            var deviceInfo = db.QueryProc<DeviceData>(
                     "add_device",
                     new DataParameter("device_id", watchRequest.DeviceId ?? "unknown"),
                     new DataParameter("device_name", watchRequest.DeviceName))
                 .Single();
 
-            var requestInfo = _mapper.Map<RequestInfo>(watchRequest);
+            var requestInfo = _mapper.Map<RequestData>(watchRequest);
             requestInfo = _mapper.Map(weatherInfo, requestInfo);
             requestInfo = _mapper.Map(locationInfo, requestInfo);
             if (exchangeRateInfo != null)
@@ -54,7 +54,7 @@ namespace IB.WatchServer.Service.Service
             requestInfo.DeviceInfoId = deviceInfo.Id;
             requestInfo.RequestTime = DateTime.UtcNow;
 
-            await db.GetTable<RequestInfo>().DataContext.InsertAsync(requestInfo);
+            await db.GetTable<RequestData>().DataContext.InsertAsync(requestInfo);
 
             _logger.LogDebug("{@requestInfo}", requestInfo);
         }
@@ -71,8 +71,8 @@ namespace IB.WatchServer.Service.Service
         {
             _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-db", MeasurementUnit = Unit.Calls});
             await using var db = _dbFactory.Create();
-            var city = await db.GetTable<RequestInfo>().Where(c => c.RequestTime != null)
-                .Join(db.GetTable<DeviceInfo>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
+            var city = await db.GetTable<RequestData>().Where(c => c.RequestTime != null)
+                .Join(db.GetTable<DeviceData>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
                     (c, d) => new {c.CityName, c.Lat, c.Lon, c.RequestTime})
                 .OrderByDescending(c => c.RequestTime).Take(1)
                 .Where(c => c.Lat == latitude && c.Lon == longitude)
