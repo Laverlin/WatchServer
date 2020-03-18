@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -124,7 +125,7 @@ namespace IB.WatchServer.Service.Service
             db.BulkCopy(points);
             await db.CommitTransactionAsync();
 
-            return $"The route * {route.RouteId} * : {route.RouteName} ({points.Count} way points) has been uploaded \n userId:{yasUser.PublicId}";
+            return $"The route <b> {route.RouteId} </b> : {route.RouteName} ({points.Count} way points) has been uploaded \n userId:{yasUser.PublicId}";
         }
 
         private async Task<string> MessageDelete(Message message, YasUser yasUser)
@@ -139,8 +140,8 @@ namespace IB.WatchServer.Service.Service
                 .DeleteAsync();
 
             return (count > 0)
-                ? $"Route id: * {routeId} * has been deleted"
-                : $"Cannot find the route id: * {routeId} *";
+                ? $"Route id: <b> {routeId} </b> has been deleted"
+                : $"Cannot find the route id: <b> {routeId} </b>";
         }
 
         private async Task<string> MessageRenameLast(Message message, YasUser yasUser)
@@ -157,8 +158,8 @@ namespace IB.WatchServer.Service.Service
                 .UpdateAsync();
 
             return (count > 0)
-                ? $"Route id: * {routeId} *, new name: * {newName} *"
-                : $"Cannot find the route id: * {routeId} *";
+                ? $"Route id: <b> {routeId} </b>, new name: <b> {newName} </b>"
+                : $"Cannot find the route id: <b> {routeId} </b>";
         }
 
         private async Task<string> MessageRename(Message message, YasUser yasUser)
@@ -175,8 +176,8 @@ namespace IB.WatchServer.Service.Service
                 .UpdateAsync();
 
             return (count > 0)
-                ? $"Route id: * {routeId} *, new name: * {newName} *"
-                : $"Cannot find the route id: * {routeId} *";
+                ? $"Route id: <b> {routeId} </b>, new name: <b> {newName} </b>"
+                : $"Cannot find the route id: <b> {routeId} </b>";
         }
 
         private async Task<string> MessageList(Message message, YasUser yasUser)
@@ -186,7 +187,7 @@ namespace IB.WatchServer.Service.Service
                 .Where(u => u.UserId == yasUser.UserId).OrderByDescending(r=>r.RouteId).ToArray();
 
             return (routes.Length > 0)
-                ? routes.Aggregate("", (o, r) => o + $"* {r.RouteId} * : ` {r.RouteName} \n({r.UploadTime})`\n\n")
+                ? routes.Aggregate("", (o, r) => o + $"<b> {r.RouteId} </b> : <code>{r.RouteName} \n({r.UploadTime})</code>\n\n")
                 : "No routes found";
         }
 
@@ -202,11 +203,11 @@ namespace IB.WatchServer.Service.Service
 
         private async Task<string> MessageStart(Message message, YasUser yasUser)
         {
-            var output = "/myid `- return ID-string to identify your routes`\n\n" +
-                "/list `- route list `\n\n" + "" +
-                "/renamelast <new name> `- rename last uploaded route`\n\n " + 
-                "/rename:<id> <new name> `- set <new name> to route with <id>`\n\n" + 
-                "/delete:<id> `delete route with <id>`";
+            var output = "/myid <code>- returns ID-string to identify your routes</code>\n\n" +
+                "/list <code>- route list </code>\n\n" + "" +
+                "/renamelast &lt;new name&gt; <code>- rename last uploaded route</code>\n\n " + 
+                "/rename:&lt;id&gt; &lt;new name&gt; <code>- set the &lt;new name&gt; to route with &lt;id&gt;</code>\n\n" + 
+                "/delete:&lt;id&gt; <code>delete route with &lt;id&gt;</code>";
             return await Task.FromResult(output);
         }
 
@@ -217,7 +218,16 @@ namespace IB.WatchServer.Service.Service
 
             var output = await processAction(message, yasUser);
 
-            await _telegramBot.SendTextMessageAsync(message.Chat, output, ParseMode.Markdown);
+            try
+            {
+                await _telegramBot.SendTextMessageAsync(message.Chat, output, ParseMode.Html);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to send formatted message, trying plane text. \n {Output}", output);
+                await _telegramBot.SendTextMessageAsync(message.Chat, output, ParseMode.Default);
+            }
+            
             _logger.LogInformation("For {@TelegramUser} has been processed {Message} and returned {Output}", yasUser, message.Text, output);
         }
 
