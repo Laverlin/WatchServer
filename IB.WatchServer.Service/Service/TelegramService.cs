@@ -218,7 +218,16 @@ namespace IB.WatchServer.Service.Service
 
             var output = await processAction(message, yasUser);
 
-            await _telegramBot.SendTextMessageAsync(message.Chat, output, ParseMode.Html);
+            try
+            {
+                await _telegramBot.SendTextMessageAsync(message.Chat, output, ParseMode.Html);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to send formatted message, trying plane text. \n {Output}", output);
+                await _telegramBot.SendTextMessageAsync(message.Chat, output, ParseMode.Default);
+            }
+            
             _logger.LogInformation("For {@TelegramUser} has been processed {Message} and returned {Output}", yasUser, message.Text, output);
         }
 
