@@ -46,31 +46,13 @@ namespace IB.WatchServer.Service.Controllers
         /// <summary>
         /// Process request of the location
         /// </summary>
-        /// <param name="watchFaceRequest"></param>
-        /// <returns></returns>
         [HttpGet("location"), MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField ="did", Seconds = 5)]
-        public async Task<ActionResult<LocationResponse>> Location([FromQuery] WatchFaceRequest watchFaceRequest)
+        public ActionResult<LocationResponse> Location()
         {
-            try
-            {
-                var city = await GetLocationName(watchFaceRequest, RequestType.Location);
-                await _yaFaceProvider.SaveRequestInfo(watchFaceRequest, city);
-                var locationResponse = new LocationResponse { CityName = city.StripDiacritics() };
-
-                _logger.LogInformation(
-                    new EventId(100, "LocationRequest"),
-                    "{@WatchFaceRequest}, {@LocationResponse}", watchFaceRequest, locationResponse);
-
-                return locationResponse;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Location request error, {@WatchFaceRequest}", watchFaceRequest);
-                return BadRequest();
-            }
+            return new LocationResponse {CityName = "Update required."};
         }
 
         /// <summary>
