@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Net;
 using System.Threading.Tasks;
 using App.Metrics;
-using App.Metrics.Counter;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 
@@ -55,7 +54,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Location name</returns>
         public async Task<string> RequestLocationName(string lat, string lon)
         {
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls});
+            _metrics.LocationIncrement("virtualearth", SourceType.Remote);
             var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat, lon));
             if (!response.IsSuccessStatusCode)
@@ -86,7 +85,6 @@ namespace IB.WatchServer.Service.Service
         /// <returns>City name or null</returns>
         public async Task<string> CheckLastLocation(string deviceId, decimal latitude, decimal longitude)
         {
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-db", MeasurementUnit = Unit.Calls});
             await using var db = _dbFactory.Create();
             var city = await db.GetTable<RequestData>().Where(c => c.RequestTime != null)
                 .Join(db.GetTable<DeviceData>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
@@ -94,8 +92,10 @@ namespace IB.WatchServer.Service.Service
                 .OrderByDescending(c => c.RequestTime).Take(1)
                 .Where(c => c.Lat == latitude && c.Lon == longitude)
                 .SingleOrDefaultAsync();
+            if (city == null) return null;
 
-           return city?.CityName;
+            _metrics.LocationIncrement("cache", SourceType.Database);
+            return city.CityName;
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<WeatherResponse> RequestDarkSky(string lat, string lon, string token)
         {
             string providerName = WeatherProvider.DarkSky.ToString();
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
+            _metrics.WeatherIncrement(providerName, SourceType.Remote);
 
             var client = _clientFactory.CreateClient();
             using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token));
@@ -138,7 +138,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<WeatherResponse> RequestOpenWeather(string lat, string lon)
         {
             var providerName = WeatherProvider.OpenWeather.ToString();
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
+            _metrics.WeatherIncrement(providerName, SourceType.Remote);
 
             var conditionIcons = new Dictionary<string, string>
             {
@@ -176,9 +176,6 @@ namespace IB.WatchServer.Service.Service
 
             return weatherResponse;
         }
-
-        public async Task SaveRequestInfo(WatchFaceRequest watchFaceRequest, string cityName)
-            => await SaveRequestInfo(RequestType.Location, watchFaceRequest, new WeatherResponse {CityName = cityName});
 
 
         /// <summary>

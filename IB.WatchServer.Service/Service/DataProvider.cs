@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using App.Metrics;
-using App.Metrics.Counter;
 using AutoMapper;
 
 using IB.WatchServer.Service.Entity.WatchFace;
@@ -69,7 +68,6 @@ namespace IB.WatchServer.Service.Service
         /// <returns><see cref="LocationInfo"/> with CityName or null</returns>
         public async Task<LocationInfo> LoadLastLocation(string deviceId, decimal latitude, decimal longitude)
         {
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-db", MeasurementUnit = Unit.Calls});
             await using var db = _dbFactory.Create();
             var city = await db.GetTable<RequestData>().Where(c => c.RequestTime != null)
                 .Join(db.GetTable<DeviceData>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
@@ -78,7 +76,11 @@ namespace IB.WatchServer.Service.Service
                 .Where(c => c.Lat == latitude && c.Lon == longitude)
                 .SingleOrDefaultAsync();
 
-            return city != null ? new LocationInfo(city.CityName) : null;
+            if (city == null) return null;
+
+            _metrics.LocationIncrement("cache", SourceType.Database);
+            return new LocationInfo(city.CityName);
+
         }
     }
 }
