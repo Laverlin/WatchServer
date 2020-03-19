@@ -163,19 +163,9 @@ namespace IB.WatchServer.Service.Controllers
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {
-            _metrics.Measure.Counter.Increment(
-                new CounterOptions {Name = "locationRequest-total", MeasurementUnit = Unit.Calls}, 
-                requestType.ToString());
             var cityName = await _yaFaceProvider.CheckLastLocation(
-                watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon));
-
-            if (cityName == null)
-            {
-                _metrics.Measure.Counter.Increment(
-                    new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls},
-                    requestType.ToString());
-                cityName = await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon);
-            }
+                               watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon)) ?? 
+                           await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
             return cityName;
         }

@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using App.Metrics;
-using App.Metrics.Counter;
+using App.Metrics.Meter;
 using AutoMapper;
 
 using IB.WatchServer.Service.Entity.Settings;
@@ -46,7 +46,8 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Location name</returns>
         public async Task<LocationInfo> RequestVirtualearth(decimal lat, decimal lon)
         {
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "locationRequest-remote", MeasurementUnit = Unit.Calls});
+            _metrics.LocationIncrement("virtualearth", SourceType.Remote);
+
             var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat.ToString("F"), lon.ToString("F")));
             if (!response.IsSuccessStatusCode)
@@ -80,7 +81,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<WeatherInfo> RequestDarkSky(decimal lat, decimal lon, string token)
         {
             string providerName = WeatherProvider.DarkSky.ToString();
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
+            _metrics.WeatherIncrement(providerName, SourceType.Remote);
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat.ToString("F"), lon.ToString("F"), token));
@@ -111,7 +112,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<WeatherInfo> RequestOpenWeather(decimal lat, decimal lon)
         {
             var providerName = WeatherProvider.OpenWeather.ToString();
-            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "weatherRequest", MeasurementUnit = Unit.Calls}, providerName);
+            _metrics.WeatherIncrement(providerName, SourceType.Remote);
 
             var conditionIcons = new Dictionary<string, string>
             {
@@ -159,6 +160,9 @@ namespace IB.WatchServer.Service.Service
         /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
         public async Task<ExchangeRateInfo> RequestCurrencyConverter(string baseCurrency, string targetCurrency)
         {
+
+            _metrics.ExchangeRateIncrement("Currency Converter", SourceType.Remote, baseCurrency, targetCurrency);
+
             var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildCurrencyConverterUrl(baseCurrency, targetCurrency));
             if (!response.IsSuccessStatusCode)
@@ -193,13 +197,12 @@ namespace IB.WatchServer.Service.Service
             string cacheKey = $"er-{baseCurrency}-{targetCurrency}";
             if (_memoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
             {
-                _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-cache"}, $"{baseCurrency}-{targetCurrency}");
+                _metrics.ExchangeRateIncrement("cache", SourceType.Memory, baseCurrency, targetCurrency);
                 return exchangeRateInfo;
             }
 
-            _metrics.Measure.Counter.Increment(new CounterOptions{Name = "exchangeRate-request"}, $"{baseCurrency}-{targetCurrency}");
             exchangeRateInfo = await exchangeRateFunc(baseCurrency, targetCurrency);
-            if (exchangeRateInfo.RequestStatus == null && exchangeRateInfo.ExchangeRate != 0)
+            if (exchangeRateInfo.RequestStatus.StatusCode == RequestStatusCode.Ok && exchangeRateInfo.ExchangeRate != 0)
                 _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
             return exchangeRateInfo;
         }
