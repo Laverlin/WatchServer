@@ -1,4 +1,4 @@
-﻿using System.Linq;
+﻿using LinqToDB.Common;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
@@ -15,19 +15,16 @@ namespace IB.WatchServer.Service.Infrastructure
         {
             app.Use((context, next) =>
             {
-                var metricsCurrentRouteName = "__App.Metrics.CurrentRouteName__";
+                const string metricsCurrentRouteName = "__App.Metrics.CurrentRouteName__";
                 var endpointFeature = context.Features[typeof(IEndpointFeature)] as IEndpointFeature;
                 if (endpointFeature?.Endpoint is RouteEndpoint endpoint)
                 {
-                    var method = endpoint.Metadata.GetMetadata<HttpMethodMetadata>()
-                        ?.HttpMethods
-                        ?.FirstOrDefault();
                     var routePattern = endpoint.RoutePattern?.RawText;
-                    var templateRouteDetailed = $"{method} {routePattern} {endpoint.DisplayName}";
-                    var templateRoute = $"{method} {routePattern}";
-                    if (!context.Items.ContainsKey(metricsCurrentRouteName))
+
+                    if (!routePattern.IsNullOrEmpty() && 
+                        !context.Items.ContainsKey(metricsCurrentRouteName))
                     {
-                        context.Items.Add(metricsCurrentRouteName, templateRouteDetailed);
+                        context.Items.Add(metricsCurrentRouteName, routePattern);
                     }
                 }
 

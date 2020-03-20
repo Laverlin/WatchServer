@@ -2,7 +2,6 @@
 using System.Net;
 using System.Threading.Tasks;
 using App.Metrics;
-using App.Metrics.Counter;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
