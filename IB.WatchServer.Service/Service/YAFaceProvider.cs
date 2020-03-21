@@ -24,7 +24,7 @@ namespace IB.WatchServer.Service.Service
     /// <summary>
     /// Provider for the Watch Face services
     /// </summary>
-    public class YAFaceProvider
+    public class YAFaceProvider : IYAFaceProvider
     {
         private readonly ILogger<YAFaceProvider> _logger;
         private readonly FaceSettings _faceSettings;

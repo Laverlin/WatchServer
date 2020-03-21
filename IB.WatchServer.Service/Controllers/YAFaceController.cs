@@ -26,13 +26,13 @@ namespace IB.WatchServer.Service.Controllers
     public class YAFaceController : ControllerBase
     {
         private readonly ILogger<YAFaceController> _logger;
-        private readonly YAFaceProvider _yaFaceProvider;
+        private readonly IYAFaceProvider _yaFaceProvider;
         private readonly DataProvider _dataProvider;
         private readonly WebRequestsProvider _webRequestsProvider;
         private readonly IMetrics _metrics;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, 
+            ILogger<YAFaceController> logger, IYAFaceProvider yaFaceProvider, 
             DataProvider dataProvider, WebRequestsProvider webRequestsProvider, IMetrics metrics)
         {
             _logger = logger;
