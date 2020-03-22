@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity.Settings;
@@ -26,6 +27,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
         protected override IHostBuilder CreateHostBuilder()
         {
             var builder = base.CreateHostBuilder();
+
             builder.ConfigureLogging(logging =>
             {
                 logging.ClearProviders(); // Remove other loggers
@@ -45,17 +47,18 @@ namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
     }
 
 
-    public class YAFControllerTest : IClassFixture<ServiceAppTestFixture>
+    public class YAFControllerTest : IClassFixture<ServiceAppTestFixture>, IDisposable
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
 
-
+        public void Dispose() => _factory.Output = null;
 
         public YAFControllerTest(ServiceAppTestFixture factory, ITestOutputHelper output)
         {
+            factory.Output = output;
             _factory = factory;
-            _factory.Output = output;
+            
             var dataProviderMock = new Mock<IDataProvider>();
             dataProviderMock.Setup(_ => _.CheckLastLocation(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<decimal>()))
                 .Returns(Task.FromResult("Olathe, KS"));
