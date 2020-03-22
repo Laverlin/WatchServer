@@ -58,8 +58,8 @@ namespace IB.WatchServer.Service
             // services
             //
             services.AddSingleton<DataConnectionFactory>();
-            services.AddScoped<YAFaceProvider>();
-            services.AddScoped<DataProvider>();
+            services.AddScoped<IYAFaceProvider, YAFaceProvider>();
+            services.AddScoped<IDataProvider, DataProvider>();
             services.AddScoped<WebRequestsProvider>();
             services.AddScoped<RequestRateLimit>();
 

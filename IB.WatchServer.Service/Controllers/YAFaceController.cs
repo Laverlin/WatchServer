@@ -26,14 +26,14 @@ namespace IB.WatchServer.Service.Controllers
     public class YAFaceController : ControllerBase
     {
         private readonly ILogger<YAFaceController> _logger;
-        private readonly YAFaceProvider _yaFaceProvider;
-        private readonly DataProvider _dataProvider;
+        private readonly IYAFaceProvider _yaFaceProvider;
+        private readonly IDataProvider _dataProvider;
         private readonly WebRequestsProvider _webRequestsProvider;
         private readonly IMetrics _metrics;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, YAFaceProvider yaFaceProvider, 
-            DataProvider dataProvider, WebRequestsProvider webRequestsProvider, IMetrics metrics)
+            ILogger<YAFaceController> logger, IYAFaceProvider yaFaceProvider, 
+            IDataProvider dataProvider, WebRequestsProvider webRequestsProvider, IMetrics metrics)
         {
             _logger = logger;
             _yaFaceProvider = yaFaceProvider;
@@ -75,7 +75,7 @@ namespace IB.WatchServer.Service.Controllers
                     : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
                 weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
-                await _yaFaceProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
+                await _dataProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
                 weatherResponse.CityName = weatherResponse.CityName.StripDiacritics();
 
                 _logger.LogInformation(
@@ -162,7 +162,7 @@ namespace IB.WatchServer.Service.Controllers
 
         private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
         {
-            var cityName = await _yaFaceProvider.CheckLastLocation(
+            var cityName = await _dataProvider.CheckLastLocation(
                                watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon)) ?? 
                            await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon);
 

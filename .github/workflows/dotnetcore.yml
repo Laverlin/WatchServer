@@ -15,5 +15,5 @@ jobs:
         dotnet-version: '3.1.101'
     - name: Build with dotnet
       run: dotnet build --configuration Release
-    - name: Run MS tests
+    - name: Run XUnit tests
       run: dotnet test

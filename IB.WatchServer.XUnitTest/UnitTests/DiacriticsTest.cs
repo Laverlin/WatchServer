@@ -1,27 +1,26 @@
 ﻿using IB.WatchServer.Service.Infrastructure;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
-namespace IB.WatchServer.Test
+namespace IB.WatchServer.XUnitTest.UnitTests
 {
-    [TestClass]
     public class DiacriticsTest
     {
-        [TestMethod]
+        [Fact]
         public void FrenchAcsonsShouldBeRemoved()
         {
             var uCity = "crème brûlée";
             var city = uCity.StripDiacritics();
 
-            Assert.AreEqual("creme brulee", city);
+            Assert.Equal("creme brulee", city);
         }
 
-        [TestMethod]
+        [Fact]
         public void NullShouldReturnNull()
         {
             string uCity = null;
             var city = uCity.StripDiacritics();
 
-            Assert.IsNull(city);
+            Assert.Null(city);
         }
     }
 }
