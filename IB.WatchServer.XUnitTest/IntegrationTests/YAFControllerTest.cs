@@ -4,57 +4,23 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Service;
-using IB.WatchServer.XUnitTest.ControllerTests;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Contrib.HttpClient;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
+namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
-    public class ServiceAppTestFixture : WebApplicationFactory<Service.Program>
-    {
-        public ITestOutputHelper Output { get; set; }
-
-        // Uses the generic host
-        protected override IHostBuilder CreateHostBuilder()
-        {
-            var builder = base.CreateHostBuilder();
-
-            builder.ConfigureLogging(logging =>
-            {
-                logging.ClearProviders(); // Remove other loggers
-                logging.AddXUnit(Output); // Use the ITestOutputHelper instance
-            });
-
-            return builder;
-        }
-
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
-        {
-            builder.ConfigureTestServices((services) =>
-            {
-                services.RemoveAll(typeof(IHostedService));
-            });
-        }
-    }
-
-
-    public class YAFControllerTest : IClassFixture<ServiceAppTestFixture>, IDisposable
+    public class YafControllerTest : IClassFixture<ServiceAppTestFixture>, IDisposable
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
 
         public void Dispose() => _factory.Output = null;
 
-        public YAFControllerTest(ServiceAppTestFixture factory, ITestOutputHelper output)
+        public YafControllerTest(ServiceAppTestFixture factory, ITestOutputHelper output)
         {
             factory.Output = output;
             _factory = factory;
@@ -79,23 +45,19 @@ namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl("38.855652", "-94.799712"))
                 .ReturnsResponse(locationResponse, "application/json");
 
-
-
             var httpFactory = handler.CreateClientFactory();
 
             _client = _factory.WithWebHostBuilder(builder =>
                 {
                     builder.ConfigureTestServices(services =>
                     {
-
                         services.AddSingleton(_ => httpFactory);
-                        services.AddScoped<IDataProvider>(_ => dataProviderMock.Object);
+                        services.AddScoped(_ => dataProviderMock.Object);
                     });
+                    
                 })
                 .CreateClient();
         }
-
-
 
         [Theory]
         [InlineData("/api/v1/YAFace/Location")]
@@ -111,6 +73,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
             var response = await _client.GetAsync(url);
 
             // Assert
+            //
             response.EnsureSuccessStatusCode(); // Status Code 200-299
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
@@ -132,7 +95,6 @@ namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
                 CityName = "Olathe, KS"
             };
             var expectedJson = JsonSerializer.Serialize(expected);
-
 
             // Act
             //
@@ -164,7 +126,6 @@ namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
             };
             var expectedJson = JsonSerializer.Serialize(expected);
 
-
             // Act
             //
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
@@ -177,6 +138,5 @@ namespace IB.WatchServer.XUnitTest.IntegrationControllerTests
             response.EnsureSuccessStatusCode(); // Status Code 200-299
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
-
     }
 }
