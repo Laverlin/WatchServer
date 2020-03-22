@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Service.Entity.V1;
+using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +19,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
+        private WatchFaceRequest _watchFaceRequest;
 
         public void Dispose() => _factory.Output = null;
 
@@ -28,6 +31,9 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var dataProviderMock = new Mock<IDataProvider>();
             dataProviderMock.Setup(_ => _.CheckLastLocation(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<decimal>()))
                 .Returns(Task.FromResult("Olathe, KS"));
+            dataProviderMock.Setup(_ => _.SaveRequestInfo(
+                    It.IsAny<RequestType>(), It.IsAny<WatchFaceRequest>(), It.IsAny<Service.Entity.V1.WeatherResponse>()))
+                .Callback<RequestType, WatchFaceRequest, Service.Entity.V1.WeatherResponse>((rt, wfr, wr) => _watchFaceRequest = wfr);
 
             var faceSettings = _factory.Services.GetRequiredService<FaceSettings>();
             var openWeatherResponse =
@@ -106,6 +112,11 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             response.EnsureSuccessStatusCode(); // Status Code 200-299
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+            Assert.Equal("unknown", _watchFaceRequest.DeviceName);
+            Assert.Equal("0.9.204", _watchFaceRequest.Version);
+            Assert.Equal("5.0", _watchFaceRequest.Framework);
+            Assert.Equal("OpenWeather", _watchFaceRequest.WeatherProvider);
+            Assert.Equal("test-device2", _watchFaceRequest.DeviceId);
         }
 
         [Fact]
@@ -137,6 +148,13 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             response.EnsureSuccessStatusCode(); // Status Code 200-299
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+            Assert.Equal("unknown", _watchFaceRequest.DeviceName);
+            Assert.Equal("0.9.208", _watchFaceRequest.Version);
+            Assert.Equal("5.0", _watchFaceRequest.Framework);
+            Assert.Equal("DarkSky", _watchFaceRequest.WeatherProvider);
+            Assert.Equal("fake-key", _watchFaceRequest.DarkskyKey);
+            Assert.Equal("test-device1", _watchFaceRequest.DeviceId);
+
         }
     }
 }
