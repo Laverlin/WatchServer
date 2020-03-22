@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.V1;
 using IB.WatchServer.Service.Entity.WatchFace;
@@ -48,6 +50,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 .ReturnsResponse(openWeatherResponse, "application/json");
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl("38.855652", "-94.799712", "fake-key"))
                 .ReturnsResponse(darkSkyResponse, "application/json");
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl("38.855652", "-94.799712", "wrong-key"))
+                .ReturnsResponse(HttpStatusCode.Unauthorized);
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl("38.855652", "-94.799712"))
                 .ReturnsResponse(locationResponse, "application/json");
 
@@ -154,6 +158,33 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             Assert.Equal("DarkSky", _watchFaceRequest.WeatherProvider);
             Assert.Equal("fake-key", _watchFaceRequest.DarkskyKey);
             Assert.Equal("test-device1", _watchFaceRequest.DeviceId);
+
+        }
+
+        [Fact]
+        public async Task DarkSkyRequestWithWrongKeyShouldReturn403()
+        {
+            // Arrange
+            //
+            var expected = new ErrorResponse
+            {
+                StatusCode = 403,
+                Description = "Forbidden"
+            };
+            var expectedJson = JsonSerializer.Serialize(expected);
+
+            // Act
+            //
+            var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
+            var url =
+                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device3&dname=unknown&v=0.9.208&lat=38.855652&lon=-94.799712&wapiKey=wrong-key&wp=DarkSky&fw=5.0&ciqv=3.1.6";
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            //
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode); // Status Code 403
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+
 
         }
     }

@@ -9,9 +9,6 @@ using App.Metrics;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 
-using LinqToDB;
-using LinqToDB.Data;
-
 using IB.WatchServer.Service.Infrastructure;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Options;
