@@ -1,7 +1,8 @@
 ﻿
+using System.Text.Json.Serialization;
 using IB.WatchServer.Service.Entity;
 
-namespace IB.WatchServer.Test.ControllerTest
+namespace IB.WatchServer.XUnitTest.ControllerTests
 {
     /// <summary>
     /// Represents the location description
@@ -11,6 +12,7 @@ namespace IB.WatchServer.Test.ControllerTest
         /// <summary>
         /// The Name of the plase 
         /// </summary>
+        [JsonPropertyName("cityName")]
         public string CityName { get; set; }
     }
 }

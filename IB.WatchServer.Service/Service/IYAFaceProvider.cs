@@ -14,15 +14,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Location name</returns>
         Task<string> RequestLocationName(string lat, string lon);
 
-        /// <summary>
-        /// Search in DB the last location of this device. If location is the same then City name will be returned,
-        /// otherwise null
-        /// </summary>
-        /// <param name="deviceId">Garmin device id</param>
-        /// <param name="latitude"></param>
-        /// <param name="longitude"></param>
-        /// <returns>City name or null</returns>
-        Task<string> CheckLastLocation(string deviceId, decimal latitude, decimal longitude);
+
 
         /// <summary>
         /// Request weather info on DarkSky weather provider
@@ -41,12 +33,5 @@ namespace IB.WatchServer.Service.Service
         /// <returns>Weather conditions for the specified coordinates <see cref="WeatherResponse"/></returns>
         Task<WeatherResponse> RequestOpenWeather(string lat, string lon);
 
-        /// <summary>
-        /// Store Weather Request and response info in DB
-        /// </summary>
-        /// <param name="requestType"></param>
-        /// <param name="watchFaceRequest">location data</param>
-        /// <param name="weatherResponse">weather response</param>
-        Task SaveRequestInfo(RequestType requestType, WatchFaceRequest watchFaceRequest, WeatherResponse weatherResponse);
     }
 }

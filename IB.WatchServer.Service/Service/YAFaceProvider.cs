@@ -75,28 +75,6 @@ namespace IB.WatchServer.Service.Service
             return city;
         }
 
-        /// <summary>
-        /// Search in DB the last location of this device. If location is the same then City name will be returned,
-        /// otherwise null
-        /// </summary>
-        /// <param name="deviceId">Garmin device id</param>
-        /// <param name="latitude"></param>
-        /// <param name="longitude"></param>
-        /// <returns>City name or null</returns>
-        public async Task<string> CheckLastLocation(string deviceId, decimal latitude, decimal longitude)
-        {
-            await using var db = _dbFactory.Create();
-            var city = await db.GetTable<RequestData>().Where(c => c.RequestTime != null)
-                .Join(db.GetTable<DeviceData>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
-                    (c, d) => new {c.CityName, c.Lat, c.Lon, c.RequestTime})
-                .OrderByDescending(c => c.RequestTime).Take(1)
-                .Where(c => c.Lat == latitude && c.Lon == longitude)
-                .SingleOrDefaultAsync();
-            if (city == null) return null;
-
-            _metrics.LocationIncrement("cache", SourceType.Database);
-            return city.CityName;
-        }
 
         /// <summary>
         /// Request weather info on DarkSky weather provider
@@ -111,7 +89,8 @@ namespace IB.WatchServer.Service.Service
             _metrics.WeatherIncrement(providerName, SourceType.Remote);
 
             var client = _clientFactory.CreateClient();
-            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat, lon, token));
+            var dsUrl = _faceSettings.BuildDarkSkyUrl(lat, lon, token);
+            using var response = await client.GetAsync(dsUrl);
             if (!response.IsSuccessStatusCode)
             { 
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -178,30 +157,6 @@ namespace IB.WatchServer.Service.Service
         }
 
 
-        /// <summary>
-        /// Store Weather Request and response info in DB
-        /// </summary>
-        /// <param name="requestType"></param>
-        /// <param name="watchFaceRequest">location data</param>
-        /// <param name="weatherResponse">weather response</param>
-        public async Task SaveRequestInfo(RequestType requestType, WatchFaceRequest watchFaceRequest, WeatherResponse weatherResponse)
-        {
-            await using var db = _dbFactory.Create();
-            var deviceInfo = db.QueryProc<DeviceData>(
-                    "add_device",
-                    new DataParameter("device_id", watchFaceRequest.DeviceId ?? "unknown"),
-                    new DataParameter("device_name", watchFaceRequest.DeviceName))
-                .Single();
 
-            var requestInfo = _mapper.Map<RequestData>(watchFaceRequest);
-            requestInfo = _mapper.Map(weatherResponse, requestInfo);
-            requestInfo.DeviceInfoId = deviceInfo.Id;
-            requestInfo.RequestTime = DateTime.UtcNow;
-            requestInfo.RequestType = requestType;
-
-            await db.GetTable<RequestData>().DataContext.InsertAsync(requestInfo);
-
-            _logger.LogDebug("{@requestInfo}", requestInfo);
-        }
     }
 }

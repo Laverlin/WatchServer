@@ -1,9 +1,9 @@
+using System.ComponentModel;
 using IB.WatchServer.Service.Entity.Settings;
 using LinqToDB.DataProvider;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.ComponentModel;
+using Xunit;
 
-namespace IB.WatchServer.Test
+namespace IB.WatchServer.XUnitTest.UnitTests
 {
 
     public class MockConnectionSettings : IConnectionSettings
@@ -33,10 +33,9 @@ namespace IB.WatchServer.Test
         public int PropertyThree { get; set; }
     }
 
-    [TestClass]
     public class Linq2DBInfrastructureTests
     {
-        [TestMethod]
+        [Fact]
         public void GetConnectionStringShouldReturnStringWithAllPropertiesWithValue()
         {
             IConnectionSettings mockSettings = new MockConnectionSettings
@@ -48,10 +47,10 @@ namespace IB.WatchServer.Test
 
             var connectionString = mockSettings.BuildConnectionString();
 
-            Assert.AreEqual("PropertyOne=one;PropertyTwo=True;PropertyThree=3;", connectionString);
+            Assert.Equal("PropertyOne=one;PropertyTwo=True;PropertyThree=3;", connectionString);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetConnectionStringShouldReturnStringWhereNullPropertiesIgnored()
         {
             IConnectionSettings mockSettings = new MockConnectionSettings
@@ -62,10 +61,10 @@ namespace IB.WatchServer.Test
 
             var connectionString = mockSettings.BuildConnectionString();
 
-            Assert.AreEqual("PropertyOne=one;PropertyThree=3;", connectionString);
+            Assert.Equal("PropertyOne=one;PropertyThree=3;", connectionString);
         }
 
-        [TestMethod]
+        [Fact]
         public void GetConnectionStringShouldReturnPropertyNameChangedByDisplayName()
         {
             IConnectionSettings mockSettings = new MockConnectionSettingsWithDisplayName
@@ -77,7 +76,7 @@ namespace IB.WatchServer.Test
 
             var connectionString = mockSettings.BuildConnectionString();
 
-            Assert.AreEqual("property-one=one;property-two=False;property-three=3;", connectionString);
+            Assert.Equal("property-one=one;property-two=False;property-three=3;", connectionString);
         }
 
     }

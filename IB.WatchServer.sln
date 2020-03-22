@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IB.WatchServer.Service", "IB.WatchServer.Service\IB.WatchServer.Service.csproj", "{C8AD0E04-908C-4614-B535-3E6B2071A1D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IB.WatchServer.Test", "IB.WatchServer.Test\IB.WatchServer.Test.csproj", "{4AC08DAB-5396-4785-B5E6-A5E50A8CD41F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IB.WatchServer.XUnitTest", "IB.WatchServer.XUnitTest\IB.WatchServer.XUnitTest.csproj", "{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{C8AD0E04-908C-4614-B535-3E6B2071A1D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8AD0E04-908C-4614-B535-3E6B2071A1D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8AD0E04-908C-4614-B535-3E6B2071A1D9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4AC08DAB-5396-4785-B5E6-A5E50A8CD41F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4AC08DAB-5396-4785-B5E6-A5E50A8CD41F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4AC08DAB-5396-4785-B5E6-A5E50A8CD41F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4AC08DAB-5396-4785-B5E6-A5E50A8CD41F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
