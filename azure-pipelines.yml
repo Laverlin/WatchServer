@@ -19,5 +19,6 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
-- script: dotnet test 
-  displayName: 'run tests'
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
