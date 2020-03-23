@@ -45,15 +45,20 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var locationResponse =
                 "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, KS\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, KS\",\"locality\": \"Olathe\"}}]}]}";
 
+            var lat = "38.855652";
+            var lon = "-94.799712";
+
             var handler = new Mock<HttpMessageHandler>();
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl("38.855652", "-94.799712"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(lat, lon))
                 .ReturnsResponse(openWeatherResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl("38.855652", "-94.799712", "fake-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(lat, lon, "fake-key"))
                 .ReturnsResponse(darkSkyResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl("38.855652", "-94.799712", "wrong-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(lat, lon, "wrong-key"))
                 .ReturnsResponse(HttpStatusCode.Unauthorized);
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl("38.855652", "-94.799712"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(lat, lon))
                 .ReturnsResponse(locationResponse, "application/json");
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(null, null))
+                .ReturnsResponse(HttpStatusCode.BadRequest);
 
             var httpFactory = handler.CreateClientFactory();
 
@@ -184,8 +189,57 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode); // Status Code 403
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+        }
 
+        [Fact]
+        public async Task NullRequestShouldReturn400()
+        {
+            // Arrange
+            //
+            var expected = new ErrorResponse
+            {
+                StatusCode = 400,
+                Description = "Bad request"
+            };
+            var expectedJson = JsonSerializer.Serialize(expected);
 
+            // Act
+            //
+            var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
+            var url =
+                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device4";
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            //
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode); // Status Code 400
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task NextRequestWithTheSameDeviceWithin5SecShouldReturn429()
+        {
+            // Arrange
+            //
+            var expected = new ErrorResponse
+            {
+                StatusCode = 429,
+                Description = "Too many requests, retry after 5"
+            };
+            var expectedJson = JsonSerializer.Serialize(expected);
+
+            // Act
+            //
+            var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
+            var url =
+                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device5";
+            await _client.GetAsync(url);
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            //
+            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode); // Status Code 429
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
     }
 }
