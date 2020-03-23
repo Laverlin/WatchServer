@@ -25,7 +25,7 @@ steps:
 - task: DotNetCoreCLI@2
   inputs:
     command: test
-    projects: "**/*Tests/*.csproj"
+    projects: "**/*XUnitTest/*.csproj"
     arguments: -c $(BuildConfiguration) --collect:"XPlat Code Coverage" 
   displayName: Run Tests
 
