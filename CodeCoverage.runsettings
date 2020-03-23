@@ -11,11 +11,11 @@
             <!-- Match assembly file paths: -->
             <ModulePaths>
               <Include>
-                <ModulePath>.*\*IB.WatchServer*.dll$</ModulePath>
-                <ModulePath>.*\*IB.WatchServer*.exe$</ModulePath>
+                <ModulePath>.*\*IB.WatchServer.dll$</ModulePath>
+                <ModulePath>.*\*IB.WatchServer.exe$</ModulePath>
               </Include>
               <Exclude>
-                <ModulePath>.*protobuf-net.*</ModulePath>
+                <ModulePath>.*protobuf-net*</ModulePath>
               </Exclude>
             </ModulePaths>
 
