@@ -23,11 +23,11 @@ steps:
 # to generate the code coverage file
 #
 - task: DotNetCoreCLI@2
-  displayName: dotnet test
   inputs:
     command: test
-    arguments: '--configuration $(BuildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
-    nobuild: true
+    arguments: -c $(BuildConfiguration) --collect:"XPlat Code Coverage" 
+  displayName: Run Tests
+
 
 # Generate the report using ReportGenerator (https://github.com/danielpalme/ReportGenerator)
 # First install the tool on the machine, then run it
