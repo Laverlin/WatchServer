@@ -30,10 +30,10 @@ jobs:
       foreach($projFile in $projFiles)
       {
         [xml]$projXml = Get-Content -Path $projFile
-	    $projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
+        $projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
         $projXml.Save($projFile)
       }
-
+    displayName: 'write version'
 
   - task: Docker@2
     displayName: Build an image
