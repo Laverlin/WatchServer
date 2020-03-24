@@ -19,7 +19,7 @@ steps:
 # Build new assembly version 
 #
 - bash: |
-    export VERSION=1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`
+    echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
     echo "version $VERSION"
 
 #- task: Bash@3
