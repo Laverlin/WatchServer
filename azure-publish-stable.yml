@@ -26,7 +26,7 @@ jobs:
       $day = (Get-Date).DayOfYear
       $version = & git rev-list --count HEAD
       $fullVersion = "1.$year.$day.$version"
-      $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *.csproj -Recurse
+      $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *Service.csproj -Recurse
       foreach($projFile in $projFiles)
       {
         Write-Host "Writing version $fullVersion in $projFile"
