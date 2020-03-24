@@ -19,7 +19,15 @@ steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
 
-# Run all tests with "/p:CollectCoverage=true /p:CoverletOutputFormat=cobertura" 
+  # Looks weird, but I have to delete protobuf-net.dll as there is no other options to exclude it from test coverage
+  #
+  steps:
+  - task: Bash@3
+    inputs:
+      targetType: 'inline'
+      script: ls | grep -P "$(System.DefaultWorkingDirectory).*XUnitTest.*protobuf-net\.dll$" | xargs -d "\n" rm -fv
+
+# Run all tests with 
 # to generate the code coverage file
 #
 - task: DotNetCoreCLI@2
