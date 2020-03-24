@@ -28,19 +28,17 @@ jobs:
       {
         Write-Host "Writing version $fullVersion in $projFile"
         [xml]$projXml = Get-Content -Path $projFile
-        $versionNode = $projXml.Project.PropertyGroup.AssemblyVersion
-        Write-Host "current $versionNode"
         $projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
         $projXml.Save($projFile)
       }
       Write-Host "##vso[task.setvariable variable=VERSION;]$fullVersion"
-    displayName: 'write version'
+    displayName: 'Write assembly version'
 
   - task: Docker@2
     displayName: Build an image
     inputs:
       containerRegistry: 'DockerHub'
-      repository: 'ilaverlin/watchserver-test'
+      repository: 'ilaverlin/watch-server'
       command: 'buildAndPush'
       dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
       buildContext: '$(Build.SourcesDirectory)'
