@@ -12,22 +12,36 @@ jobs:
 - template: azure-build-test.yml
 
 - job: deploy
+  dependsOn: build
 
   pool: 
     vmImage: 'ubuntu-latest'
 
-  variables:
-    tag: '$(Build.BuildId)'
-
   steps:
+  - pwsh: |
+      $year = Get-Date -Format yy
+      $day = (Get-Date).DayOfYear
+      $version = & git rev-list --count HEAD
+      $fullVersion = "1.$year.$day.$version"
+      $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *Service.csproj -Recurse
+      foreach($projFile in $projFiles)
+      {
+        Write-Host "Writing version $fullVersion in $projFile"
+        [xml]$projXml = Get-Content -Path $projFile
+        $projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
+        $projXml.Save($projFile)
+      }
+      Write-Host "##vso[task.setvariable variable=VERSION;]$fullVersion"
+    displayName: 'Write assembly version'
+
   - task: Docker@2
     displayName: Build an image
     inputs:
       containerRegistry: 'DockerHub'
-      repository: 'ilaverlin/watchserver-test'
+      repository: 'ilaverlin/watch-server'
       command: 'buildAndPush'
       dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
       buildContext: '$(Build.SourcesDirectory)'
       tags: |
         latest
-        $(tag)
+        $(VERSION)
