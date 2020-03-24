@@ -31,6 +31,8 @@ jobs:
       {
         Write-Host "Writing version $fullVersion in $projFile"
         [xml]$projXml = Get-Content -Path $projFile
+        $versionNode = $projXml.Project.PropertyGroup.AssemblyVersion
+        Write-Host "current $versionNode"
         $projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
         $projXml.Save($projFile)
       }
