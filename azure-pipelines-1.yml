@@ -24,7 +24,7 @@ jobs:
     displayName: Build an image
     inputs:
       containerRegistry: 'DockerHub'
-      repository: 'WatchServer-Test'
+      repository: 'ilaverlin/watchserver-test'
       command: 'buildAndPush'
       dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
       buildContext: '$(Build.SourcesDirectory)'
