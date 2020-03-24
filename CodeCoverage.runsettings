@@ -12,7 +12,7 @@
               <Include>
               </Include>
               <Exclude>
-                <ModulePath>.*protobuf-net\.dll$</ModulePath>
+                <ModulePath>.*protobuf-net.dll$</ModulePath>
               </Exclude>
             </ModulePaths>
 
