@@ -24,12 +24,11 @@ jobs:
   - pwsh: |
       $year = Get-Date -Format yy
       $day = (Get-Date).DayOfYear
-      $version = & git rev-list --count $branch
+      $version = & git rev-list --count HEAD
       $fullVersion = "1.$year.$day.$version"
-      $projFiles = Get-Childitem -Path $currentDir\.. -Include *.csproj -Recurse
+      $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *.csproj -Recurse
       foreach($projFile in $projFiles)
       {
-        Write-Host "Writing version $fullVersion in $projFile" -ForegroundColor $consoleColor
         [xml]$projXml = Get-Content -Path $projFile
 	    $projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
         $projXml.Save($projFile)
