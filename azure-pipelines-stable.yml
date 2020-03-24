@@ -1,12 +1,5 @@
 trigger:
-  batch: true
-  branches:
-    include:
-    - stable
-  paths:
-    exclude:
-    - README.md
-    - LICENSE
+- stable
 
 jobs:
 - template: azure-build-test.yml
