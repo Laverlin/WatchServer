@@ -24,7 +24,8 @@ steps:
 - task: Bash@3
   inputs:
     targetType: 'inline'
-    script: ls | grep -P ".*protobuf-net.dll$" | xargs -d "\n" sudo rm -fv
+    script: sudo rm -fv $(System.DefaultWorkingDirectory)/IB.WatchServer.XUnitTest/bin/$(BuildConfiguration)/netcoreapp3.1/protobuf-net.dll
+    #script: ls | grep -P ".*protobuf-net.dll$" | xargs -d "\n" sudo rm -fv
 
 # Run all tests with 
 # to generate the code coverage file
