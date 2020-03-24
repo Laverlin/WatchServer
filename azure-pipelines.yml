@@ -5,6 +5,10 @@
 
 trigger:
 - master
+  paths:
+    exclude:
+    - README.md
+    - LICENSE
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -20,18 +24,12 @@ steps:
 #
 - bash: |
     echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
-    echo "version $VERSION"
-
-#- task: Bash@3
-#  displayName: 'build assembly version'
-#  inputs:
-#    targetType: 'inline'
-#    script: export VERSION=1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD` 
+    echo "build assembly version $VERSION"
 
 # Build the solution
 #
 - script: dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(VERSION)
-  displayName: 'dotnet build $(buildConfiguration), assembly version: $(VERSION)' 
+  displayName: 'dotnet build $(buildConfiguration)' 
 
 # Looks weird, but I have to delete protobuf-net.dll as there is no other options to exclude it from test coverage
 #
