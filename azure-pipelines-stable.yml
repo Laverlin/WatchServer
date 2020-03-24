@@ -1,0 +1,27 @@
+trigger:
+  batch: true
+  branches:
+    include:
+    - stable
+  paths:
+    exclude:
+    - README.md
+    - LICENSE
+
+jobs:
+- template: azure-build-test.yml
+
+- job: deploy
+
+  pool: vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'DockerHub'
+      repository: 'WatchServer-Test'
+      command: 'buildAndPush'
+      Dockerfile: '**/Dockerfile'
+      tags: |
+        latest
+        $(Build.BuildId)
