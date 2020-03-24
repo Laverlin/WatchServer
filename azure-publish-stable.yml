@@ -12,6 +12,7 @@ jobs:
 - template: azure-build-test.yml
 
 - job: deploy
+  dependsOn: build
 
   pool: 
     vmImage: 'ubuntu-latest'
