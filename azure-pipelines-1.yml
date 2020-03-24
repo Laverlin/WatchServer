@@ -27,6 +27,8 @@ jobs:
       repository: 'WatchServer-Test'
       command: 'buildAndPush'
       dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
+      buildContext: '$(Build.SourcesDirectory)'
       tags: |
         latest
         $(tag)
+
