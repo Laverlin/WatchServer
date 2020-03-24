@@ -19,14 +19,14 @@ jobs:
   variables:
     tag: '$(Build.BuildId)'
 
-    steps:
-    - task: Docker@2
-      displayName: Build an image
-      inputs:
-        containerRegistry: 'DockerHub'
-        repository: 'WatchServer-Test'
-        command: 'buildAndPush'
-        dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
-        tags: |
-          latest
-          $(tag)
+  steps:
+  - task: Docker@2
+    displayName: Build an image
+    inputs:
+      containerRegistry: 'DockerHub'
+      repository: 'WatchServer-Test'
+      command: 'buildAndPush'
+      dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
+      tags: |
+        latest
+        $(tag)
