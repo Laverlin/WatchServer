@@ -5,9 +5,6 @@
 trigger:
 - stable
 
-resources:
-- repo: self
-
 jobs:
 - template: azure-build-test.yml
 
