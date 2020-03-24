@@ -15,7 +15,8 @@ jobs:
 # Build new assembly version 
 #
   - bash: |
-    echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
+      echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
+      echo "build assembly version $VERSION"
 
 # Build the solution
 #
