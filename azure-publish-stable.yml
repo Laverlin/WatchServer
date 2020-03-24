@@ -29,6 +29,7 @@ jobs:
       $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *.csproj -Recurse
       foreach($projFile in $projFiles)
       {
+        Write-Host "Writing version $fullVersion in $projFile"
         [xml]$projXml = Get-Content -Path $projFile
         $projXml.Project.PropertyGroup.AssemblyVersion = $fullVersion
         $projXml.Save($projFile)
