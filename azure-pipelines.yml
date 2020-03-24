@@ -13,5 +13,5 @@ trigger:
     - README.md
     - LICENSE
 
-extends:
-    template: azure-build-test.yml
+jobs:
+- template: azure-build-test.yml
