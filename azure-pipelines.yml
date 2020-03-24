@@ -21,7 +21,6 @@ steps:
 - bash: |
     export VERSION=1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`
     echo "version $VERSION"
-    displayName: 'build assembly version'
 
 #- task: Bash@3
 #  displayName: 'build assembly version'
