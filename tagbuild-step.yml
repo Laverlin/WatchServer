@@ -6,5 +6,5 @@ parameters:
 steps:
 - script: |
     git -C $(Build.SourcesDirectory) tag '$(Version)'
-    git -C $(Build.SourcesDirectory) -c http.extraheader='AUTHORIZATION: bearer $(System.AccessToken)' push origin '$(Version)'
-  displayName: 'tag build: $(Version)'
+    git -C $(Build.SourcesDirectory) -c http.extraheader='AUTHORIZATION: bearer $(System.AccessToken)' push https://github.com/Laverlin/WatchServer.git '$(Version)'
+  displayName: 'tag build'
