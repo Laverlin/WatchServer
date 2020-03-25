@@ -20,7 +20,8 @@ jobs:
 #
   - bash: |
       echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
-      echo "build assembly version $VERSION, full version $VERSION-$(VersionSuffix)"
+      echo "##vso[task.setvariable variable=FullVersion]$VERSION-$(VersionSuffix)"
+      echo "build assembly version $VERSION, full version $FullVersion"
 
 # Build the solution
 #
@@ -67,6 +68,6 @@ jobs:
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - template: tagbuild-step.yml  # Template reference
       parameters:
-        Version: '$(VERSION)-$(VersionSuffix)'
+        Version: $FullVersion
     
 
