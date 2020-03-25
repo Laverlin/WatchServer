@@ -8,5 +8,5 @@ steps:
     git config user.email 'ilaverlin@gmail.com'
     git config user.name 'Azure pipeline publisher'
     git -C $(Build.SourcesDirectory) tag '$(Version)'
-    git -C $(Build.SourcesDirectory) push https://github.com/Laverlin/WatchServer.git '$(Version)'
+    git -C $(Build.SourcesDirectory) push https://$(GitHubPAT)@github.com/Laverlin/WatchServer.git '$(Version)'
   displayName: 'tag build'
