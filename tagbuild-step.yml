@@ -3,13 +3,10 @@ parameters:
   type: string
   default: 'dev'
 
-variables:
-- group: sec
-
 steps:
 - script: bash |
     git config user.email 'ilaverlin@gmail.com'
     git config user.name 'Azure pipeline publisher'
     git -C $(Build.SourcesDirectory) tag '$(Version)'
-    git -C $(Build.SourcesDirectory) push https://$(GitHubPAT)@github.com/Laverlin/WatchServer.git '$(Version)'
-  displayName: 'tag build'
+    git -C $(Build.SourcesDirectory) push https://$(GithubPAT)@github.com/Laverlin/WatchServer.git '$(Version)'
+  displayName: 'Tag build'
