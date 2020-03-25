@@ -6,5 +6,5 @@ parameters:
 steps:
 - script: |
     git -C $(Build.SourcesDirectory) tag '$(Version)'
-    git -C $(Build.SourcesDirectory) push origin '$(Version)'
+    git -C $(Build.SourcesDirectory) push $(Build.Repository.Uri) '$(Version)'
   displayName: 'tag build: $(Version)'
