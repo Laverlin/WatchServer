@@ -7,6 +7,7 @@ jobs:
 
   variables:
     buildConfiguration: 'Release'
+    VersionSuffix: 'dev'
 
   steps:
   - script: dotnet restore
@@ -20,7 +21,7 @@ jobs:
 
 # Build the solution
 #
-  - script: dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(VERSION)
+  - script: dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(VERSION) /p:VersionPrefix=$(VERSION) /p:VersionSuffix=$(VersionSuffix)
     displayName: 'dotnet build $(buildConfiguration)' 
 
 # Looks weird, but I have to delete protobuf-net.dll as there is no other options to exclude it from test coverage
@@ -59,3 +60,9 @@ jobs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
       reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
+
+  - template: tagbuild-step.yml  # Template reference
+    parameters:
+        Version: $(VERSION)-$(VersionSuffix)
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/master')
+

@@ -1,0 +1,10 @@
+parameters:
+- name: Version
+  type: string
+  default: 'dev'
+
+steps:
+- script: |
+    git tag '$(Version)'
+    git push tag '$(Version)'
+  displayName: 'tag build: $(Version)'
