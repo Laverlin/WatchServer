@@ -1,0 +1,17 @@
+# 
+# Master build pipeline
+#
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - README.md
+    - LICENSE
+
+extends:
+  template: azure-build-publish-pipeline.yml
+
