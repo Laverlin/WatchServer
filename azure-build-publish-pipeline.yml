@@ -105,7 +105,7 @@ steps:
     summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
     reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
 
-# Tag build in master branch
+# Tag build in master branch after successful build
 #
 - bash: |
     echo 'tagging build: $(fullVersion)'
@@ -114,6 +114,9 @@ steps:
   condition:  and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
   displayName: 'Tag build in master branch'
 
+
+# Build and publish docker container 
+#
 - task: Docker@2
   displayName: 'Build & publish Docker image'
   condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'stable'))
@@ -126,3 +129,12 @@ steps:
     tags: |
       latest
       $(fullVersion)
+
+# Tag build in stable branch after successful push
+#
+- bash: |
+    echo 'tagging build: $(fullVersion)'
+    git -C $(Build.SourcesDirectory) tag '$(fullVersion)'
+    git -C $(Build.SourcesDirectory) push https://$(GithubPAT)@github.com/Laverlin/WatchServer.git '$(fullVersion)'
+  condition:  and(succeeded(), eq(variables['Build.SourceBranchName'], 'stable'))
+  displayName: 'Tag build in stable branch'
