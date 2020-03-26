@@ -124,5 +124,5 @@ steps:
     dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
     buildContext: '$(Build.SourcesDirectory)'
     tags: |
-    latest
-    $(fullVersion)
+      latest
+      $(fullVersion)
