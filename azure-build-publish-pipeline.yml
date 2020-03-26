@@ -2,8 +2,11 @@
 # Build and publish pipeline
 #
 
-variables:
-  buildConfiguration: 'Release'
+
+steps:
+
+  variables:
+    buildConfiguration: 'Release'
 
 - checkout: self
   persistCredentials: true
