@@ -9,6 +9,7 @@
     <Description>The server-side component for the Garmin watch applications</Description>
     <Copyright>Ivan Bodyagin (c) 2019</Copyright>
     <AssemblyVersion>1.20.80.111</AssemblyVersion>
+    <Version>1.20.80.111-dev-local</Version>
     <AssemblyName>IB.WatchServer</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
