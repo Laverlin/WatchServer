@@ -1,7 +1,6 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+#
+# Build and publish pipeline
+#
 
 trigger:
   batch: true
@@ -27,33 +26,38 @@ steps:
 - script: dotnet restore
   displayName: 'dotnet restore'
 
+# Define actual branch and set variables
+#
 - pwsh: |
+    Write-Host "Actual branch: $(Build.SourceBranchName)"
     if ("$(Build.SourceBranchName)" -eq "master") {
-      Write-Host "##vso[task.setvariable variable=versionSuffix;]dev"
+      $versionSuffix = "dev"
     } 
     if ("$(Build.SourceBranchName)" -eq "stable") {
-      Write-Host "##vso[task.setvariable variable=versionSuffix;]stable"
+      $versionSuffix = "stable"
     }
+    $year = Get-Date -Format yy
+    $day = (Get-Date).DayOfYear
+    $commit = & git rev-list --count HEAD
+    $version = "1.$year.$day.$commit"
+    $fullVersion = "1.$year.$day.$commit-$versionSuffix"
+    Write-Host "##vso[task.setvariable variable=version;]$version"
+    Write-Host "##vso[task.setvariable variable=fullVersion;]$fullVersion"
+  displayName: "Set variables"
 
 
 # Build new assembly version 
 #
 - pwsh: |
-    $year = Get-Date -Format yy
-    $day = (Get-Date).DayOfYear
-    $commit = & git rev-list --count HEAD
-    $version = "1.$year.$day.$commit"
-    $fullVersion = "1.$year.$day.$commit-$(versionSuffix)"
     $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *Service.csproj -Recurse
     foreach($projFile in $projFiles)
     {
       Write-Host "Writing version $fullVersion in $projFile"
       [xml]$projXml = Get-Content -Path $projFile
-      $projXml.Project.PropertyGroup.AssemblyVersion = $version
-      $projXml.Project.PropertyGroup.Version = $fullVersion
+      $projXml.Project.PropertyGroup.AssemblyVersion = $(version)
+      $projXml.Project.PropertyGroup.Version = $(fullVersion)
       $projXml.Save($projFile)
     }
-    Write-Host "##vso[task.setvariable variable=fullVersion;]$fullVersion"
   displayName: 'Write assembly version'
 
 # Build the solution
@@ -101,14 +105,24 @@ steps:
     summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
     reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
 
-# - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-# tag master branch
+# Tag build in master branch
 #
 - bash: |
-    echo 'tagging version: $(fullVersion)'
+    echo 'tagging build: $(fullVersion)'
     git -C $(Build.SourcesDirectory) tag '$(fullVersion)'
     git -C $(Build.SourcesDirectory) push https://$(GithubPAT)@github.com/Laverlin/WatchServer.git '$(fullVersion)'
   condition:  and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
   displayName: 'Tag build in master branch'
 
-
+- task: Docker@2
+  displayName: 'Build & publish Docker image'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'stable'))
+  inputs:
+    containerRegistry: 'DockerHub'
+    repository: 'ilaverlin/watch-server'
+    command: 'buildAndPush'
+    dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
+    buildContext: '$(Build.SourcesDirectory)'
+    tags: |
+    latest
+    $(fullVersion)
