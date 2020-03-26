@@ -108,7 +108,7 @@ steps:
     echo 'tagging version: $(fullVersion)'
     git -C $(Build.SourcesDirectory) tag '$(fullVersion)'
     git -C $(Build.SourcesDirectory) push https://$(GithubPAT)@github.com/Laverlin/WatchServer.git '$(fullVersion)'
-  condition: (succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+  condition:  and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
   displayName: 'Tag build in master branch'
 
 
