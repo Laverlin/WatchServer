@@ -12,6 +12,9 @@ trigger:
     - README.md
     - LICENSE
 
-extends:
-  template: azure-build-publish-pipeline.yml
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- template: azure-build-publish-pipeline.yml
 

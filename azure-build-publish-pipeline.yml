@@ -2,13 +2,9 @@
 # Build and publish pipeline
 #
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 variables:
   buildConfiguration: 'Release'
 
-steps:
 - checkout: self
   persistCredentials: true
 
