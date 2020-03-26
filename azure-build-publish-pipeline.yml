@@ -2,17 +2,6 @@
 # Build and publish pipeline
 #
 
-trigger:
-  batch: true
-  branches:
-    include:
-    - master
-    - stable
-  paths:
-    exclude:
-    - README.md
-    - LICENSE
-
 pool:
   vmImage: 'ubuntu-latest'
 
