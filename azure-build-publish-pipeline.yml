@@ -17,8 +17,8 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-  variables:
-    buildConfiguration: 'Release'
+variables:
+  buildConfiguration: 'Release'
 
 steps:
 - checkout: self
