@@ -28,10 +28,10 @@ steps:
   displayName: 'dotnet restore'
 
 - pwsh: |
-    if ("$(Build.SourceBranchName)" == "master") {
+    if ("$(Build.SourceBranchName)" -eq "master") {
       Write-Host "##vso[task.setvariable variable=versionSuffix;]dev"
     } 
-    if ("$(Build.SourceBranchName)" == "stable") {
+    if ("$(Build.SourceBranchName)" -eq "stable") {
       Write-Host "##vso[task.setvariable variable=versionSuffix;]stable"
     }
 
