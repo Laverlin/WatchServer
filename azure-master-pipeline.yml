@@ -1,12 +1,12 @@
 # 
-# Stable build pipeline
+# Master build pipeline
 #
 
 trigger:
   batch: true
   branches:
     include:
-    - stable
+    - master
   paths:
     exclude:
     - README.md
@@ -20,3 +20,4 @@ variables:
 
 steps:
 - template: azure-build-publish-pipeline.yml
+
