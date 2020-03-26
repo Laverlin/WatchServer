@@ -5,9 +5,6 @@
 
 steps:
 
-  variables:
-    buildConfiguration: 'Release'
-
 - checkout: self
   persistCredentials: true
 

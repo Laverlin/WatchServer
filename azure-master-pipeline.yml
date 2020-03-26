@@ -15,6 +15,9 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  buildConfiguration: 'Release'
+
 steps:
 - template: azure-build-publish-pipeline.yml
 
