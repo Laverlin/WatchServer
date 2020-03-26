@@ -55,7 +55,7 @@ steps:
       Write-Host "Writing version $fullVersion in $projFile"
       [xml]$projXml = Get-Content -Path $projFile
       $projXml.Project.PropertyGroup.AssemblyVersion = $(version)
-      $projXml.Project.PropertyGroup.Version = $(fullVersion)
+      $projXml.Project.PropertyGroup.Version = "$(fullVersion)"
       $projXml.Save($projFile)
     }
   displayName: 'Write assembly version'
