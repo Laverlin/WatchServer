@@ -20,8 +20,8 @@ jobs:
 #
   - bash: |
       echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
-      echo "##vso[task.setvariable variable=FullVersion]$VERSION\-$(VersionSuffix)"
-      echo "build assembly version $(VERSION), full version $(FullVersion)"
+      echo "##vso[task.setvariable variable=FullVersion]'$VERSION$(VersionSuffix)'"
+      echo "build assembly version $VERSION, suffix $(VersionSuffix) full version $FullVersion"
     displayName: 'Set variables'
 
 # Build the solution
