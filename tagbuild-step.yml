@@ -1,12 +1,10 @@
 parameters:
-- name: Version
+- name: fullVersion
   type: string
 
 steps:
 - bash: |
-    echo 'tagging version: $(Version)'
-    git config user.email 'ilaverlin@gmail.com'
-    git config user.name 'Azure pipeline publisher'
-    git -C $(Build.SourcesDirectory) tag '$(Version)'
-    git -C $(Build.SourcesDirectory) push https://$(GithubPAT)@github.com/Laverlin/WatchServer.git '$(Version)'
+    echo 'tagging version: $(fullVersion)'
+    git -C $(Build.SourcesDirectory) tag '$(fullVersion)'
+    git -C $(Build.SourcesDirectory) push https://$(GithubPAT)@github.com/Laverlin/WatchServer.git '$(fullVersion)'
   displayName: 'Tag build'
