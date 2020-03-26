@@ -1,7 +1,6 @@
 parameters:
 - name: Version
   type: string
-  default: 'dev'
 
 steps:
 - bash: |
