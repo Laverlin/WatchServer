@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace IB.WatchServer.Service.Infrastructure
 {
@@ -10,7 +11,9 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <summary>
         /// Assembly version info
         /// </summary>
-        public static string Version => Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        public static string Version => Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        
 
         /// <summary>
         /// Assembly name

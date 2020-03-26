@@ -7,20 +7,30 @@ jobs:
 
   variables:
     buildConfiguration: 'Release'
+    versionSuffix: 'dev'
 
   steps:
+  - checkout: self
+    persistCredentials: true
+
   - script: dotnet restore
     displayName: 'dotnet restore'
 
 # Build new assembly version 
 #
   - bash: |
-      echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
-      echo "build assembly version $VERSION"
+      export VERSION=1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`
+      export FULLVERSION=$VERSION-$(versionSuffix)
+      echo "##vso[task.setvariable variable=version]$VERSION"
+      echo "##vso[task.setvariable variable=fullVersion]$FULLVERSION"
+      echo "build assembly version: $VERSION, suffix: $(versionSuffix), full version: $FULLVERSION"
+    displayName: 'Set variables'
 
 # Build the solution
 #
-  - script: dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(VERSION)
+  - script: |
+      dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(version) /p:Version=$(fullVersion) /p:VersionPrefix=$(version) /p:VersionSuffix=$(versionSuffix)
+      echo "full version: $(fullVersion)"
     displayName: 'dotnet build $(buildConfiguration)' 
 
 # Looks weird, but I have to delete protobuf-net.dll as there is no other options to exclude it from test coverage
@@ -59,3 +69,10 @@ jobs:
       codeCoverageTool: Cobertura
       summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
       reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
+
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    - template: tagbuild-step.yml  # Template reference
+      parameters:
+        fullVersion: $(fullVersion)
+    
+

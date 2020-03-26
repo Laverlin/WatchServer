@@ -17,19 +17,26 @@ using Xunit.Abstractions;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
-    public class YafControllerTest : IClassFixture<ServiceAppTestFixture>, IDisposable
+    /// <summary>
+    /// Test Weather and Location methods in API 1.0
+    /// </summary>
+    public class YafControllerWeatherTest : IClassFixture<ServiceAppTestFixture>, IDisposable
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
         private WatchFaceRequest _watchFaceRequest;
+        private readonly string _lat;
+        private readonly string _lon;
 
         public void Dispose() => _factory.Output = null;
 
-        public YafControllerTest(ServiceAppTestFixture factory, ITestOutputHelper output)
+        public YafControllerWeatherTest(ServiceAppTestFixture factory, ITestOutputHelper output)
         {
             factory.Output = output;
             _factory = factory;
             
+            // Mock database
+            //
             var dataProviderMock = new Mock<IDataProvider>();
             dataProviderMock.Setup(_ => _.CheckLastLocation(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<decimal>()))
                 .Returns(Task.FromResult("Olathe, KS"));
@@ -37,6 +44,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                     It.IsAny<RequestType>(), It.IsAny<WatchFaceRequest>(), It.IsAny<Service.Entity.V1.WeatherResponse>()))
                 .Callback<RequestType, WatchFaceRequest, Service.Entity.V1.WeatherResponse>((rt, wfr, wr) => _watchFaceRequest = wfr);
 
+            // Mock web requests
+            //
             var faceSettings = _factory.Services.GetRequiredService<FaceSettings>();
             var openWeatherResponse =
                 "{\"coord\":{\"lon\":-94.8,\"lat\":38.88},\"weather\":[{\"id\":800,\"main\":\"Clear\",\"description\":\"clear sky\",\"icon\":\"01d\"}],\"base\":\"stations\",\"main\":{\"temp\":4.28,\"feels_like\":0.13,\"temp_min\":3,\"temp_max\":5.56,\"pressure\":1034,\"humidity\":51},\"visibility\":16093,\"wind\":{\"speed\":2.21,\"deg\":169},\"clouds\":{\"all\":1},\"dt\":1584811457,\"sys\":{\"type\":1,\"id\":5188,\"country\":\"US\",\"sunrise\":1584793213,\"sunset\":1584837126},\"timezone\":-18000,\"id\":4276614,\"name\":\"Olathe\",\"cod\":200}";
@@ -45,23 +54,25 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var locationResponse =
                 "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, KS\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, KS\",\"locality\": \"Olathe\"}}]}]}";
 
-            var lat = "38.855652";
-            var lon = "-94.799712";
+            _lat = "38.855652";
+            _lon = "-94.799712";
 
             var handler = new Mock<HttpMessageHandler>();
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(lat, lon))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat, _lon))
                 .ReturnsResponse(openWeatherResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(lat, lon, "fake-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "fake-key"))
                 .ReturnsResponse(darkSkyResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(lat, lon, "wrong-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "wrong-key"))
                 .ReturnsResponse(HttpStatusCode.Unauthorized);
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(lat, lon))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(_lat, _lon))
                 .ReturnsResponse(locationResponse, "application/json");
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(null, null))
                 .ReturnsResponse(HttpStatusCode.BadRequest);
 
             var httpFactory = handler.CreateClientFactory();
 
+            // Set Mock services on DI
+            //
             _client = _factory.WithWebHostBuilder(builder =>
                 {
                     builder.ConfigureTestServices(services =>
@@ -114,7 +125,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Act
             //
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
-            var url = $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&lat=38.855652&lon=-94.799712&did=test-device2&v=0.9.204&fw=5.0&ciqv=3.1.6&dname=unknown&wp=OpenWeather";
+            var url = $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did=test-device2&v=0.9.204&fw=5.0&ciqv=3.1.6&dname=unknown&wp=OpenWeather";
             var response = await _client.GetAsync(url);
 
             // Assert
@@ -150,7 +161,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
             var url =
-                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device1&dname=unknown&v=0.9.208&lat=38.855652&lon=-94.799712&wapiKey=fake-key&wp=DarkSky&fw=5.0&ciqv=3.1.6";
+                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device1&dname=unknown&v=0.9.208&lat={_lat}&lon={_lon}&wapiKey=fake-key&wp=DarkSky&fw=5.0&ciqv=3.1.6";
             var response = await _client.GetAsync(url);
 
             // Assert
@@ -182,7 +193,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
             var url =
-                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device3&dname=unknown&v=0.9.208&lat=38.855652&lon=-94.799712&wapiKey=wrong-key&wp=DarkSky&fw=5.0&ciqv=3.1.6";
+                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device3&dname=unknown&v=0.9.208&lat={_lat}&lon={_lon}&wapiKey=wrong-key&wp=DarkSky&fw=5.0&ciqv=3.1.6";
             var response = await _client.GetAsync(url);
 
             // Assert
@@ -240,6 +251,43 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode); // Status Code 429
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task WrongTokenShouldReturnAuthError()
+        {
+            // Act
+            //
+            var url =
+                $"/api/v1/YAFace/weather?apiToken=wrong-token&did=test-device6";
+            await _client.GetAsync(url);
+            var responseWrong = await _client.GetAsync(url);
+            var responseEmpty = await _client.GetAsync($"/api/v1/YAFace/weather");
+
+            // Assert
+            //
+            Assert.Equal(HttpStatusCode.Forbidden, responseWrong.StatusCode); // Status Code 403
+            Assert.Equal(HttpStatusCode.Forbidden, responseEmpty.StatusCode); // Status Code 403
+        }
+
+        [Fact]
+        public async Task WrongApiVersionShouldReturnError()
+        {
+            // Act
+            //
+            var responseWeather = await _client.GetAsync($"/api/v2/YAFace/weather");
+            var responseLocation = await _client.GetAsync($"/api/v2/YAFace/location");
+
+            // Assert
+            //
+            Assert.Equal(HttpStatusCode.BadRequest, responseWeather.StatusCode); 
+            Assert.Equal(HttpStatusCode.BadRequest, responseLocation.StatusCode);
+
+            var errorWeather = JsonSerializer.Deserialize(await responseWeather.Content.ReadAsStringAsync(), typeof(ErrorResponse));
+            var errorLocation = JsonSerializer.Deserialize(await responseLocation.Content.ReadAsStringAsync(), typeof(ErrorResponse));
+
+            Assert.IsType<ErrorResponse>(errorWeather);
+            Assert.IsType<ErrorResponse>(errorLocation);
         }
     }
 }

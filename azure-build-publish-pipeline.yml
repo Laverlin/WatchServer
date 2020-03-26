@@ -1,0 +1,128 @@
+#
+# Build and publish pipeline
+#
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+    - stable
+  paths:
+    exclude:
+    - README.md
+    - LICENSE
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+
+steps:
+- checkout: self
+  persistCredentials: true
+
+- script: dotnet restore
+  displayName: 'dotnet restore'
+
+# Define actual branch and set variables
+#
+- pwsh: |
+    Write-Host "Actual branch: $(Build.SourceBranchName)"
+    if ("$(Build.SourceBranchName)" -eq "master") {
+      $versionSuffix = "dev"
+    } 
+    if ("$(Build.SourceBranchName)" -eq "stable") {
+      $versionSuffix = "stable"
+    }
+    $year = Get-Date -Format yy
+    $day = (Get-Date).DayOfYear
+    $commit = & git rev-list --count HEAD
+    $version = "1.$year.$day.$commit"
+    $fullVersion = "1.$year.$day.$commit-$versionSuffix"
+    Write-Host "##vso[task.setvariable variable=version;]$version"
+    Write-Host "##vso[task.setvariable variable=fullVersion;]$fullVersion"
+  displayName: "Set variables"
+
+
+# Build new assembly version 
+#
+- pwsh: |
+    $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *Service.csproj -Recurse
+    foreach($projFile in $projFiles)
+    {
+      Write-Host "Writing version $fullVersion in $projFile"
+      [xml]$projXml = Get-Content -Path $projFile
+      $projXml.Project.PropertyGroup.AssemblyVersion = $(version)
+      $projXml.Project.PropertyGroup.Version = "$(fullVersion)"
+      $projXml.Save($projFile)
+    }
+  displayName: 'Write assembly version'
+
+# Build the solution
+#
+- script: |
+    dotnet build --configuration $(buildConfiguration) 
+    echo "full version: $(fullVersion)"
+  displayName: 'dotnet build $(buildConfiguration)' 
+
+# Looks weird, but I have to delete protobuf-net.dll as there is no other options to exclude it from test coverage
+#
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: find $(System.DefaultWorkingDirectory) -type f | grep -P ".*XUnitTest.*protobuf-net.dll$" | xargs -d "\n" rm -fv
+  displayName: "Kill protobuf-net.dll"
+
+# Run all tests and generate the code coverage file
+#
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: "**/*XUnitTest/*.csproj"
+    arguments: -c $(BuildConfiguration) --no-build --no-restore -s $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" 
+  displayName: Run Tests
+
+
+# Generate the report using ReportGenerator (https://github.com/danielpalme/ReportGenerator)
+# First install the tool on the machine, then run it
+#
+- script: dotnet tool install --tool-path . dotnet-reportgenerator-globaltool
+  displayName: Install reportgenerator
+
+- script: ./reportgenerator -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:"Cobertura"
+  displayName: Create Code coverage report
+
+# Publish the code coverage result (summary and web site)
+# The summary allows to view the coverage percentage in the summary tab
+# The web site allows to view which lines are covered directly in Azure Pipeline
+#
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish code coverage'
+  inputs:
+    codeCoverageTool: Cobertura
+    summaryFileLocation: '$(Build.SourcesDirectory)/CodeCoverage/Cobertura.xml'
+    reportDirectory: '$(Build.SourcesDirectory)/CodeCoverage'
+
+# Tag build in master branch
+#
+- bash: |
+    echo 'tagging build: $(fullVersion)'
+    git -C $(Build.SourcesDirectory) tag '$(fullVersion)'
+    git -C $(Build.SourcesDirectory) push https://$(GithubPAT)@github.com/Laverlin/WatchServer.git '$(fullVersion)'
+  condition:  and(succeeded(), eq(variables['Build.SourceBranchName'], 'master'))
+  displayName: 'Tag build in master branch'
+
+- task: Docker@2
+  displayName: 'Build & publish Docker image'
+  condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'stable'))
+  inputs:
+    containerRegistry: 'DockerHub'
+    repository: 'ilaverlin/watch-server'
+    command: 'buildAndPush'
+    dockerfile: '$(Build.SourcesDirectory)/IB.WatchServer.Service/Dockerfile'
+    buildContext: '$(Build.SourcesDirectory)'
+    tags: |
+      latest
+      $(fullVersion)

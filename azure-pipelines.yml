@@ -7,7 +7,7 @@ trigger:
   batch: true
   branches:
     include:
-    - master
+    - test
   paths:
     exclude:
     - README.md
@@ -15,3 +15,4 @@ trigger:
 
 jobs:
 - template: azure-build-test.yml
+
