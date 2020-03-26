@@ -11,10 +11,8 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <summary>
         /// Assembly version info
         /// </summary>
-        public static string Version => Assembly.GetEntryAssembly()?
-                                            .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion
-                                        ?? Assembly.GetExecutingAssembly()
-                                            .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        public static string Version => Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         
 
         /// <summary>
