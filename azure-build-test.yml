@@ -21,11 +21,14 @@ jobs:
   - bash: |
       echo "##vso[task.setvariable variable=VERSION]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
       echo "##vso[task.setvariable variable=FullVersion]$VERSION\-$(VersionSuffix)"
-      echo "build assembly version $VERSION, full version $FullVersion"
+      echo "build assembly version $(VERSION), full version $(FullVersion)"
+    displayName: 'Set variables'
 
 # Build the solution
 #
-  - script: dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(VERSION) /p:VersionPrefix=$(VERSION) /p:VersionSuffix=$(VersionSuffix)
+  - script: |
+      dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(VERSION) /p:VersionPrefix=$(VERSION) /p:VersionSuffix=$(VersionSuffix)
+      echo "$(FullVersion)"
     displayName: 'dotnet build $(buildConfiguration)' 
 
 # Looks weird, but I have to delete protobuf-net.dll as there is no other options to exclude it from test coverage
