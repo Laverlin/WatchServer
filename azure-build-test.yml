@@ -19,17 +19,16 @@ jobs:
 # Build new assembly version 
 #
   - bash: |
-      echo "$VERSION=1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
-      echo "##vso[task.setvariable variable=VERSION]$VERSION"
-      echo "##vso[task.setvariable variable=FullVersion]'$VERSION$(VersionSuffix)'"
-      echo "build assembly version $VERSION, suffix $(VersionSuffix) full version $FullVersion"
+      echo "##vso[task.setvariable variable=version]1.`date +'%y'`.`date +'%-j'`.`git rev-list --count HEAD`"
+      echo "##vso[task.setvariable variable=fullVersion]$VERSION$(versionSuffix)"
+      echo "build assembly version $VERSION, suffix $(VersionSuffix) full version $FULLVERSION"
     displayName: 'Set variables'
 
 # Build the solution
 #
   - script: |
-      dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(VERSION) /p:VersionPrefix=$(VERSION) /p:VersionSuffix=$(VersionSuffix)
-      echo "$(FullVersion)"
+      dotnet build --configuration $(buildConfiguration) /p:AssemblyVersion=$(version) /p:VersionPrefix=$(version) /p:VersionSuffix=$(versionSuffix)
+      echo "full version: $(fullVersion)"
     displayName: 'dotnet build $(buildConfiguration)' 
 
 # Looks weird, but I have to delete protobuf-net.dll as there is no other options to exclude it from test coverage
@@ -72,6 +71,6 @@ jobs:
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - template: tagbuild-step.yml  # Template reference
       parameters:
-        Version: $FullVersion
+        Version: $(fullVersion)
     
 
