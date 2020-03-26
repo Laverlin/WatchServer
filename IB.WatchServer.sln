@@ -9,6 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IB.WatchServer.XUnitTest", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{685434B4-F204-4848-95C1-031B476E42EB}"
 	ProjectSection(SolutionItems) = preProject
+		azure-build-publish-pipeline.yml = azure-build-publish-pipeline.yml
 		azure-build-test.yml = azure-build-test.yml
 		azure-pipelines.yml = azure-pipelines.yml
 		azure-publish-stable.yml = azure-publish-stable.yml
