@@ -9,12 +9,11 @@ namespace IB.WatchServer.Service.Infrastructure
     public static class SolutionInfo
     {
         /// <summary>
-        /// Assembly version info
+        /// Application version info
         /// </summary>
-        public static string Version => Assembly.GetExecutingAssembly()
+        public static string Version => (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly())
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
         
-
         /// <summary>
         /// Assembly name
         /// </summary>
