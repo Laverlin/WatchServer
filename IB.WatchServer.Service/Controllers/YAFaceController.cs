@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
-using App.Metrics;
-using Microsoft.AspNetCore.Http;
+
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 
 using IB.WatchServer.Service.Entity;
-using IB.WatchServer.Service.Entity.V1;
-using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
+using IB.WatchServer.Service.Entity.WatchFace;
 using LinqToDB.Common;
 
 namespace IB.WatchServer.Service.Controllers
@@ -26,20 +25,15 @@ namespace IB.WatchServer.Service.Controllers
     public class YAFaceController : ControllerBase
     {
         private readonly ILogger<YAFaceController> _logger;
-        private readonly IYAFaceProvider _yaFaceProvider;
         private readonly IDataProvider _dataProvider;
         private readonly WebRequestsProvider _webRequestsProvider;
-        private readonly IMetrics _metrics;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, IYAFaceProvider yaFaceProvider, 
-            IDataProvider dataProvider, WebRequestsProvider webRequestsProvider, IMetrics metrics)
+            ILogger<YAFaceController> logger, IDataProvider dataProvider, WebRequestsProvider webRequestsProvider)
         {
             _logger = logger;
-            _yaFaceProvider = yaFaceProvider;
             _dataProvider = dataProvider;
             _webRequestsProvider = webRequestsProvider;
-            _metrics = metrics;
         }
 
         /// <summary>
@@ -49,51 +43,62 @@ namespace IB.WatchServer.Service.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField ="did", Seconds = 5)]
-        public ActionResult<LocationResponse> Location()
+        public ActionResult<object> Location()
         {
-            return new LocationResponse {CityName = "Update required."};
+            return new
+            {
+                CityName = "Update required.",
+                ServerVersion = SolutionInfo.Version
+            };
         }
 
         /// <summary>
         /// Provide weather info
         /// </summary>
         /// <param name="watchFaceRequest"></param>
-        /// <returns>The <see cref="WeatherResponse"/> data of current weather in given location</returns>
+        /// <returns>The data of current weather in given location</returns>
         [HttpGet("weather"), MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
         [Authorize]
-        public async Task<ActionResult<WeatherResponse>> Weather([FromQuery] WatchFaceRequest watchFaceRequest)
+        public async Task<ActionResult<object>> Weather([FromQuery] WatchRequest watchFaceRequest)
         {
-            try
-            {
-                Enum.TryParse<WeatherProvider>(watchFaceRequest.WeatherProvider, true, out var weatherProvider);
-                var weatherResponse = (weatherProvider == WeatherProvider.DarkSky || watchFaceRequest.DarkskyKey?.Length == 32)
-                    ? await _yaFaceProvider.RequestDarkSky(watchFaceRequest.Lat, watchFaceRequest.Lon, watchFaceRequest.DarkskyKey)
-                    : await _yaFaceProvider.RequestOpenWeather(watchFaceRequest.Lat, watchFaceRequest.Lon);
 
-                weatherResponse.CityName = await GetLocationName(watchFaceRequest, RequestType.Weather);
-                await _dataProvider.SaveRequestInfo(RequestType.Weather, watchFaceRequest, weatherResponse);
-                weatherResponse.CityName = weatherResponse.CityName.StripDiacritics();
+            watchFaceRequest.Version = Request.Query["v"];
+            watchFaceRequest.DeviceName = Request.Query["dname"];
 
-                _logger.LogInformation(
-                    new EventId(101, "WeatherRequest"),
-                    "{@WatchFaceRequest}, {@WeatherResponse}", watchFaceRequest, weatherResponse);
-                return weatherResponse;
-            }
-            catch (UnauthorizedAccessException ex)
+            var result = await Get(watchFaceRequest);
+            var watchResponse = result.Value;
+
+            if (watchResponse != null && 
+                watchResponse.WeatherInfo.RequestStatus.StatusCode == RequestStatusCode.Error &&
+                watchResponse.WeatherInfo.RequestStatus.ErrorCode == 401)
             {
-                _logger.LogWarning(ex, "Unauthorized weather request: {@WatchFaceRequest}", watchFaceRequest);
                 return StatusCode((int) HttpStatusCode.Forbidden,
                     new ErrorResponse {StatusCode = (int) HttpStatusCode.Forbidden, Description = "Forbidden"});
             }
-            catch (Exception ex)
+
+            if (watchResponse == null || watchFaceRequest.Lat == null || watchFaceRequest.Lon == null ||
+                watchResponse.WeatherInfo.RequestStatus.StatusCode == RequestStatusCode.Error ||
+                watchResponse.LocationInfo.RequestStatus.StatusCode == RequestStatusCode.Error)
             {
-                _logger.LogWarning(ex, "Weather request error, {@WatchFaceRequest}", watchFaceRequest);
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
+
+            return new 
+            {
+                watchResponse.WeatherInfo.WeatherProvider,
+                watchResponse.WeatherInfo.Icon,
+                watchResponse.WeatherInfo.PrecipProbability,
+                watchResponse.WeatherInfo.Temperature,
+                watchResponse.WeatherInfo.WindSpeed,
+                watchResponse.WeatherInfo.Humidity,
+                watchResponse.WeatherInfo.Pressure,
+                watchResponse.LocationInfo.CityName,
+                ServerVersion = SolutionInfo.Version
+            };
         }
 
         /// <summary>
@@ -158,15 +163,6 @@ namespace IB.WatchServer.Service.Controllers
                 _logger.LogWarning(ex, "Request error, {@WatchFaceRequest}", watchRequest);
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
-        }
-
-        private async Task<string> GetLocationName(WatchFaceRequest watchFaceRequest, RequestType requestType)
-        {
-            var cityName = await _dataProvider.CheckLastLocation(
-                               watchFaceRequest.DeviceId, Convert.ToDecimal(watchFaceRequest.Lat), Convert.ToDecimal(watchFaceRequest.Lon)) ?? 
-                           await _yaFaceProvider.RequestLocationName(watchFaceRequest.Lat, watchFaceRequest.Lon);
-
-            return cityName;
         }
     }
 }

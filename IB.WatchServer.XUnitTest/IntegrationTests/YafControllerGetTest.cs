@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.V1;
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using Microsoft.AspNetCore.TestHost;
@@ -23,7 +22,6 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
-        private WatchFaceRequest _watchFaceRequest;
         private readonly string _lat;
         private readonly string _lon;
 
@@ -37,11 +35,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Mock database
             //
             var dataProviderMock = new Mock<IDataProvider>();
-            dataProviderMock.Setup(_ => _.CheckLastLocation(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<decimal>()))
-                .Returns(Task.FromResult("Olathe, KS"));
-            dataProviderMock.Setup(_ => _.SaveRequestInfo(
-                    It.IsAny<RequestType>(), It.IsAny<WatchFaceRequest>(), It.IsAny<Service.Entity.V1.WeatherResponse>()))
-                .Callback<RequestType, WatchFaceRequest, Service.Entity.V1.WeatherResponse>((rt, wfr, wr) => _watchFaceRequest = wfr);
+
+     
 
             // Mock web requests
             //

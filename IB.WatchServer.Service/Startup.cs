@@ -4,7 +4,6 @@ using App.Metrics.Formatters.Prometheus;
 using AutoMapper;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.V1;
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;
@@ -58,7 +57,6 @@ namespace IB.WatchServer.Service
             // services
             //
             services.AddSingleton<DataConnectionFactory>();
-            services.AddScoped<IYAFaceProvider, YAFaceProvider>();
             services.AddScoped<IDataProvider, DataProvider>();
             services.AddScoped<WebRequestsProvider>();
             services.AddScoped<RequestRateLimit>();
@@ -105,7 +103,7 @@ namespace IB.WatchServer.Service
                     .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(attempt * 3),
                         onRetry: (outcome, timespan, retryAttempt, context) =>
                         {
-                            var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<YAFaceProvider>();
+                            var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<WebRequestsProvider>();
                             logger.LogWarning("Delaying for {delay}ms, then making retry {retry}. CorrelationId {correlationId}",
                                 timespan.TotalMilliseconds, retryAttempt, context.CorrelationId);
                         }
@@ -115,16 +113,11 @@ namespace IB.WatchServer.Service
             //
             var mappingConfig = new MapperConfiguration(mc =>
             {
-                mc.CreateMap<WeatherResponse, WeatherInfo>();
-                mc.CreateMap<WatchFaceRequest, RequestData>()
-                    .ForMember(d => d.Lat, c=> c.MapFrom(s => Convert.ToDecimal(s.Lat)))
-                    .ForMember(d => d.Lon, c=> c.MapFrom(s => Convert.ToDecimal(s.Lon)));
                 mc.CreateMap<WatchRequest, RequestData>();
-                mc.CreateMap<WeatherResponse, RequestData>();
                 mc.CreateMap<WeatherInfo, RequestData>();
                 mc.CreateMap<LocationInfo, RequestData>();
                 mc.CreateMap<ExchangeRateInfo, RequestData>();
-                mc.CreateMap<Dictionary<string, object>, WeatherResponse>()
+                mc.CreateMap<Dictionary<string, object>, WeatherInfo>()
                     .ForMember(d => d.Temperature, c => c.MapFrom(s => s.ContainsKey("temp") ? s["temp"] : 0))
                     .ForMember(d => d.WindSpeed, c => c.MapFrom(s => s.ContainsKey("speed") ? s["speed"] : 0))
                     .ForMember(d => d.Humidity,
