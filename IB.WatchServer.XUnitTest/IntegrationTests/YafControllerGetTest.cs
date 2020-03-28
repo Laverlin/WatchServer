@@ -139,5 +139,25 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             Assert.IsType<ErrorResponse>(error);
         }
 
+
+        [Fact]
+        public async Task NullRequestShouldReturnEmptyResponse()
+        {
+            // Arrange
+            //
+            var expected = new WatchResponse();
+            var expectedJson = JsonSerializer.Serialize(expected);
+
+            // Act
+            //
+            var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
+            var response = await _client.GetAsync($"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}");
+
+            // Assert
+            //
+            response.EnsureSuccessStatusCode(); // Status Code 2xx
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+        }
+
     }
 }
