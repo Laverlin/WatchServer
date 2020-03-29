@@ -6,11 +6,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using App.Metrics;
-using App.Metrics.Meter;
 using AutoMapper;
 
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.V1;
 using IB.WatchServer.Service.Entity.WatchFace;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Caching.Memory;
@@ -26,7 +24,7 @@ namespace IB.WatchServer.Service.Service
         private readonly FaceSettings _faceSettings;
         private readonly IMetrics _metrics;
         private readonly IMapper _mapper;
-        private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly MemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
 
         public WebRequestsProvider(
             ILogger<WebRequestsProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, IMetrics metrics, IMapper mapper)
@@ -49,7 +47,7 @@ namespace IB.WatchServer.Service.Service
             _metrics.LocationIncrement("virtualearth", SourceType.Remote);
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat.ToString("F"), lon.ToString("F")));
+            using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat.ToString("G"), lon.ToString("G")));
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
@@ -84,7 +82,7 @@ namespace IB.WatchServer.Service.Service
             _metrics.WeatherIncrement(providerName, SourceType.Remote);
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat.ToString("F"), lon.ToString("F"), token));
+            using var response = await client.GetAsync(_faceSettings.BuildDarkSkyUrl(lat.ToString("G"), lon.ToString("G"), token));
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
@@ -108,7 +106,7 @@ namespace IB.WatchServer.Service.Service
         /// </summary>
         /// <param name="lat">latitude</param>
         /// <param name="lon">longitude</param>
-        /// <returns>Weather conditions for the specified coordinates <see cref="WeatherResponse"/></returns>
+        /// <returns>Weather conditions for the specified coordinates </returns>
         public async Task<WeatherInfo> RequestOpenWeather(decimal lat, decimal lon)
         {
             var providerName = WeatherProvider.OpenWeather.ToString();
@@ -125,7 +123,7 @@ namespace IB.WatchServer.Service.Service
             };
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(_faceSettings.BuildOpenWeatherUrl(lat.ToString("F"), lon.ToString("F")));
+            using var response = await client.GetAsync(_faceSettings.BuildOpenWeatherUrl(lat.ToString("G"), lon.ToString("G")));
             if (!response.IsSuccessStatusCode)
             { 
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
@@ -145,7 +143,7 @@ namespace IB.WatchServer.Service.Service
                     ? (object) (conditionIcons.ContainsKey(v.Value.GetString()) ? conditionIcons[v.Value.GetString()] : "clear-day") 
                     : v.Value.GetDecimal());
 
-            var weatherInfo = _mapper.Map<WeatherInfo>(_mapper.Map<WeatherResponse>(elements));
+            var weatherInfo = _mapper.Map<WeatherInfo>(elements);
             weatherInfo.WeatherProvider = providerName;
             weatherInfo.RequestStatus = new RequestStatus(RequestStatusCode.Ok);
 
@@ -160,7 +158,6 @@ namespace IB.WatchServer.Service.Service
         /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
         public async Task<ExchangeRateInfo> RequestCurrencyConverter(string baseCurrency, string targetCurrency)
         {
-
             _metrics.ExchangeRateIncrement("Currency Converter", SourceType.Remote, baseCurrency, targetCurrency);
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
@@ -195,7 +192,7 @@ namespace IB.WatchServer.Service.Service
             string baseCurrency, string targetCurrency, Func<string, string, Task<ExchangeRateInfo>> exchangeRateFunc)
         {
             string cacheKey = $"er-{baseCurrency}-{targetCurrency}";
-            if (_memoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
+            if (MemoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
             {
                 _metrics.ExchangeRateIncrement("cache", SourceType.Memory, baseCurrency, targetCurrency);
                 return exchangeRateInfo;
@@ -203,7 +200,7 @@ namespace IB.WatchServer.Service.Service
 
             exchangeRateInfo = await exchangeRateFunc(baseCurrency, targetCurrency);
             if (exchangeRateInfo.RequestStatus.StatusCode == RequestStatusCode.Ok && exchangeRateInfo.ExchangeRate != 0)
-                _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
+                MemoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
             return exchangeRateInfo;
         }
     }

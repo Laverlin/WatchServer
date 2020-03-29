@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.V1;
+
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using Microsoft.AspNetCore.TestHost;
@@ -24,7 +24,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
-        private WatchFaceRequest _watchFaceRequest;
+        private WatchRequest _watchRequest;
         private readonly string _lat;
         private readonly string _lon;
 
@@ -38,11 +38,11 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Mock database
             //
             var dataProviderMock = new Mock<IDataProvider>();
-            dataProviderMock.Setup(_ => _.CheckLastLocation(It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<decimal>()))
-                .Returns(Task.FromResult("Olathe, KS"));
+
             dataProviderMock.Setup(_ => _.SaveRequestInfo(
-                    It.IsAny<RequestType>(), It.IsAny<WatchFaceRequest>(), It.IsAny<Service.Entity.V1.WeatherResponse>()))
-                .Callback<RequestType, WatchFaceRequest, Service.Entity.V1.WeatherResponse>((rt, wfr, wr) => _watchFaceRequest = wfr);
+                    It.IsAny<WatchRequest>(), It.IsAny<WeatherInfo>(), It.IsAny<LocationInfo>(), It.IsAny<ExchangeRateInfo>()))
+                .Callback<WatchRequest, WeatherInfo, LocationInfo, ExchangeRateInfo>((wr, wi, li, ei) => _watchRequest = wr);
+
 
             // Mock web requests
             //
@@ -132,11 +132,11 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             response.EnsureSuccessStatusCode(); // Status Code 200-299
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
-            Assert.Equal("unknown", _watchFaceRequest.DeviceName);
-            Assert.Equal("0.9.204", _watchFaceRequest.Version);
-            Assert.Equal("5.0", _watchFaceRequest.Framework);
-            Assert.Equal("OpenWeather", _watchFaceRequest.WeatherProvider);
-            Assert.Equal("test-device2", _watchFaceRequest.DeviceId);
+            Assert.Equal("unknown", _watchRequest.DeviceName);
+            Assert.Equal("0.9.204", _watchRequest.Version);
+            Assert.Equal("5.0", _watchRequest.Framework);
+            Assert.Equal("OpenWeather", _watchRequest.WeatherProvider);
+            Assert.Equal("test-device2", _watchRequest.DeviceId);
         }
 
         [Fact]
@@ -168,12 +168,12 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             response.EnsureSuccessStatusCode(); // Status Code 200-299
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
-            Assert.Equal("unknown", _watchFaceRequest.DeviceName);
-            Assert.Equal("0.9.208", _watchFaceRequest.Version);
-            Assert.Equal("5.0", _watchFaceRequest.Framework);
-            Assert.Equal("DarkSky", _watchFaceRequest.WeatherProvider);
-            Assert.Equal("fake-key", _watchFaceRequest.DarkskyKey);
-            Assert.Equal("test-device1", _watchFaceRequest.DeviceId);
+            Assert.Equal("unknown", _watchRequest.DeviceName);
+            Assert.Equal("0.9.208", _watchRequest.Version);
+            Assert.Equal("5.0", _watchRequest.Framework);
+            Assert.Equal("DarkSky", _watchRequest.WeatherProvider);
+            Assert.Equal("fake-key", _watchRequest.DarkskyKey);
+            Assert.Equal("test-device1", _watchRequest.DeviceId);
 
         }
 
@@ -217,8 +217,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Act
             //
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
-            var url =
-                $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device4";
+            var url = $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&did=test-device4";
             var response = await _client.GetAsync(url);
 
             // Assert
