@@ -25,9 +25,16 @@ namespace IB.WatchServer.XUnitTest.UnitTests
         {
             // Arrange
             //
+            var config = new ConfigurationBuilder()
+                //.SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", false, true)
+                .AddJsonFile("appsettings.Development.json", false, true)
+                .Build();
+            var settings = config.LoadVerifiedConfiguration<FaceSettings>();
+
             var handler = new Mock<HttpMessageHandler>();
             handler.SetupAnyRequest()
-                .ReturnsResponse(HttpStatusCode.OK, "{\"USD_PHP\": 51.440375}")
+                .ReturnsResponse(HttpStatusCode.OK, "{\"USD_EUR\": 51.440375}")
                 .Verifiable();
 
             var measureCounterMetrics = new Mock<IMeasureCounterMetrics>();
@@ -39,17 +46,13 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             var httpClientFactoryMock = handler.CreateClientFactory();
 
-            var settings = new FaceSettings
-            {
-                CurrencyConverterKey = "test-key",
-                CurrencyConverterUrl = "https://free.currconv.com/api/v7/convert?apiKey={0}&q={1}_{2}&compact=ultra"
-            };
+
 
             var webRequestProvider = new WebRequestsProvider(null, httpClientFactoryMock, settings, metricsMock.Object, null);
 
             // Act
             //
-            await webRequestProvider.RequestCacheExchangeRate("USD", "PHP");
+            await webRequestProvider.RequestCacheExchangeRate("USD", "EUR");
 
             // Assert
             //
