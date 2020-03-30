@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using App.Metrics;
 using AutoMapper;
 
@@ -14,6 +15,7 @@ using LinqToDB.Tools;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -158,7 +160,7 @@ namespace IB.WatchServer.Service.Service
         /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
         public async Task<ExchangeRateInfo> RequestCurrencyConverter(string baseCurrency, string targetCurrency)
         {
-            _metrics.ExchangeRateIncrement("Currency Converter", SourceType.Remote, baseCurrency, targetCurrency);
+            _metrics.ExchangeRateIncrement("CurrencyConverter.com", SourceType.Remote, baseCurrency, targetCurrency);
 
             var client = _clientFactory.CreateClient(Options.DefaultName);
             using var response = await client.GetAsync(_faceSettings.BuildCurrencyConverterUrl(baseCurrency, targetCurrency));
@@ -182,14 +184,43 @@ namespace IB.WatchServer.Service.Service
         }
 
         /// <summary>
+        /// Request current Exchange rate on api.exchangerateapi.com
+        /// </summary>
+        /// <param name="baseCurrency">the currency from which convert</param>
+        /// <param name="targetCurrency">the currency to which convert</param>
+        /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
+        public async Task<ExchangeRateInfo> RequestExchangeRateApi(string baseCurrency, string targetCurrency)
+        {
+            _metrics.ExchangeRateIncrement("ExchangeRateApi.com", SourceType.Remote, baseCurrency, targetCurrency);
+
+            var client = _clientFactory.CreateClient(Options.DefaultName);
+            using var response = await client.GetAsync($"https://api.exchangeratesapi.io/latest?base={baseCurrency}&symbols={targetCurrency}");
+            if (!response.IsSuccessStatusCode)
+            { 
+                _logger.LogWarning($"Error ExchangeRate request, status: {response.StatusCode.ToString()}");
+                return new ExchangeRateInfo {RequestStatus = new RequestStatus(response.StatusCode)};
+            }
+
+            await using var content = await response.Content.ReadAsStreamAsync();
+            using var json = await JsonDocument.ParseAsync(content);
+
+            return new ExchangeRateInfo
+            {
+                ExchangeRate = json.RootElement.GetProperty("rates")
+                    .TryGetProperty($"{targetCurrency}", out var rate) 
+                    ? rate.GetDecimal() : 0,
+                RequestStatus = new RequestStatus(RequestStatusCode.Ok)
+            };
+        }
+
+        /// <summary>
         /// Request current Exchange rate in local cache
         /// </summary>
         /// <param name="baseCurrency">the currency from which convert</param>
         /// <param name="targetCurrency">the currency to which convert</param>
-        /// <param name="exchangeRateFunc">function to get exchange rate</param>
         /// <returns>Returns exchange rate, if cache is missed returns null</returns>
         public async Task<ExchangeRateInfo> RequestCacheExchangeRate(
-            string baseCurrency, string targetCurrency, Func<string, string, Task<ExchangeRateInfo>> exchangeRateFunc)
+            string baseCurrency, string targetCurrency)
         {
             string cacheKey = $"er-{baseCurrency}-{targetCurrency}";
             if (MemoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
@@ -198,7 +229,14 @@ namespace IB.WatchServer.Service.Service
                 return exchangeRateInfo;
             }
 
-            exchangeRateInfo = await exchangeRateFunc(baseCurrency, targetCurrency);
+            var fallbackPolicy = Policy<ExchangeRateInfo>
+                .Handle<Exception>()
+                .OrResult(_ => _.RequestStatus.StatusCode== RequestStatusCode.Error)
+                .FallbackAsync(async cancellationToken =>  await RequestExchangeRateApi(baseCurrency, targetCurrency)
+                    .ConfigureAwait(false));
+            exchangeRateInfo = await fallbackPolicy.ExecuteAsync(async () => await RequestCurrencyConverter(baseCurrency, targetCurrency)
+                .ConfigureAwait(false));
+            
             if (exchangeRateInfo.RequestStatus.StatusCode == RequestStatusCode.Ok && exchangeRateInfo.ExchangeRate != 0)
                 MemoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
             return exchangeRateInfo;

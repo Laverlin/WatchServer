@@ -48,7 +48,7 @@ namespace IB.WatchServer.Service.Entity.Settings
         }
 
         /// <summary>
-        /// Build url string to request the weather from OpenWeather
+        /// Build url string to request the currency exchange from CurrencyConverter service
         /// </summary>
         /// <param name="settings">Configuration object</param>
         /// <param name="baseCurrency">base currency for exchange rate</param>
@@ -57,6 +57,18 @@ namespace IB.WatchServer.Service.Entity.Settings
         public static Uri BuildCurrencyConverterUrl(this FaceSettings settings, string baseCurrency, string targetCurrency)
         {
             return new Uri(string.Format(settings.CurrencyConverterUrl, settings.CurrencyConverterKey, baseCurrency, targetCurrency));
+        }
+
+        /// <summary>
+        /// Build url string to request the exchange rate from ExchangeRateApi.com
+        /// </summary>
+        /// <param name="settings">Configuration object</param>
+        /// <param name="baseCurrency">base currency for exchange rate</param>
+        /// <param name="targetCurrency">target currency for exchange rate</param>
+        /// <returns>url with parameters to get exchange rate from from ExchangeRateApi.com</returns>
+        public static Uri BuildExchangeRateApiUrl(this FaceSettings settings, string baseCurrency, string targetCurrency)
+        {
+            return new Uri(string.Format(settings.ExchangeRateApiUrl, baseCurrency, targetCurrency));
         }
 
         /// <summary>

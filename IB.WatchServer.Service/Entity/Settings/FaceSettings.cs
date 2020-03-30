@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
 
 namespace IB.WatchServer.Service.Entity.Settings
 {
@@ -55,6 +56,9 @@ namespace IB.WatchServer.Service.Entity.Settings
 
         [Required]
         public string CurrencyConverterKey { get; set; }
+
+        [Required, Url]
+        public string ExchangeRateApiUrl { get; set; }
     }
 
     /// <summary>
