@@ -139,8 +139,8 @@ namespace IB.WatchServer.Service.Controllers
                 //
                 if (!watchRequest.BaseCurrency.IsNullOrEmpty() && !watchRequest.TargetCurrency.IsNullOrEmpty())
                 {
-                    exchangeRateInfo = await _webRequestsProvider.RequestCacheExchangeRate(
-                        watchRequest.BaseCurrency, watchRequest.TargetCurrency, _webRequestsProvider.RequestCurrencyConverter);
+                    exchangeRateInfo = await _webRequestsProvider
+                        .RequestCacheExchangeRate(watchRequest.BaseCurrency, watchRequest.TargetCurrency);
                 }
 
                 // Save all requested data
