@@ -60,6 +60,48 @@ namespace IB.WatchServer.XUnitTest.UnitTests
            
         }
 
+
+        [Fact]
+        public async void SecondRequestWithSameCurrancyShouldbeFromCache()
+        {
+            // Arrange
+            //
+            var config = new ConfigurationBuilder()
+                //.SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", false, true)
+                .AddJsonFile("appsettings.Development.json", false, true)
+                .Build();
+            var settings = config.LoadVerifiedConfiguration<FaceSettings>();
+
+            var handler = new Mock<HttpMessageHandler>();
+            handler.SetupAnyRequest()
+                .ReturnsResponse(HttpStatusCode.OK, "{\"USD_CHF\": 51.440375}")
+                .Verifiable();
+
+            var measureCounterMetrics = new Mock<IMeasureCounterMetrics>();
+            
+            var measureMetricMock = new Mock<IMeasureMetrics>();
+            measureMetricMock.Setup(_ => _.Counter).Returns(measureCounterMetrics.Object);
+            var metricsMock = new Mock<IMetrics>();
+            metricsMock.Setup(_ => _.Measure).Returns(measureMetricMock.Object);
+
+            var httpClientFactoryMock = handler.CreateClientFactory();
+
+
+
+            var webRequestProvider = new WebRequestsProvider(null, httpClientFactoryMock, settings, metricsMock.Object, null);
+
+            // Act
+            //
+            await webRequestProvider.RequestCacheExchangeRate("USD", "CHF");
+            await webRequestProvider.RequestCacheExchangeRate("USD", "CHF");
+
+            // Assert
+            //
+            handler.VerifyAnyRequest(Times.Exactly(1));
+           
+        }
+
         [Fact]
         public async void ExchangeRateWithErrorShouldFallbackToAnotherProvider()
         {
