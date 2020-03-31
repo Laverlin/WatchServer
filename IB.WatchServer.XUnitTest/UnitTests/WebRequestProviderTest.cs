@@ -155,7 +155,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
         }
 
         [Fact]
-        public async void After4FaultsCircuitBreakerShouldSendRequestsToFallback()
+        public async void After2FaultsCircuitBreakerShouldSendRequestsToFallback()
         {
             // Arrange
             //
@@ -166,10 +166,10 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 .Build();
             var settings = config.LoadVerifiedConfiguration<FaceSettings>();
             
-            var mainUrl1 = settings.BuildCurrencyConverterUrl("USD", "PHP");
+            var mainUrl1 = settings.BuildCurrencyConverterUrl("USD", "RUB");
             var mainUrl2 = settings.BuildCurrencyConverterUrl("EUR", "PHP");
-            var fallbackUrl1 = settings.BuildExchangeRateApiUrl("USD", "PHP");
-            var fallbackUrl2 = settings.BuildExchangeRateApiUrl("USD", "PHP");
+            var fallbackUrl1 = settings.BuildExchangeRateApiUrl("USD", "RUB");
+            var fallbackUrl2 = settings.BuildExchangeRateApiUrl("EUR", "PHP");
 
 
             var handler = new Mock<HttpMessageHandler>();
@@ -180,7 +180,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 .ReturnsResponse(HttpStatusCode.ServiceUnavailable)
                 .Verifiable();
             handler.SetupRequest(HttpMethod.Get, fallbackUrl1)
-                .ReturnsResponse(HttpStatusCode.OK,"{\"rates\":{\"PHP\":50.9298531811},\"base\":\"USD\",\"date\":\"2020-03-30\"}")
+                .ReturnsResponse(HttpStatusCode.OK,"{\"rates\":{\"RUB\":50.9298531811},\"base\":\"USD\",\"date\":\"2020-03-30\"}")
                 .Verifiable();
             handler.SetupRequest(HttpMethod.Get, fallbackUrl2)
                 .ReturnsResponse(HttpStatusCode.OK,"{\"rates\":{\"PHP\":50.9298531811},\"base\":\"EUR\",\"date\":\"2020-03-30\"}")
@@ -211,8 +211,8 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             // Act
             //
-            await webRequestProvider.RequestCacheExchangeRate("USD", "PHP");
-            await webRequestProvider.RequestCacheExchangeRate("EUR", "PHP");
+            var result1 = await webRequestProvider.RequestCacheExchangeRate("USD", "RUB");
+            var result2 = await webRequestProvider.RequestCacheExchangeRate("EUR", "PHP");
 
             // Assert
             //
