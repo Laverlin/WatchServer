@@ -82,14 +82,12 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 .Verifiable();
 
             var measureCounterMetrics = new Mock<IMeasureCounterMetrics>();
-            
             var measureMetricMock = new Mock<IMeasureMetrics>();
             measureMetricMock.Setup(_ => _.Counter).Returns(measureCounterMetrics.Object);
             var metricsMock = new Mock<IMetrics>();
             metricsMock.Setup(_ => _.Measure).Returns(measureMetricMock.Object);
 
             var httpClientFactoryMock = handler.CreateClientFactory();
-
 
 
             var webRequestProvider = new WebRequestsProvider(null, httpClientFactoryMock, settings, metricsMock.Object, null);
@@ -151,8 +149,58 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             //
             handler.VerifyRequest(HttpMethod.Get, mainUrl, Times.Exactly(1));
             handler.VerifyRequest(HttpMethod.Get, fallbackUrl, Times.Exactly(1));
-           
         }
+
+        [Fact]
+        public async void ExchangeRateWithErrorShouldFallbackAndReturnZeroForUnsupportedPair()
+        {
+            // Arrange
+            //
+            var config = new ConfigurationBuilder()
+                //.SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", false, true)
+                .AddJsonFile("appsettings.Development.json", false, true)
+                .Build();
+            var settings = config.LoadVerifiedConfiguration<FaceSettings>();
+            
+            var mainUrl = settings.BuildCurrencyConverterUrl("USD", "BTC");
+            var fallbackUrl = settings.BuildExchangeRateApiUrl("USD", "BTC");
+
+
+            var handler = new Mock<HttpMessageHandler>();
+            handler.SetupRequest(HttpMethod.Get, mainUrl)
+                .ReturnsResponse(HttpStatusCode.ServiceUnavailable)
+                .Verifiable();
+            handler.SetupRequest(HttpMethod.Get, fallbackUrl)
+                //.ReturnsResponse(HttpStatusCode.OK,"{\"rates\":{\"PHP\":50.9298531811},\"base\":\"USD\",\"date\":\"2020-03-30\"}")
+                .Verifiable();
+
+            var measureCounterMetrics = new Mock<IMeasureCounterMetrics>();
+            
+            var measureMetricMock = new Mock<IMeasureMetrics>();
+            measureMetricMock.Setup(_ => _.Counter).Returns(measureCounterMetrics.Object);
+            var metricsMock = new Mock<IMetrics>();
+            metricsMock.Setup(_ => _.Measure).Returns(measureMetricMock.Object);
+
+            var httpClientFactoryMock = handler.CreateClientFactory();
+            
+
+
+            var webRequestProvider = new WebRequestsProvider(null, httpClientFactoryMock, settings, metricsMock.Object, null);
+
+
+            // Act
+            //
+            var result = await webRequestProvider.RequestCacheExchangeRate("USD", "BTC");
+
+            // Assert
+            //
+            handler.VerifyRequest(HttpMethod.Get, mainUrl, Times.Exactly(1));
+            handler.VerifyRequest(HttpMethod.Get, fallbackUrl, Times.Exactly(0));
+            Assert.Equal(0, result.ExchangeRate);
+            Assert.Equal(RequestStatusCode.HasNotBeenRequested, result.RequestStatus.StatusCode);
+        }
+
 
         [Fact]
         public async void After2FaultsCircuitBreakerShouldSendRequestsToFallback()
@@ -194,7 +242,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             metricsMock.Setup(_ => _.Measure).Returns(measureMetricMock.Object);
 
             var client = handler.CreateClient();
-            //var httpClientFactoryMock = handler.CreateClientFactory();
+
             IServiceCollection services = new ServiceCollection();
             services.AddHttpClient(HttpBuilderExtensions.ExchangeClientName)
                 .DefaultHttpPolicy().CircuitHttpPolicy(2, TimeSpan.FromMinutes(10))
@@ -202,7 +250,6 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             services.AddHttpClient(HttpBuilderExtensions.DefaultClientName)
                 .DefaultHttpPolicy().AddHttpMessageHandler(() => new StubDelegatingHandler(client));
-
 
 
             var webRequestProvider = new WebRequestsProvider(
