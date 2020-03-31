@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -96,18 +97,12 @@ namespace IB.WatchServer.Service
                     });
             services.AddAuthorization();
 
-            // HttpClient
+            // HttpClients
             //
-            services.AddHttpClient(Options.DefaultName)
-                .AddPolicyHandler((serviceProvider, request) => HttpPolicyExtensions.HandleTransientHttpError()
-                    .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(attempt * 3),
-                        onRetry: (outcome, timespan, retryAttempt, context) =>
-                        {
-                            var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<WebRequestsProvider>();
-                            logger.LogWarning("Delaying for {delay}ms, then making retry {retry}. CorrelationId {correlationId}",
-                                timespan.TotalMilliseconds, retryAttempt, context.CorrelationId);
-                        }
-                    ));
+            services.AddHttpClient(HttpBuilderExtensions.DefaultClientName)
+                .DefaultHttpPolicy();
+            services.AddHttpClient(HttpBuilderExtensions.ExchangeClientName)
+                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
 
             // AutoMapper Configuration
             //
