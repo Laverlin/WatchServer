@@ -59,6 +59,9 @@ namespace IB.WatchServer.Service.Entity.Settings
 
         [Required, Url]
         public string ExchangeRateApiUrl { get; set; }
+
+        [Required]
+        public string[] ExchangeRateSupportedCurrency { get; set; }
     }
 
     /// <summary>

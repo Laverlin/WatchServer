@@ -162,7 +162,7 @@ namespace IB.WatchServer.Service.Service
         {
             _metrics.ExchangeRateIncrement("CurrencyConverter.com", SourceType.Remote, baseCurrency, targetCurrency);
 
-            var client = _clientFactory.CreateClient(Options.DefaultName);
+            var client = _clientFactory.CreateClient(HttpBuilderExtensions.ExchangeClientName);
             using var response = await client.GetAsync(_faceSettings.BuildCurrencyConverterUrl(baseCurrency, targetCurrency));
             if (!response.IsSuccessStatusCode)
             { 
@@ -193,8 +193,8 @@ namespace IB.WatchServer.Service.Service
         {
             _metrics.ExchangeRateIncrement("ExchangeRateApi.com", SourceType.Remote, baseCurrency, targetCurrency);
 
-            var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync($"https://api.exchangeratesapi.io/latest?base={baseCurrency}&symbols={targetCurrency}");
+            var client = _clientFactory.CreateClient(HttpBuilderExtensions.DefaultClientName);
+            using var response = await client.GetAsync(_faceSettings.BuildExchangeRateApiUrl(baseCurrency, targetCurrency));
             if (!response.IsSuccessStatusCode)
             { 
                 _logger.LogWarning($"Error ExchangeRate request, status: {response.StatusCode.ToString()}");
@@ -231,9 +231,15 @@ namespace IB.WatchServer.Service.Service
 
             var fallbackPolicy = Policy<ExchangeRateInfo>
                 .Handle<Exception>()
-                .OrResult(_ => _.RequestStatus.StatusCode== RequestStatusCode.Error)
-                .FallbackAsync(async cancellationToken =>  await RequestExchangeRateApi(baseCurrency, targetCurrency)
-                    .ConfigureAwait(false));
+                .OrResult(_ => _.RequestStatus.StatusCode == RequestStatusCode.Error)
+                .FallbackAsync(async cancellationToken =>
+                {
+                    if (_faceSettings.ExchangeRateSupportedCurrency.Contains(baseCurrency) &&
+                        _faceSettings.ExchangeRateSupportedCurrency.Contains(targetCurrency))
+                        return await RequestExchangeRateApi(baseCurrency, targetCurrency)
+                            .ConfigureAwait(false);
+                    return new ExchangeRateInfo();
+                });
             exchangeRateInfo = await fallbackPolicy.ExecuteAsync(async () => await RequestCurrencyConverter(baseCurrency, targetCurrency)
                 .ConfigureAwait(false));
             
