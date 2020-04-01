@@ -1,24 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using App.Metrics;
-using App.Metrics.Counter;
-using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.WatchFace;
-using IB.WatchServer.Service.Infrastructure;
+﻿using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Service.HttpClients;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Contrib.HttpClient;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace IB.WatchServer.XUnitTest.UnitTests

@@ -50,6 +50,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 "{\"currently\":{\"time\":1584864023,\"summary\":\"Possible Drizzle\",\"icon\":\"rain\",\"precipIntensity\":0.2386,\"precipProbability\":0.4,\"precipType\":\"rain\",\"temperature\":9.39,\"apparentTemperature\":8.3,\"dewPoint\":9.39,\"humidity\":1,\"pressure\":1010.8,\"windSpeed\":2.22,\"windGust\":3.63,\"windBearing\":71,\"cloudCover\":0.52,\"uvIndex\":1,\"visibility\":16.093,\"ozone\":391.9},\"offset\":1}";
             var locationResponse =
                 "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, KS\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, KS\",\"locality\": \"Olathe\"}}]}]}";
+            var ccResponse = "{\"USD_DKK\": 1.1}";
 
             _lat = (decimal) 38.855652;
             _lon = (decimal)-94.799712;
@@ -65,6 +66,9 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 .ReturnsResponse(locationResponse, "application/json");
             _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(0, 0))
                 .ReturnsResponse(HttpStatusCode.BadRequest);
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildCurrencyConverterUrl("USD", "DKK"))
+                .ReturnsResponse(ccResponse, "application/json");
+
 
             var httpFactory = _handler.CreateClientFactory();
 
@@ -98,8 +102,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Act
             //
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
-            var url =
-                $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&did=test-device10";
+            var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&did=test-device10";
             await _client.GetAsync(url);
             var response = await _client.GetAsync(url);
 
@@ -109,13 +112,13 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
 
+
         [Fact]
         public async Task WrongTokenShouldReturnAuthError()
         {
             // Act
             //
-            var url =
-                $"/api/v2/YAFace?apiToken=wrong-token&did=test-device11";
+            var url = $"/api/v2/YAFace?apiToken=wrong-token&did=test-device11";
             await _client.GetAsync(url);
             var responseWrong = await _client.GetAsync(url);
 
@@ -155,6 +158,61 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Assert
             //
             response.EnsureSuccessStatusCode(); // Status Code 2xx
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task CorrectExchangeRequestShouldReturnCurrency()
+        {
+            // Arrange
+            //
+            var expected = new WatchResponse
+            {
+                ExchangeRateInfo = new ExchangeRateInfo
+                {
+                    RequestStatus = new RequestStatus(RequestStatusCode.Ok),
+                    ExchangeRate = (decimal) 1.1
+                }
+            };
+
+            // Act
+            //
+            var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
+            var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&did=test-device12&bc=USD&tc=DKK";
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            //
+            response.EnsureSuccessStatusCode();
+
+            var actual = JsonSerializer.Deserialize<WatchResponse>(await response.Content.ReadAsStringAsync());
+            Assert.Equal(expected.ExchangeRateInfo.ExchangeRate, actual.ExchangeRateInfo.ExchangeRate);
+            Assert.Equal(RequestStatusCode.Ok, actual.ExchangeRateInfo.RequestStatus.StatusCode);
+        }
+
+        [Fact]
+        public async Task OnExceptionShouldReturnBadRequest()
+        {
+            // Arrange
+            //
+            var expected = new ErrorResponse
+            {
+                StatusCode = 400,
+                Description = "Bad request"
+            };
+            var expectedJson = JsonSerializer.Serialize(expected);
+
+            var faceSettings = _factory.Services.GetRequiredService<FaceSettings>();
+            //_handler.SetupAnyRequest().Throws(new Exception());
+            var url = $"/api/v2/YAFace?apiToken={faceSettings.AuthSettings.Token}&did=test-device14&bc=DKK&tc=CHF";
+
+            // Act
+            //
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            //
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode); // Status Code 400
             Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
 
