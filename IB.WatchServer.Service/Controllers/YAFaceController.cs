@@ -11,6 +11,7 @@ using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Service.Service.HttpClients;
 using LinqToDB.Common;
 
 namespace IB.WatchServer.Service.Controllers
@@ -26,19 +27,25 @@ namespace IB.WatchServer.Service.Controllers
     {
         private readonly ILogger<YAFaceController> _logger;
         private readonly IDataProvider _dataProvider;
-        private readonly WebRequestsProvider _webRequestsProvider;
+        private readonly ExchangeRateCacheStrategy _exchangeRateCacheStrategy;
         private readonly VirtualearthClient _virtualearthClient;
         private readonly CurrencyConverterClient _currencyConverterClient;
+        private readonly DarkSkyClient _darkSkyClient;
+        private readonly OpenWeatherClient _openWeatherClient;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, IDataProvider dataProvider, WebRequestsProvider webRequestsProvider,
-            VirtualearthClient virtualearthClient, CurrencyConverterClient currencyConverterClient)
+            ILogger<YAFaceController> logger, IDataProvider dataProvider, ExchangeRateCacheStrategy exchangeRateCacheStrategy,
+            VirtualearthClient virtualearthClient, CurrencyConverterClient currencyConverterClient, 
+            DarkSkyClient darkSkyClient,
+            OpenWeatherClient openWeatherClient)
         {
             _logger = logger;
             _dataProvider = dataProvider;
-            _webRequestsProvider = webRequestsProvider;
+            _exchangeRateCacheStrategy = exchangeRateCacheStrategy;
             _virtualearthClient = virtualearthClient;
             _currencyConverterClient = currencyConverterClient;
+            _darkSkyClient = darkSkyClient;
+            _openWeatherClient = openWeatherClient;
         }
 
         /// <summary>
@@ -130,8 +137,8 @@ namespace IB.WatchServer.Service.Controllers
                     //
                     Enum.TryParse<WeatherProvider>(watchRequest.WeatherProvider, true, out var weatherProvider);
                     weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
-                        ? await _webRequestsProvider.RequestDarkSky(watchRequest.Lat.Value, watchRequest.Lon.Value, watchRequest.DarkskyKey)
-                        : await _webRequestsProvider.RequestOpenWeather(watchRequest.Lat.Value, watchRequest.Lon.Value);
+                        ? await _darkSkyClient.RequestDarkSky(watchRequest.Lat.Value, watchRequest.Lon.Value, watchRequest.DarkskyKey)
+                        : await _openWeatherClient.RequestOpenWeather(watchRequest.Lat.Value, watchRequest.Lon.Value);
 
                     // Get location info
                     //
@@ -139,15 +146,15 @@ namespace IB.WatchServer.Service.Controllers
                         await _dataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
                         await _virtualearthClient.RequestLocationName(watchRequest.Lat.Value, watchRequest.Lon.Value);
 
-                    //await _webRequestsProvider.RequestVirtualearth(watchRequest.Lat.Value, watchRequest.Lon.Value);
+                    //await _exchangeRateCacheStrategy.RequestVirtualearth(watchRequest.Lat.Value, watchRequest.Lon.Value);
                 }
 
                 // Get Exchange Rate info
                 //
                 if (!watchRequest.BaseCurrency.IsNullOrEmpty() && !watchRequest.TargetCurrency.IsNullOrEmpty())
                 {
-                    exchangeRateInfo = await _webRequestsProvider
-                        .RequestCacheExchangeRate(watchRequest.BaseCurrency, watchRequest.TargetCurrency);
+                    exchangeRateInfo = await _exchangeRateCacheStrategy
+                        .GetExchangeRate(watchRequest.BaseCurrency, watchRequest.TargetCurrency);
                 }
 
                 // Save all requested data

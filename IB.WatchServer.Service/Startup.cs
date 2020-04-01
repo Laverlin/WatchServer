@@ -32,6 +32,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using IB.WatchServer.Service.Service.HttpClients;
 using Telegram.Bot;
 
 namespace IB.WatchServer.Service
@@ -59,7 +60,7 @@ namespace IB.WatchServer.Service
             //
             services.AddSingleton<DataConnectionFactory>();
             services.AddScoped<IDataProvider, DataProvider>();
-            services.AddScoped<WebRequestsProvider>();
+            services.AddScoped<ExchangeRateCacheStrategy>();
             services.AddScoped<RequestRateLimit>();
 
             services.AddControllers();
@@ -105,10 +106,11 @@ namespace IB.WatchServer.Service
                 .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
             services.AddHttpClient<ExchangeRateApiClient>()
                 .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
-            services.AddHttpClient(HttpBuilderExtensions.DefaultClientName)
-                .DefaultHttpPolicy();
-            services.AddHttpClient(HttpBuilderExtensions.ExchangeClientName)
+            services.AddHttpClient<DarkSkyClient>()
                 .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<OpenWeatherClient>()
+                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
+
 
             // AutoMapper Configuration
             //
@@ -151,7 +153,7 @@ namespace IB.WatchServer.Service
                 .AddNpgSql(pgSettings.BuildConnectionString(), name: "database")
                 .AddUrlGroup(faceSettings.BuildLocationUrl(0, 0), "location")
                 .AddUrlGroup(new Uri("https://api.darksky.net/v1/status.txt"), "darkSky")
-                .AddUrlGroup(faceSettings.BuildOpenWeatherUrl("0", "0"), "openWeather");
+                .AddUrlGroup(faceSettings.BuildOpenWeatherUrl(0, 0), "openWeather");
 
             services.AddApiVersioning(options =>
             {

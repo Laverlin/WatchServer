@@ -22,7 +22,7 @@ namespace IB.WatchServer.Service.Service
                 .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(attempt * 3),
                     onRetry: (outcome, timespan, retryAttempt, context) =>
                     {
-                        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<WebRequestsProvider>();
+                        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<ExchangeRateCacheStrategy>();
                         logger.LogWarning("Delaying for {delay}ms, then making retry {retry}. CorrelationId {correlationId}",
                             timespan.TotalMilliseconds, retryAttempt, context.CorrelationId);
                     }

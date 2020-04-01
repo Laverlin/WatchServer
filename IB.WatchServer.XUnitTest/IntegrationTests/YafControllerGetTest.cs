@@ -52,15 +52,15 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             _lon = (decimal)-94.799712;
 
             var handler = new Mock<HttpMessageHandler>();
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat.ToString(), _lon.ToString()))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat, _lon))
                 .ReturnsResponse(openWeatherResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat.ToString(), _lon.ToString(), "fake-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "fake-key"))
                 .ReturnsResponse(darkSkyResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat.ToString(), _lon.ToString(), "wrong-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "wrong-key"))
                 .ReturnsResponse(HttpStatusCode.Unauthorized);
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(_lat, _lon))
                 .ReturnsResponse(locationResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(null, null))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(0, 0))
                 .ReturnsResponse(HttpStatusCode.BadRequest);
 
             var httpFactory = handler.CreateClientFactory();

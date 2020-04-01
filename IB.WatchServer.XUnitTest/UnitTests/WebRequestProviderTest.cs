@@ -12,6 +12,7 @@ using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;
+using IB.WatchServer.Service.Service.HttpClients;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -57,12 +58,11 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             var erc = new ExchangeRateApiClient(loggerErcMock.Object, handler.CreateClient(), settings, metricsMock.Object);
 
 
-            var webRequestProvider = new WebRequestsProvider(
-                null, httpClientFactoryMock, settings, metricsMock.Object, null, ccc, erc);
+            var webRequestProvider = new ExchangeRateCacheStrategy(ccc, erc, settings, metricsMock.Object);
 
             // Act
             //
-            await webRequestProvider.RequestCacheExchangeRate("USD", "EUR");
+            await webRequestProvider.GetExchangeRate("USD", "EUR");
 
             // Assert
             //
@@ -102,12 +102,12 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             var ccc = new CurrencyConverterClient(loggerCccMock.Object, handler.CreateClient(), settings, metricsMock.Object);
             var erc = new ExchangeRateApiClient(loggerErcMock.Object, handler.CreateClient(), settings, metricsMock.Object);
 
-            var webRequestProvider = new WebRequestsProvider(null, httpClientFactoryMock, settings, metricsMock.Object, null, ccc, erc);
+            var webRequestProvider = new ExchangeRateCacheStrategy(ccc, erc, settings, metricsMock.Object);
 
             // Act
             //
-            await webRequestProvider.RequestCacheExchangeRate("USD", "CHF");
-            await webRequestProvider.RequestCacheExchangeRate("USD", "CHF");
+            await webRequestProvider.GetExchangeRate("USD", "CHF");
+            await webRequestProvider.GetExchangeRate("USD", "CHF");
 
             // Assert
             //
@@ -155,13 +155,12 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             var erc = new ExchangeRateApiClient(loggerErcMock.Object, handler.CreateClient(), settings, metricsMock.Object);
 
 
-            var webRequestProvider = new WebRequestsProvider(
-                null, httpClientFactoryMock, settings, metricsMock.Object, null, ccc, erc);
+            var webRequestProvider = new ExchangeRateCacheStrategy(ccc, erc, settings, metricsMock.Object);
 
 
             // Act
             //
-            await webRequestProvider.RequestCacheExchangeRate("USD", "PHP");
+            await webRequestProvider.GetExchangeRate("USD", "PHP");
 
             // Assert
             //
@@ -208,13 +207,12 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             var ccc = new CurrencyConverterClient(loggerCccMock.Object, handler.CreateClient(), settings, metricsMock.Object);
             var erc = new ExchangeRateApiClient(loggerErcMock.Object, handler.CreateClient(), settings, metricsMock.Object);
 
-            var webRequestProvider = new WebRequestsProvider(
-                null, httpClientFactoryMock, settings, metricsMock.Object, null, ccc, erc);
+            var webRequestProvider = new ExchangeRateCacheStrategy(ccc, erc, settings, metricsMock.Object);
 
 
             // Act
             //
-            var result = await webRequestProvider.RequestCacheExchangeRate("USD", "BTC");
+            var result = await webRequestProvider.GetExchangeRate("USD", "BTC");
 
             // Assert
             //
@@ -297,15 +295,15 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             var isp = services.BuildServiceProvider();
 
-            var webRequestProvider = new WebRequestsProvider(
-                null, isp.GetRequiredService<IHttpClientFactory>(), settings, metricsMock.Object, null, 
-                isp.GetRequiredService<CurrencyConverterClient>(), isp.GetRequiredService<ExchangeRateApiClient>());
+            var webRequestProvider = new ExchangeRateCacheStrategy(
+                isp.GetRequiredService<CurrencyConverterClient>(), isp.GetRequiredService<ExchangeRateApiClient>(),
+                settings, metricsMock.Object);
 
 
             // Act
             //
-            var result1 = await webRequestProvider.RequestCacheExchangeRate("USD", "RUB");
-            var result2 = await webRequestProvider.RequestCacheExchangeRate("EUR", "PHP");
+            var result1 = await webRequestProvider.GetExchangeRate("USD", "RUB");
+            var result2 = await webRequestProvider.GetExchangeRate("EUR", "PHP");
 
             // Assert
             //

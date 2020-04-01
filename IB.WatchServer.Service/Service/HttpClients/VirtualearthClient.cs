@@ -8,7 +8,7 @@ using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.WatchFace;
 using Microsoft.Extensions.Logging;
 
-namespace IB.WatchServer.Service.Service
+namespace IB.WatchServer.Service.Service.HttpClients
 {
     /// <summary>
     /// Http Client to work with https://dev.virtualearth.net
