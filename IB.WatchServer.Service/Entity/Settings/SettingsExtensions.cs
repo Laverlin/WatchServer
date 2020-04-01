@@ -17,9 +17,9 @@ namespace IB.WatchServer.Service.Entity.Settings
         /// <param name="lat">Latitude of location</param>
         /// <param name="lon">Longitude of location</param>
         /// <returns>url with parameters to get location name</returns>
-        public static Uri BuildLocationUrl(this FaceSettings settings, string lat, string lon)
+        public static Uri BuildLocationUrl(this FaceSettings settings, decimal lat, decimal lon)
         {
-            return new Uri(string.Format(settings.LocationUrl, lat, lon, settings.LocationKey));
+            return new Uri(string.Format(settings.LocationUrl, lat.ToString("G"), lon.ToString("G"), settings.LocationKey));
         }
 
         /// <summary>

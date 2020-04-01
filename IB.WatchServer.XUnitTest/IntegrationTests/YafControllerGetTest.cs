@@ -22,8 +22,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
-        private readonly string _lat;
-        private readonly string _lon;
+        private readonly decimal _lat;
+        private readonly decimal _lon;
 
         public void Dispose() => _factory.Output = null;
 
@@ -48,15 +48,15 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var locationResponse =
                 "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, KS\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, KS\",\"locality\": \"Olathe\"}}]}]}";
 
-            _lat = "38.855652";
-            _lon = "-94.799712";
+            _lat = (decimal) 38.855652;
+            _lon = (decimal)-94.799712;
 
             var handler = new Mock<HttpMessageHandler>();
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat, _lon))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat.ToString(), _lon.ToString()))
                 .ReturnsResponse(openWeatherResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "fake-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat.ToString(), _lon.ToString(), "fake-key"))
                 .ReturnsResponse(darkSkyResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "wrong-key"))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat.ToString(), _lon.ToString(), "wrong-key"))
                 .ReturnsResponse(HttpStatusCode.Unauthorized);
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(_lat, _lon))
                 .ReturnsResponse(locationResponse, "application/json");

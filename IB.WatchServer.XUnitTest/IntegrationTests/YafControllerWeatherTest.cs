@@ -64,7 +64,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 .ReturnsResponse(darkSkyResponse, "application/json");
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "wrong-key"))
                 .ReturnsResponse(HttpStatusCode.Unauthorized);
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(_lat, _lon))
+            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(Convert.ToDecimal(_lat), Convert.ToDecimal(_lon)))
                 .ReturnsResponse(locationResponse, "application/json");
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(null, null))
                 .ReturnsResponse(HttpStatusCode.BadRequest);

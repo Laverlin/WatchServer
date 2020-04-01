@@ -27,13 +27,18 @@ namespace IB.WatchServer.Service.Controllers
         private readonly ILogger<YAFaceController> _logger;
         private readonly IDataProvider _dataProvider;
         private readonly WebRequestsProvider _webRequestsProvider;
+        private readonly VirtualearthClient _virtualearthClient;
+        private readonly CurrencyConverterClient _currencyConverterClient;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, IDataProvider dataProvider, WebRequestsProvider webRequestsProvider)
+            ILogger<YAFaceController> logger, IDataProvider dataProvider, WebRequestsProvider webRequestsProvider,
+            VirtualearthClient virtualearthClient, CurrencyConverterClient currencyConverterClient)
         {
             _logger = logger;
             _dataProvider = dataProvider;
             _webRequestsProvider = webRequestsProvider;
+            _virtualearthClient = virtualearthClient;
+            _currencyConverterClient = currencyConverterClient;
         }
 
         /// <summary>
@@ -132,7 +137,9 @@ namespace IB.WatchServer.Service.Controllers
                     //
                     locationInfo =
                         await _dataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
-                        await _webRequestsProvider.RequestVirtualearth(watchRequest.Lat.Value, watchRequest.Lon.Value);
+                        await _virtualearthClient.RequestLocationName(watchRequest.Lat.Value, watchRequest.Lon.Value);
+
+                    //await _webRequestsProvider.RequestVirtualearth(watchRequest.Lat.Value, watchRequest.Lon.Value);
                 }
 
                 // Get Exchange Rate info
@@ -164,5 +171,8 @@ namespace IB.WatchServer.Service.Controllers
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
         }
+
+
+
     }
 }

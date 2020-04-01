@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+
 using App.Metrics;
 using AutoMapper;
 
@@ -26,50 +26,24 @@ namespace IB.WatchServer.Service.Service
         private readonly FaceSettings _faceSettings;
         private readonly IMetrics _metrics;
         private readonly IMapper _mapper;
+        private readonly CurrencyConverterClient _currencyConverterClient;
+        private readonly ExchangeRateApiClient _exchangeRateApiClient;
         private static readonly MemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
 
         public WebRequestsProvider(
-            ILogger<WebRequestsProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, IMetrics metrics, IMapper mapper)
+            ILogger<WebRequestsProvider> logger, IHttpClientFactory clientFactory, FaceSettings faceSettings, IMetrics metrics, IMapper mapper,
+            CurrencyConverterClient currencyConverterClient, ExchangeRateApiClient exchangeRateApiClient)
         {
             _logger = logger;
             _clientFactory = clientFactory;
             _faceSettings = faceSettings;
             _metrics = metrics;
             _mapper = mapper;
+            _currencyConverterClient = currencyConverterClient;
+            _exchangeRateApiClient = exchangeRateApiClient;
         }
 
-        /// <summary>
-        /// Return location name from geocode provider
-        /// </summary>
-        /// <param name="lat">Latitude</param>
-        /// <param name="lon">Longitude</param>
-        /// <returns>Location name</returns>
-        public async Task<LocationInfo> RequestVirtualearth(decimal lat, decimal lon)
-        {
-            _metrics.LocationIncrement("virtualearth", SourceType.Remote);
 
-            var client = _clientFactory.CreateClient(Options.DefaultName);
-            using var response = await client.GetAsync(_faceSettings.BuildLocationUrl(lat.ToString("G"), lon.ToString("G")));
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
-                    ? $"Unauthorized access to virtualearth"
-                    : $"Error virtualearth request, status: {response.StatusCode.ToString()}");
-                return new LocationInfo {RequestStatus = new RequestStatus(response.StatusCode)};
-            }
-
-            var content = await response.Content.ReadAsStringAsync();
-            using var document = JsonDocument.Parse(content);
-            var resource = document.RootElement
-                .GetProperty("resourceSets")[0]
-                .GetProperty("resources");
-
-            var city = (resource.GetArrayLength() > 0)
-                ? resource[0].GetProperty("name").GetString()
-                : null;
-
-            return new LocationInfo(city);
-        }
 
         /// <summary>
         /// Request weather info on DarkSky weather provider
@@ -152,66 +126,8 @@ namespace IB.WatchServer.Service.Service
             return weatherInfo;
         }
 
-        /// <summary>
-        /// Request current Exchange rate on  currencyconverterapi.com
-        /// </summary>
-        /// <param name="baseCurrency">the currency from which convert</param>
-        /// <param name="targetCurrency">the currency to which convert</param>
-        /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
-        public async Task<ExchangeRateInfo> RequestCurrencyConverter(string baseCurrency, string targetCurrency)
-        {
-            _metrics.ExchangeRateIncrement("CurrencyConverter.com", SourceType.Remote, baseCurrency, targetCurrency);
 
-            var client = _clientFactory.CreateClient(HttpBuilderExtensions.ExchangeClientName);
-            using var response = await client.GetAsync(_faceSettings.BuildCurrencyConverterUrl(baseCurrency, targetCurrency));
-            if (!response.IsSuccessStatusCode)
-            { 
-                _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
-                    ? $"Unauthorized access to currencyconverterapi.com"
-                    : $"Error currencyconverterapi.com request, status: {response.StatusCode.ToString()}");
-                return new ExchangeRateInfo {RequestStatus = new RequestStatus(response.StatusCode)};
-            }
 
-            await using var content = await response.Content.ReadAsStreamAsync();
-            using var json = await JsonDocument.ParseAsync(content);
-
-            return new ExchangeRateInfo
-            {
-                ExchangeRate = json.RootElement.TryGetProperty($"{baseCurrency}_{targetCurrency}", out var rate) 
-                    ? rate.GetDecimal() : 0,
-                RequestStatus = new RequestStatus(RequestStatusCode.Ok)
-            };
-        }
-
-        /// <summary>
-        /// Request current Exchange rate on api.exchangerateapi.com
-        /// </summary>
-        /// <param name="baseCurrency">the currency from which convert</param>
-        /// <param name="targetCurrency">the currency to which convert</param>
-        /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
-        public async Task<ExchangeRateInfo> RequestExchangeRateApi(string baseCurrency, string targetCurrency)
-        {
-            _metrics.ExchangeRateIncrement("ExchangeRateApi.com", SourceType.Remote, baseCurrency, targetCurrency);
-
-            var client = _clientFactory.CreateClient(HttpBuilderExtensions.DefaultClientName);
-            using var response = await client.GetAsync(_faceSettings.BuildExchangeRateApiUrl(baseCurrency, targetCurrency));
-            if (!response.IsSuccessStatusCode)
-            { 
-                _logger.LogWarning($"Error ExchangeRate request, status: {response.StatusCode.ToString()}");
-                return new ExchangeRateInfo {RequestStatus = new RequestStatus(response.StatusCode)};
-            }
-
-            await using var content = await response.Content.ReadAsStreamAsync();
-            using var json = await JsonDocument.ParseAsync(content);
-
-            return new ExchangeRateInfo
-            {
-                ExchangeRate = json.RootElement.GetProperty("rates")
-                    .TryGetProperty($"{targetCurrency}", out var rate) 
-                    ? rate.GetDecimal() : 0,
-                RequestStatus = new RequestStatus(RequestStatusCode.Ok)
-            };
-        }
 
         /// <summary>
         /// Request current Exchange rate in local cache
@@ -236,11 +152,12 @@ namespace IB.WatchServer.Service.Service
                 {
                     if (_faceSettings.ExchangeRateSupportedCurrency.Contains(baseCurrency) &&
                         _faceSettings.ExchangeRateSupportedCurrency.Contains(targetCurrency))
-                        return await RequestExchangeRateApi(baseCurrency, targetCurrency)
+                        return await _exchangeRateApiClient.RequestExchangeRateApi(baseCurrency, targetCurrency)
                             .ConfigureAwait(false);
                     return new ExchangeRateInfo();
                 });
-            exchangeRateInfo = await fallbackPolicy.ExecuteAsync(async () => await RequestCurrencyConverter(baseCurrency, targetCurrency)
+            exchangeRateInfo = await fallbackPolicy.ExecuteAsync(async () => 
+                await _currencyConverterClient.RequestCurrencyConverter(baseCurrency, targetCurrency)
                 .ConfigureAwait(false));
             
             if (exchangeRateInfo.RequestStatus.StatusCode == RequestStatusCode.Ok && exchangeRateInfo.ExchangeRate != 0)

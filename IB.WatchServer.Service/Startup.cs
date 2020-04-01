@@ -99,6 +99,12 @@ namespace IB.WatchServer.Service
 
             // HttpClients
             //
+            services.AddHttpClient<VirtualearthClient>()
+                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<CurrencyConverterClient>()
+                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<ExchangeRateApiClient>()
+                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
             services.AddHttpClient(HttpBuilderExtensions.DefaultClientName)
                 .DefaultHttpPolicy();
             services.AddHttpClient(HttpBuilderExtensions.ExchangeClientName)
@@ -143,7 +149,7 @@ namespace IB.WatchServer.Service
             //
             services.AddHealthChecks()
                 .AddNpgSql(pgSettings.BuildConnectionString(), name: "database")
-                .AddUrlGroup(faceSettings.BuildLocationUrl("0", "0"), "location")
+                .AddUrlGroup(faceSettings.BuildLocationUrl(0, 0), "location")
                 .AddUrlGroup(new Uri("https://api.darksky.net/v1/status.txt"), "darkSky")
                 .AddUrlGroup(faceSettings.BuildOpenWeatherUrl("0", "0"), "openWeather");
 
