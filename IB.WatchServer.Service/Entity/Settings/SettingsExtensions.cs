@@ -17,9 +17,9 @@ namespace IB.WatchServer.Service.Entity.Settings
         /// <param name="lat">Latitude of location</param>
         /// <param name="lon">Longitude of location</param>
         /// <returns>url with parameters to get location name</returns>
-        public static Uri BuildLocationUrl(this FaceSettings settings, string lat, string lon)
+        public static Uri BuildLocationUrl(this FaceSettings settings, decimal lat, decimal lon)
         {
-            return new Uri(string.Format(settings.LocationUrl, lat, lon, settings.LocationKey));
+            return new Uri(string.Format(settings.LocationUrl, lat.ToString("G"), lon.ToString("G"), settings.LocationKey));
         }
 
         /// <summary>
@@ -30,9 +30,9 @@ namespace IB.WatchServer.Service.Entity.Settings
         /// <param name="lon">Location longitude</param>
         /// <param name="dsToken">DarkSky authentication token</param>
         /// <returns>Url to request the weather from DarkSky</returns>
-        public static Uri BuildDarkSkyUrl(this FaceSettings settings, string lat, string lon, string dsToken)
+        public static Uri BuildDarkSkyUrl(this FaceSettings settings, decimal lat, decimal lon, string dsToken)
         {
-            return new Uri(string.Format(settings.DarkSkyUrl, dsToken, lat, lon));
+            return new Uri(string.Format(settings.DarkSkyUrl, dsToken, lat.ToString("G"), lon.ToString("G")));
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace IB.WatchServer.Service.Entity.Settings
         /// <param name="lat">Latitude of location</param>
         /// <param name="lon">Longitude of location</param>
         /// <returns>url with parameters to get the weather from OpenWeather</returns>
-        public static Uri BuildOpenWeatherUrl(this FaceSettings settings, string lat, string lon)
+        public static Uri BuildOpenWeatherUrl(this FaceSettings settings, decimal lat, decimal lon)
         {
             return new Uri(string.Format(settings.OpenWeatherUrl, lat, lon, settings.OpenWeatherKey));
         }
