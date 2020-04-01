@@ -222,6 +222,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             Assert.Equal(RequestStatusCode.HasNotBeenRequested, result.RequestStatus.StatusCode);
         }
 
+   
 
         [Fact]
         public async void After2FaultsCircuitBreakerShouldSendRequestsToFallback()
@@ -266,14 +267,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             IServiceCollection services = new ServiceCollection();
             
-            /*
-            services.AddHttpClient(HttpBuilderExtensions.ExchangeClientName)
-                .DefaultHttpPolicy().CircuitHttpPolicy(2, TimeSpan.FromMinutes(10))
-                .AddHttpMessageHandler(()=>new StubDelegatingHandler(client));
 
-            services.AddHttpClient(HttpBuilderExtensions.DefaultClientName)
-                .DefaultHttpPolicy().AddHttpMessageHandler(() => new StubDelegatingHandler(client));
-                */
 
             var loggerCccMock = new Mock<ILogger<CurrencyConverterClient>>();
             var loggerErcMock = new Mock<ILogger<ExchangeRateApiClient>>();
@@ -287,11 +281,13 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             services.AddSingleton(metricsMock.Object);
 
             services.AddHttpClient<CurrencyConverterClient>()
-                .DefaultHttpPolicy().CircuitHttpPolicy(2, TimeSpan.FromMinutes(10))
+                .AddRetryPolicyWithCb(2, TimeSpan.FromMinutes(10))
                 .AddHttpMessageHandler(()=>new StubDelegatingHandler(client));
             services.AddHttpClient<ExchangeRateApiClient>()
-                .DefaultHttpPolicy().CircuitHttpPolicy(2, TimeSpan.FromMinutes(10))
+                .AddRetryPolicyWithCb(2, TimeSpan.FromMinutes(10))
                 .AddHttpMessageHandler(()=>new StubDelegatingHandler(client));
+
+
 
             var isp = services.BuildServiceProvider();
 
@@ -312,7 +308,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             handler.VerifyRequest(HttpMethod.Get, fallbackUrl1, Times.Exactly(1));
             handler.VerifyRequest(HttpMethod.Get, fallbackUrl2, Times.Exactly(1));
            
-        }
+        } 
 
     }
 

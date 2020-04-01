@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -9,6 +10,7 @@ using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
+using IB.WatchServer.Service.Service.HttpClients;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -24,6 +26,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
         private readonly HttpClient _client;
         private readonly decimal _lat;
         private readonly decimal _lon;
+        private readonly Mock<HttpMessageHandler> _handler;
 
         public void Dispose() => _factory.Output = null;
 
@@ -51,19 +54,19 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             _lat = (decimal) 38.855652;
             _lon = (decimal)-94.799712;
 
-            var handler = new Mock<HttpMessageHandler>();
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat, _lon))
+            _handler = new Mock<HttpMessageHandler>();
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat, _lon))
                 .ReturnsResponse(openWeatherResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "fake-key"))
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "fake-key"))
                 .ReturnsResponse(darkSkyResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "wrong-key"))
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "wrong-key"))
                 .ReturnsResponse(HttpStatusCode.Unauthorized);
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(_lat, _lon))
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(_lat, _lon))
                 .ReturnsResponse(locationResponse, "application/json");
-            handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(0, 0))
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(0, 0))
                 .ReturnsResponse(HttpStatusCode.BadRequest);
 
-            var httpFactory = handler.CreateClientFactory();
+            var httpFactory = _handler.CreateClientFactory();
 
             // Set Mock services on DI
             //
@@ -78,6 +81,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 .CreateClient();
         }
         
+
         
         [Fact]
         public async Task NextRequestWithTheSameDeviceWithin5SecShouldReturn429()

@@ -100,37 +100,15 @@ namespace IB.WatchServer.Service
 
             // HttpClients
             //
-            services.AddHttpClient<VirtualearthClient>()
-                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
-            services.AddHttpClient<CurrencyConverterClient>()
-                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
-            services.AddHttpClient<ExchangeRateApiClient>()
-                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
-            services.AddHttpClient<DarkSkyClient>()
-                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
-            services.AddHttpClient<OpenWeatherClient>()
-                .DefaultHttpPolicy().CircuitHttpPolicy(4, TimeSpan.FromMinutes(10));
-
+            services.AddHttpClient<VirtualearthClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<CurrencyConverterClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<ExchangeRateApiClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<DarkSkyClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<OpenWeatherClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
 
             // AutoMapper Configuration
             //
-            var mappingConfig = new MapperConfiguration(mc =>
-            {
-                mc.CreateMap<WatchRequest, RequestData>();
-                mc.CreateMap<WeatherInfo, RequestData>();
-                mc.CreateMap<LocationInfo, RequestData>();
-                mc.CreateMap<ExchangeRateInfo, RequestData>();
-                mc.CreateMap<Dictionary<string, object>, WeatherInfo>()
-                    .ForMember(d => d.Temperature, c => c.MapFrom(s => s.ContainsKey("temp") ? s["temp"] : 0))
-                    .ForMember(d => d.WindSpeed, c => c.MapFrom(s => s.ContainsKey("speed") ? s["speed"] : 0))
-                    .ForMember(d => d.Humidity,
-                        c => c.MapFrom(s => s.ContainsKey("humidity") ? Convert.ToDecimal(s["humidity"]) / 100 : 0))
-                    .ForAllOtherMembers(o => o.MapFrom(s =>
-                        s.ContainsKey(o.DestinationMember.Name.ToLower())
-                            ? s[o.DestinationMember.Name.ToLower()]
-                            : null));
-            });
-            services.AddSingleton(mappingConfig.CreateMapper());
+            services.AddSingleton(MapperConfig.CreateMapper());
 
             // for AppMetric prometheus endpoint
             //
