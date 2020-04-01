@@ -36,7 +36,7 @@ namespace IB.WatchServer.Service.Service.HttpClients
         /// <param name="baseCurrency">the currency from which convert</param>
         /// <param name="targetCurrency">the currency to which convert</param>
         /// <returns>exchange rate. if conversion is unsuccessfull the rate could be 0 </returns>
-        public async Task<ExchangeRateInfo> RequestExchangeRateApi(string baseCurrency, string targetCurrency)
+        public virtual async Task<ExchangeRateInfo> RequestExchangeRateApi(string baseCurrency, string targetCurrency)
         {
             _metrics.ExchangeRateIncrement("ExchangeRateApi.com", SourceType.Remote, baseCurrency, targetCurrency);
 
