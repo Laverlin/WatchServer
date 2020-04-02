@@ -50,7 +50,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             //Assert
             //
             Assert.Equal(200, code);
-            Assert.Equal(expectedJson, result);
+            Assert.Equal(expectedJson, result, true, true, true);
 
         }
     }
