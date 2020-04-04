@@ -13,7 +13,7 @@ namespace IB.WatchServer.Service.Entity.WatchFace
         public int? Id { get; set; }
 
         [Column("DeviceInfoId")]
-        public int? DeviceInfoId { get; set; }
+        public int? DeviceDataId { get; set; }
 
         [Column("RequestTime")]
         public DateTime RequestTime { get; set; }

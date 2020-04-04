@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using App.Metrics;
@@ -11,18 +12,43 @@ using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service
 {
+
+    public class WatchServerDbConnection : DataConnection
+    {
+        public WatchServerDbConnection(LinqToDB.DataProvider.IDataProvider dataProvider, string connectionString) : 
+            base(dataProvider, connectionString){}
+
+        public virtual ITable<DeviceData> DeviceData => GetTable<DeviceData>();
+
+        public virtual ITable<RequestData> RequestData => GetTable<RequestData>();
+
+        public virtual Task<int> InsertAsync(RequestData requestData)
+        {
+            return RequestData.DataContext.InsertAsync(requestData);
+        }
+
+        public virtual DeviceData AddDevice(string deviceId, string deviceName)
+        {
+            return this.QueryProc<DeviceData>(
+                    "add_device",
+                    new DataParameter("device_id", deviceId),
+                    new DataParameter("device_name", deviceName))
+                .Single();
+        }
+    }
+
     public class DataProvider : IDataProvider
     {
         private readonly ILogger<DataProvider> _logger;
-        private readonly DataConnectionFactory _dbFactory;
+        private readonly DataConnectionFactory<WatchServerDbConnection> _connectionFactory;
         private readonly IMapper _mapper;
         private readonly IMetrics _metrics;
 
         public DataProvider(
-            ILogger<DataProvider> logger, DataConnectionFactory dbFactory, IMapper mapper, IMetrics metrics)
+            ILogger<DataProvider> logger, DataConnectionFactory<WatchServerDbConnection> connectionFactory, IMapper mapper, IMetrics metrics)
         {
             _logger = logger;
-            _dbFactory = dbFactory;
+            _connectionFactory = connectionFactory;
             _mapper = mapper;
             _metrics = metrics;
         }
@@ -35,24 +61,23 @@ namespace IB.WatchServer.Service.Service
         /// <param name="locationInfo">Location data</param>
         /// <param name="exchangeRateInfo">Exchange rate data</param>
         public async Task SaveRequestInfo(
-            WatchRequest watchRequest, WeatherInfo weatherInfo, LocationInfo locationInfo, ExchangeRateInfo exchangeRateInfo)
+            [NotNull] WatchRequest watchRequest, 
+            [NotNull] WeatherInfo weatherInfo, 
+            [NotNull] LocationInfo locationInfo, 
+            [NotNull] ExchangeRateInfo exchangeRateInfo)
         {
-            await using var db = _dbFactory.Create();
-            var deviceInfo = db.QueryProc<DeviceData>(
-                    "add_device",
-                    new DataParameter("device_id", watchRequest.DeviceId ?? "unknown"),
-                    new DataParameter("device_name", watchRequest.DeviceName))
-                .Single();
+
+            await using var dbWatchServer = _connectionFactory.Create();
+            var deviceData = dbWatchServer.AddDevice(watchRequest.DeviceId ?? "unknown", watchRequest.DeviceName);
 
             var requestInfo = _mapper.Map<RequestData>(watchRequest);
             requestInfo = _mapper.Map(weatherInfo, requestInfo);
             requestInfo = _mapper.Map(locationInfo, requestInfo);
-            if (exchangeRateInfo != null)
-                requestInfo = _mapper.Map(exchangeRateInfo, requestInfo);
-            requestInfo.DeviceInfoId = deviceInfo.Id;
+            requestInfo = _mapper.Map(exchangeRateInfo, requestInfo);
+            requestInfo.DeviceDataId = deviceData.Id;
             requestInfo.RequestTime = DateTime.UtcNow;
-
-            await db.GetTable<RequestData>().DataContext.InsertAsync(requestInfo);
+            
+            await dbWatchServer.InsertAsync(requestInfo);
 
             _logger.LogDebug("{@requestInfo}", requestInfo);
         }
@@ -67,9 +92,10 @@ namespace IB.WatchServer.Service.Service
         /// <returns><see cref="LocationInfo"/> with CityName or null</returns>
         public async Task<LocationInfo> LoadLastLocation(string deviceId, decimal latitude, decimal longitude)
         {
-            await using var db = _dbFactory.Create();
-            var city = await db.GetTable<RequestData>().Where(c => c.RequestTime != null)
-                .Join(db.GetTable<DeviceData>().Where(d => d.DeviceId == deviceId), c => c.DeviceInfoId, d => d.Id,
+            await using var dbWatchServer = _connectionFactory.Create();
+
+            var city = await dbWatchServer.RequestData.Where(c => c.RequestTime != null)
+                .Join(dbWatchServer.DeviceData.Where(d => d.DeviceId == deviceId), c => c.DeviceDataId, d => d.Id,
                     (c, d) => new {c.CityName, c.Lat, c.Lon, c.RequestTime})
                 .OrderByDescending(c => c.RequestTime).Take(1)
                 .Where(c => c.Lat == latitude && c.Lon == longitude)
@@ -79,7 +105,6 @@ namespace IB.WatchServer.Service.Service
 
             _metrics.LocationIncrement("cache", SourceType.Database);
             return new LocationInfo(city.CityName);
-
         }
     }
 }

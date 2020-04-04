@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity.SailingApp;
+using LinqToDB.Data;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -16,9 +17,9 @@ namespace IB.WatchServer.Service.Controllers
     public class YASailController : ControllerBase
     {
         private readonly ILogger<YASailController> _logger;
-        private readonly DataConnectionFactory _dbFactory;
+        private readonly DataConnectionFactory<DataConnection> _dbFactory;
 
-        public YASailController (ILogger<YASailController > logger, DataConnectionFactory dbFactory)
+        public YASailController (ILogger<YASailController > logger, DataConnectionFactory<DataConnection> dbFactory)
         {
             _logger = logger;
             _dbFactory = dbFactory;

@@ -11,6 +11,11 @@ namespace IB.WatchServer.Service.Entity.Settings
     public static class SettingsExtensions
     {
         /// <summary>
+        /// Cache connection string builder result
+        /// </summary>
+        private static Lazy<string> _connectionString;
+
+        /// <summary>
         /// Build url string to request location info
         /// </summary>
         /// <param name="settings">Configuration object</param>
@@ -78,20 +83,25 @@ namespace IB.WatchServer.Service.Entity.Settings
         /// <returns>Connection String</returns>
         public static string BuildConnectionString(this IConnectionSettings connectionSettings)
         {
-            var connectionString = new StringBuilder();
-            foreach (var propertyInfo in connectionSettings.GetType().GetProperties())
+            _connectionString = new Lazy<string>(() =>
             {
-                var value = propertyInfo.GetValue(connectionSettings);
-                if (value != null)
+                var connectionString = new StringBuilder();
+                foreach (var propertyInfo in connectionSettings.GetType().GetProperties())
                 {
-                    var name = propertyInfo.GetCustomAttribute<DisplayNameAttribute>() != null
-                        ? propertyInfo.GetCustomAttribute<DisplayNameAttribute>().DisplayName
-                        : propertyInfo.Name;
-                    connectionString.Append($"{name}={value};");
+                    var value = propertyInfo.GetValue(connectionSettings);
+                    if (value != null)
+                    {
+                        var name = propertyInfo.GetCustomAttribute<DisplayNameAttribute>() != null
+                            ? propertyInfo.GetCustomAttribute<DisplayNameAttribute>().DisplayName
+                            : propertyInfo.Name;
+                        connectionString.Append($"{name}={value};");
+                    }
                 }
-            }
 
-            return connectionString.ToString();
+                return connectionString.ToString();
+            });
+
+            return _connectionString.Value;
         }
     }
 }

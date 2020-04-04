@@ -33,6 +33,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Service.HttpClients;
+using LinqToDB.Data;
 using Telegram.Bot;
 
 namespace IB.WatchServer.Service
@@ -58,7 +59,8 @@ namespace IB.WatchServer.Service
 
             // services
             //
-            services.AddSingleton<DataConnectionFactory>();
+            services.AddSingleton<DataConnectionFactory<WatchServerDbConnection>>();
+            services.AddSingleton<DataConnectionFactory<DataConnection>>();
             services.AddScoped<IDataProvider, DataProvider>();
             services.AddScoped<ExchangeRateCacheStrategy>();
             services.AddScoped<RequestRateLimit>();

@@ -1,13 +1,15 @@
-﻿using LinqToDB.Data;
+﻿using System;
 using LinqToDB.DataProvider;
 using IB.WatchServer.Service.Entity.Settings;
+using LinqToDB.Common;
+using LinqToDB.Data;
 
 namespace IB.WatchServer.Service.Infrastructure
 {
     /// <summary>
     /// Factory to work with Data Connection from DI 
     /// </summary>
-    public class DataConnectionFactory
+    public class DataConnectionFactory<T> where T: DataConnection
     {
         private readonly IDataProvider _dataProvider;
         private readonly string _connectionString;
@@ -27,13 +29,13 @@ namespace IB.WatchServer.Service.Infrastructure
             this(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
         { }
 
-        /// <summary>
-        /// Create data connection with provided settings
-        /// </summary>
-        /// <returns><see cref="DataConnection"/></returns>
-        public DataConnection Create()
+
+        public virtual T Create()
         {
-            return new DataConnection(_dataProvider, _connectionString);
+            if (_dataProvider == null) throw new ArgumentNullException(nameof(_dataProvider));
+            if (_connectionString.IsNullOrEmpty()) throw new ArgumentNullException(nameof(_connectionString));
+
+            return (T) Activator.CreateInstance(typeof(T), _dataProvider, _connectionString);
         }
-    }        
+    }
 }
