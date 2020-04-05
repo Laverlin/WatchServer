@@ -13,11 +13,16 @@
     <AssemblyName>IB.WatchServer</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Migrations\baseline-up.sql" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="App.Metrics.AspNetCore" Version="3.2.0" />
     <PackageReference Include="App.Metrics.Formatters.Prometheus" Version="3.2.0" />
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="3.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.Uris" Version="3.0.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="FluentMigrator" Version="3.2.1" />
+    <PackageReference Include="FluentMigrator.Runner" Version="3.2.1" />
     <PackageReference Include="HttpToSocks5Proxy" Version="1.4.0" />
     <PackageReference Include="linq2db.PostgreSQL" Version="2.9.6" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.1.1" />
@@ -30,6 +35,9 @@
     <PackageReference Include="Serilog.Sinks.Seq" Version="4.0.0" />
     <PackageReference Include="shortid" Version="2.0.0" />
     <PackageReference Include="Telegram.Bot" Version="15.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\baseline-up.sql" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="appsettings.json">
