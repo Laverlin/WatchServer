@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Service.Migrations;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Service.HttpClients;
 using Microsoft.AspNetCore.TestHost;
@@ -20,7 +21,7 @@ using Xunit.Abstractions;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
-    public class YafControllerGetTest : IClassFixture<ServiceAppTestFixture>, IDisposable
+    public class YafControllerGetNoDatabaseTest : IClassFixture<ServiceAppTestFixture>, IDisposable
     {
         private readonly ServiceAppTestFixture _factory;
         private readonly HttpClient _client;
@@ -30,7 +31,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
         public void Dispose() => _factory.Output = null;
 
-        public YafControllerGetTest(ServiceAppTestFixture factory, ITestOutputHelper output)
+        public YafControllerGetNoDatabaseTest(ServiceAppTestFixture factory, ITestOutputHelper output)
         {
             factory.Output = output;
             _factory = factory;

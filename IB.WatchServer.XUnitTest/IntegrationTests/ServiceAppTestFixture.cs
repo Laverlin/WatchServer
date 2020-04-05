@@ -39,18 +39,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             {
                 services.RemoveAll<IMetricsRoot>();
                 services.RemoveAll<IHostedService>();
-
-                using (var scope =services.BuildServiceProvider().CreateScope())
-                {
-                    var scopeServices = scope.ServiceProvider;
-                    var config = scopeServices.GetService<IConnectionSettings>();
-                    var testDbConnectionString = config.BuildConnectionString();//config.GetValue<string>("testDbConnectionString");
-                    MigrationExtensions.RunMigrationsUp(testDbConnectionString);
-                }
             });
-
-
-
 
             
         }
