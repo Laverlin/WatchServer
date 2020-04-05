@@ -13,6 +13,7 @@
     <AssemblyName>IB.WatchServer</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Migrations\baseline-down.sql" />
     <None Remove="Migrations\baseline-up.sql" />
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +38,7 @@
     <PackageReference Include="Telegram.Bot" Version="15.3.0" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\baseline-down.sql" />
     <EmbeddedResource Include="Migrations\baseline-up.sql" />
   </ItemGroup>
   <ItemGroup>

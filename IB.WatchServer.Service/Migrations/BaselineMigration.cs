@@ -12,7 +12,7 @@ namespace IB.WatchServer.Service.Migrations
 
         public override void Down()
         {
-            // throw new NotImplementedException();
+            Execute.EmbeddedScript(@"IB.WatchServer.Service.Migrations.baseline-down.sql");
         }
     }
 }

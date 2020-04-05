@@ -23,24 +23,25 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
         private readonly decimal _lat;
         private readonly decimal _lon;
         private readonly Mock<HttpMessageHandler> _handler;
+        private readonly MigrationRunner _migrationRunner;
 
         public void Dispose()
         {
-            var config = _factory.Services.GetRequiredService<IConnectionSettings>();
-            MigrationExtensions.RollbackMigration(config.BuildConnectionString());
+            _migrationRunner.RunMigrationDown(new BaselineMigration());
             _factory.Output = null;
         }
 
         public YafControllerFullTest(ServiceAppTestFixture factory, ITestOutputHelper output)
         {
-            _factory = factory;
+
             factory.Output = output;
             _factory = factory;
 
             // Prepare Database
             //
             var config = _factory.Services.GetRequiredService<IConnectionSettings>();
-            MigrationExtensions.RunMigrationsUp(config.BuildConnectionString());
+            _migrationRunner = new MigrationRunner(config.BuildConnectionString());
+            _migrationRunner.RunMigrationsUp();
 
             // Mock web requests
             //
@@ -77,10 +78,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             _client = _factory.WithWebHostBuilder(builder =>
                 {
-                    builder.ConfigureTestServices(services =>
-                    {
-                        services.AddSingleton(_ => httpFactory);
-                    });
+                    builder.ConfigureTestServices(services => { services.AddSingleton(_ => httpFactory); });
                 })
                 .CreateClient();
         }
@@ -88,6 +86,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
         [Fact]
         public async void RequestToOpenWeatherShouldStoredInDatabase()
         {
+            // Arrange
+            //
             var deviceId = "test-device20";
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
             var url = $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&v=0.9.204&fw=5.0&ciqv=3.1.6&dname=unknown&wp=OpenWeather";
