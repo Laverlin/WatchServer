@@ -25,6 +25,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
         private readonly Mock<HttpMessageHandler> _handler;
         private readonly MigrationRunner _migrationRunner;
 
+
         public void Dispose()
         {
             _migrationRunner.RunMigrationDown(new BaselineMigration());
@@ -60,7 +61,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             _handler = new Mock<HttpMessageHandler>();
             _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(_lat, _lon))
                 .ReturnsResponse(openWeatherResponse, "application/json");
-            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "fake-key"))
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "test-key"))
                 .ReturnsResponse(darkSkyResponse, "application/json");
             _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildDarkSkyUrl(_lat, _lon, "wrong-key"))
                 .ReturnsResponse(HttpStatusCode.Unauthorized);
@@ -90,7 +91,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             var deviceId = "test-device20";
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
-            var url = $"/api/v1/YAFace/weather?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&v=0.9.204&fw=5.0&ciqv=3.1.6&dname=unknown&wp=OpenWeather";
+            var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&av=0.9.204&fw=5.0&ciqv=3.1.6&dn=unknown&wp=OpenWeather";
 
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
             var dbConnection = new WatchServerDbConnection(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString());
@@ -105,7 +106,70 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var actualDevice = await dbConnection.DeviceData.SingleAsync(d => d.DeviceId == deviceId);
             var actualRequest = await dbConnection.RequestData.SingleAsync(r => r.DeviceDataId == actualDevice.Id);
 
+            Assert.Equal("unknown", actualDevice.DeviceName);
+            Assert.Equal(deviceId, actualDevice.DeviceId);
+
+            Assert.Equal("5.0", actualRequest.Framework);
+            Assert.Equal("3.1.6", actualRequest.CiqVersion);
+            Assert.Equal("0.9.204", actualRequest.Version);
+            Assert.Equal(_lon, actualRequest.Lon);
+            Assert.Equal(_lat, actualRequest.Lat);
+
             Assert.Equal((decimal) 4.28, actualRequest.Temperature);
+            Assert.Equal((decimal) 2.21, actualRequest.WindSpeed);
+            Assert.Equal("Olathe, KS", actualRequest.CityName);
+
+
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.darksky.net") , Times.Never());
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("dev.virtualearth.net") , Times.Once());
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("free.currconv.com") , Times.Never());
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.openweathermap.org") , Times.Once());
+            
+        }
+
+        [Fact]
+        public async void RequestToDarkSkyAndCurrencyShouldStoredInDatabase()
+        {
+            // Arrange
+            //
+            var deviceId = "test-device21";
+            var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
+            var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&av=0.9.204&fw=5.0&ciqv=3.1.6&dn=unknown&wapiKey=test-key&wp=DarkSky&bc=USD&tc=DKK";
+
+            var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+            var dbConnection = new WatchServerDbConnection(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString());
+
+            // Act
+            //
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            //
+            response.EnsureSuccessStatusCode();
+            var actualDevice = await dbConnection.DeviceData.SingleAsync(d => d.DeviceId == deviceId);
+            var actualRequest = await dbConnection.RequestData.SingleAsync(r => r.DeviceDataId == actualDevice.Id);
+
+            Assert.Equal("unknown", actualDevice.DeviceName);
+            Assert.Equal(deviceId, actualDevice.DeviceId);
+
+            Assert.Equal("5.0", actualRequest.Framework);
+            Assert.Equal("3.1.6", actualRequest.CiqVersion);
+            Assert.Equal("0.9.204", actualRequest.Version);
+            Assert.Equal(_lon, actualRequest.Lon);
+            Assert.Equal(_lat, actualRequest.Lat);
+            Assert.Equal("USD", actualRequest.BaseCurrency);
+            Assert.Equal("DKK", actualRequest.TargetCurrency);
+
+            Assert.Equal((decimal) 9.39, actualRequest.Temperature);
+            Assert.Equal((decimal) 2.22, actualRequest.WindSpeed);
+            Assert.Equal((decimal) 0.4, actualRequest.PrecipProbability);
+            Assert.Equal("Olathe, KS", actualRequest.CityName);
+            Assert.Equal((decimal) 1.1, actualRequest.ExchangeRate);
+
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("free.currconv.com") , Times.Once());
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.darksky.net") , Times.Once());
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("dev.virtualearth.net") , Times.Once());
+            _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.openweathermap.org") , Times.Never());
         }
     }
 }
