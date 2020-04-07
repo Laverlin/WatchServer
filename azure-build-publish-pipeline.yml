@@ -66,18 +66,22 @@ steps:
 
 # Run all tests and generate the code coverage file
 #
-#- task: DotNetCoreCLI@2
-#  inputs:
-#    command: test
-#    projects: "**/*XUnitTest/*.csproj"
-#    arguments: -c $(BuildConfiguration) --no-build --no-restore -s $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" 
-#  displayName: Run Tests
-
-- script: dotnet test $(Build.SourcesDirectory)/**/*XUnitTest/*.csproj --no-build --no-restore --collect:"XPlat Code Coverage"
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: "**/*XUnitTest/*.csproj"
+    arguments: -c $(BuildConfiguration) --no-build --no-restore -s $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" 
+  displayName: Run Tests
   env: 
     PostgresProviderSettings__Database : $(testDatabase)
     PostgresProviderSettings__UserId : $(testDbUsername)
     PostgresProviderSettings__Password : $(testDbPassword)
+
+#- script: dotnet test $(Build.SourcesDirectory)/**/*XUnitTest/*.csproj --no-build --no-restore --collect:"XPlat Code Coverage"
+#  env: 
+#    PostgresProviderSettings__Database : $(testDatabase)
+#    PostgresProviderSettings__UserId : $(testDbUsername)
+#    PostgresProviderSettings__Password : $(testDbPassword)
 
 
 # Generate the report using ReportGenerator (https://github.com/danielpalme/ReportGenerator)
