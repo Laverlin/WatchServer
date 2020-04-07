@@ -18,8 +18,13 @@ steps:
     if ("$(Build.SourceBranchName)" -eq "master") {
       $versionSuffix = "dev"
     } 
-    if ("$(Build.SourceBranchName)" -eq "stable") {
+    elseif ("$(Build.SourceBranchName)" -eq "stable") {
       $versionSuffix = "stable"
+    } 
+    else
+    {
+      $regex = ".*(?=\/)"
+      $versionSuffix = [regex]::matches($(Build.SourceBranchName), $regex).value
     }
     $year = Get-Date -Format yy
     $day = (Get-Date).DayOfYear
