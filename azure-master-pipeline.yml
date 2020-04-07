@@ -37,14 +37,7 @@ variables:
   testDbPassword: 'testdb-password'
 
 services:
-  pg_server_test: 
-    containerName: 'postgres_linux'  
-    databaseConnectionString: >-
-      Host=localhost;
-      Port=5432;
-      Database=$(testDatabase);
-      Username=$(testDbUsername);
-      Password=$(testDbPassword);
+  pg_server_test: 'postgres_linux'
 
 steps:
 - template: azure-build-publish-pipeline.yml
