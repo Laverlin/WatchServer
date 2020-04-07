@@ -77,12 +77,6 @@ steps:
     PostgresProviderSettings__UserId : $(testDbUsername)
     PostgresProviderSettings__Password : $(testDbPassword)
 
-#- script: dotnet test $(Build.SourcesDirectory)/**/*XUnitTest/*.csproj --no-build --no-restore --collect:"XPlat Code Coverage"
-#  env: 
-#    PostgresProviderSettings__Database : $(testDatabase)
-#    PostgresProviderSettings__UserId : $(testDbUsername)
-#    PostgresProviderSettings__Password : $(testDbPassword)
-
 
 # Generate the report using ReportGenerator (https://github.com/danielpalme/ReportGenerator)
 # First install the tool on the machine, then run it
