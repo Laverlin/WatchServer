@@ -66,12 +66,12 @@ steps:
 
 # Run all tests and generate the code coverage file
 #
-- task: DotNetCoreCLI@2
-  inputs:
-    command: test
-    projects: "**/*XUnitTest/*.csproj"
-    arguments: -c $(BuildConfiguration) --no-build --no-restore -s $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" 
-  displayName: Run Tests
+#- task: DotNetCoreCLI@2
+#  inputs:
+#    command: test
+#    projects: "**/*XUnitTest/*.csproj"
+#    arguments: -c $(BuildConfiguration) --no-build --no-restore -s $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" 
+#  displayName: Run Tests
 
 - script: dotent test $(Build.SourcesDirectory)/**/*XUnitTest/*.csproj --no-build --no-restore --collect:"XPlat Code Coverage"
   env: 
