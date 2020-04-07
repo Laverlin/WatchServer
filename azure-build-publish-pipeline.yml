@@ -24,7 +24,7 @@ steps:
     else
     {
       $regex = ".*(?=\/)"
-      $versionSuffix = [regex]::matches($(Build.SourceBranchName), $regex).value
+      $versionSuffix = [regex]::matches("$(Build.SourceBranchName)", $regex).value
     }
     $year = Get-Date -Format yy
     $day = (Get-Date).DayOfYear
