@@ -2,6 +2,19 @@
 # Master build pipeline
 #
 
+resources:
+  containers:
+  # Specify the Docker container hosting the database to be used when running integration tests.
+  # 
+  - container: 'postgres_linux'
+    image: 'postgres:alpine'
+    ports:
+    - 5432:5432
+    env:
+      POSTGRES_DB: $(testDatabase)
+      POSTGRES_USER: $(testDbUsername)
+      POSTGRES_PASSWORD: $(testDbPassword)
+
 trigger:
   batch: true
   branches:
@@ -19,6 +32,19 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
+  testDatabase: 'watch-server-test'
+  testDbUsername: 'testdb-user'
+  testDbPassword: 'testdb-password'
+
+services:
+    pg-server-test: 
+      containerName: 'postgres_linux'  
+      databaseConnectionString: >-
+        Host=localhost;
+        Port=5432;
+        Database=$(testDatabase);
+        Username=$(testDbUsername);
+        Password=$(testDbPassword);
 
 steps:
 - template: azure-build-publish-pipeline.yml

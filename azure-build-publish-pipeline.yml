@@ -23,8 +23,7 @@ steps:
     } 
     else
     {
-      $regex = "refs\/heads\/(\w+)"
-      $versionSuffix = [regex]::matches("$(Build.SourceBranch)", $regex).groups[1]
+      $versionSuffix = [regex]::matches("$(Build.SourceBranch)", "refs\/heads\/(\w+)").groups[1]
     }
     $year = Get-Date -Format yy
     $day = (Get-Date).DayOfYear
@@ -73,6 +72,12 @@ steps:
     projects: "**/*XUnitTest/*.csproj"
     arguments: -c $(BuildConfiguration) --no-build --no-restore -s $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" 
   displayName: Run Tests
+
+- script: dotent test $(Build.SourcesDirectory)/**/*XUnitTest/*.csproj --no-build --no-restore --collect:"XPlat Code Coverage"
+  env: 
+    PostgresProviderSettings__Database : $(testDatabase)
+    PostgresProviderSettings__UserId : $(testDbUsername)
+    PostgresProviderSettings__Password : $(testDbPassword)
 
 
 # Generate the report using ReportGenerator (https://github.com/danielpalme/ReportGenerator)
