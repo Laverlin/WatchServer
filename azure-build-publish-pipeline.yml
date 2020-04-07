@@ -23,8 +23,8 @@ steps:
     } 
     else
     {
-      $regex = ".*(?=\/)"
-      $versionSuffix = [regex]::matches("$(Build.SourceBranchName)", $regex).value
+      $regex = "refs\/heads\/(\w+)"
+      $versionSuffix = [regex]::matches("$(Build.SourceBranch)", $regex).groups[1]
     }
     $year = Get-Date -Format yy
     $day = (Get-Date).DayOfYear
