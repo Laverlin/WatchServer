@@ -32,7 +32,7 @@ pool:
 
 variables:
   buildConfiguration: 'Release'
-  testDatabase: 'watch-server-test'
+  testDatabase: 'watch-service-test'
   testDbUsername: 'testdb-user'
   testDbPassword: 'testdb-password'
 
