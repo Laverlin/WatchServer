@@ -37,7 +37,7 @@ variables:
   testDbPassword: 'testdb-password'
 
 services:
-  pg-server-test: 
+  pg_server_test: 
     containerName: 'postgres_linux'  
     databaseConnectionString: >-
       Host=localhost;
