@@ -19,10 +19,10 @@ namespace IB.WatchServer.Service.Migrations
                     .WithGlobalConnectionString(connectionString)
                     .ScanIn(GetType().Assembly).For.Migrations()
                     .ScanIn(GetType().Assembly).For.EmbeddedResources())
-                .AddLogging(lb => lb.AddConsole().SetMinimumLevel(LogLevel.Trace))
+                .AddLogging(lb => lb.AddConsole().SetMinimumLevel(LogLevel.Debug))
                 .Configure<FluentMigratorLoggerOptions>(options =>
                 {
-                    options.ShowSql = true;
+                    //options.ShowSql = true;
                     options.ShowElapsedTime = true;
                 })
                 .BuildServiceProvider(false)

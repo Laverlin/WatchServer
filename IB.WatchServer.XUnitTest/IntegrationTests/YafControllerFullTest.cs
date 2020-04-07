@@ -69,7 +69,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 .ReturnsResponse(locationResponse, "application/json");
             _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildOpenWeatherUrl(0, 0))
                 .ReturnsResponse(HttpStatusCode.BadRequest);
-            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildCurrencyConverterUrl("USD", "DKK"))
+            _handler.SetupRequest(HttpMethod.Get, faceSettings.BuildCurrencyConverterUrl("BTC", "DKK"))
                 .ReturnsResponse(ccResponse, "application/json");
 
 
@@ -134,7 +134,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             var deviceId = "test-device21";
             var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
-            var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&av=0.9.204&fw=5.0&ciqv=3.1.6&dn=unknown&wapiKey=test-key&wp=DarkSky&bc=USD&tc=DKK";
+            var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&av=0.9.204&fw=5.0&ciqv=3.1.6&dn=unknown&wapiKey=test-key&wp=DarkSky&bc=BTC&tc=DKK";
 
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
             var dbConnection = new WatchServerDbConnection(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString());
@@ -157,7 +157,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             Assert.Equal("0.9.204", actualRequest.Version);
             Assert.Equal(_lon, actualRequest.Lon);
             Assert.Equal(_lat, actualRequest.Lat);
-            Assert.Equal("USD", actualRequest.BaseCurrency);
+            Assert.Equal("BTC", actualRequest.BaseCurrency);
             Assert.Equal("DKK", actualRequest.TargetCurrency);
 
             Assert.Equal((decimal) 9.39, actualRequest.Temperature);
