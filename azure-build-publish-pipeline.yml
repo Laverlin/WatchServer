@@ -15,17 +15,12 @@ resources:
       POSTGRES_USER: $(testDbUsername)
       POSTGRES_PASSWORD: $(testDbPassword)
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 variables:
   buildConfiguration: 'Release'
   testDatabase: 'watch-service-test'
   testDbUsername: 'testdb-user'
   testDbPassword: 'testdb-password'
 
-services:
-  pg_server_test: 'postgres_linux'
 
 steps:
 

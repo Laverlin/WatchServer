@@ -15,7 +15,11 @@ trigger:
     - README.md
     - LICENSE
 
+pool:
+  vmImage: 'ubuntu-latest'
 
+services:
+  pg_server_test: 'postgres_linux'
 
 extends:
   template: azure-build-publish-pipeline.yml
