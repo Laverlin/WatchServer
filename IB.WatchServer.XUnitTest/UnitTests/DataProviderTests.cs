@@ -24,23 +24,6 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 {
     public class DataProviderTests
     {
-        [Fact(Skip = "db init only")]
-     //   [Fact]
-        public void RunDbMigration()
-        {
-            var serviceProvider = new ServiceCollection()
-                .AddFluentMigratorCore()
-                .ConfigureRunner(rb => rb
-                    .AddPostgres()
-                    .WithGlobalConnectionString(
-                        "User ID=postgres;Password=docker;Host=localhost;Port=5432;Database=WatchService;Pooling=true;")
-                    .ScanIn(typeof(BaselineMigration).Assembly).For.Migrations())
-                .AddLogging(lb => lb.AddDebug().SetMinimumLevel(LogLevel.Trace))
-                .BuildServiceProvider(false);
-            serviceProvider.GetRequiredService<IMigrationRunner>().MigrateUp();
-
-        }
-
         [Fact]
         public async Task SaveDbShouldCorrectlyGetDataFromQuery()
         {
