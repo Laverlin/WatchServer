@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Migrations;
 using IB.WatchServer.Service.Service;
 using LinqToDB;
@@ -13,6 +16,7 @@ using Moq;
 using Moq.Contrib.HttpClient;
 using Xunit;
 using Xunit.Abstractions;
+using IDataProvider = LinqToDB.DataProvider.IDataProvider;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
@@ -170,6 +174,67 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.darksky.net") , Times.Once());
             _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("dev.virtualearth.net") , Times.Once());
             _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.openweathermap.org") , Times.Never());
+        }
+
+
+        [Fact]
+        public async Task SaveDbShouldCorrectlyGetDataFromQuery()
+        {
+            // Arrange
+            //
+
+            var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+            var dbConnection = new WatchServerDbConnection(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString());
+
+            var dataProvider = new DataProvider(
+                TestHelper.GetLoggerMock<DataProvider>().Object, 
+                new DataConnectionFactory<WatchServerDbConnection>(connectionSettings), 
+                MapperConfig.CreateMapper(), null);
+
+            var watchRequest = new WatchRequest
+            {
+                DeviceId = "device-id",
+                DeviceName = "device-name",
+                Version = "version",
+                CiqVersion = "ciq-version",
+                Framework = "framework",
+                WeatherProvider = "weather-provider",
+                DarkskyKey = "dark-key",
+                Lat = (decimal) 1.1,
+                Lon = (decimal) 2.2,
+                BaseCurrency = "USD",
+                TargetCurrency = "EUR"
+            };
+
+            // Act
+            //
+            await dataProvider.SaveRequestInfo(watchRequest,
+                new WeatherInfo {WindSpeed = (decimal) 5.5, Temperature = (decimal) 4.4},
+                new LocationInfo {CityName = "city-name"},
+                new ExchangeRateInfo {ExchangeRate = (decimal) 3.3});
+
+            // Assert
+            //
+            var actualDevice = await dbConnection.DeviceData.SingleAsync(d => d.DeviceId == watchRequest.DeviceId);
+            var actualRequest = await dbConnection.RequestData.SingleAsync(r => r.DeviceDataId == actualDevice.Id);
+
+
+            Assert.Equal("device-name", actualDevice.DeviceName);
+            Assert.Equal("device-id", actualDevice.DeviceId);
+
+
+            Assert.Equal(watchRequest.Framework, actualRequest.Framework);
+            Assert.Equal(watchRequest.CiqVersion, actualRequest.CiqVersion);
+            Assert.Equal(watchRequest.Version, actualRequest.Version);
+            Assert.Equal(watchRequest.Lon, actualRequest.Lon);
+            Assert.Equal(watchRequest.Lat, actualRequest.Lat);
+            Assert.Equal(watchRequest.BaseCurrency, actualRequest.BaseCurrency);
+            Assert.Equal(watchRequest.TargetCurrency, actualRequest.TargetCurrency);
+
+            Assert.Equal((decimal) 4.4, actualRequest.Temperature);
+            Assert.Equal("city-name", actualRequest.CityName);
+            Assert.Equal((decimal) 3.3, actualRequest.ExchangeRate);
+
         }
     }
 }
