@@ -98,7 +98,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&av=0.9.204&fw=5.0&ciqv=3.1.6&dn=unknown&wp=OpenWeather";
 
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
-            var dbConnection = new WatchServerDbConnection(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString());
+            var dbConnection = new DataConnectionFactory(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
+                .Create();
 
             // Act
             //
@@ -107,8 +108,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Assert
             //
             response.EnsureSuccessStatusCode();
-            var actualDevice = await dbConnection.DeviceData.SingleAsync(d => d.DeviceId == deviceId);
-            var actualRequest = await dbConnection.RequestData.SingleAsync(r => r.DeviceDataId == actualDevice.Id);
+            var actualDevice = await dbConnection.GetTable<DeviceData>().SingleAsync(d => d.DeviceId == deviceId);
+            var actualRequest = await dbConnection.GetTable<RequestData>().SingleAsync(r => r.DeviceDataId == actualDevice.Id);
 
             Assert.Equal("unknown", actualDevice.DeviceName);
             Assert.Equal(deviceId, actualDevice.DeviceId);
@@ -141,7 +142,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var url = $"/api/v2/YAFace?apiToken={faceSetting.AuthSettings.Token}&lat={_lat}&lon={_lon}&did={deviceId}&av=0.9.204&fw=5.0&ciqv=3.1.6&dn=unknown&wapiKey=test-key&wp=DarkSky&bc=BTC&tc=DKK";
 
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
-            var dbConnection = new WatchServerDbConnection(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString());
+            var dbConnection = new DataConnectionFactory(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
+                .Create();
 
             // Act
             //
@@ -150,8 +152,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Assert
             //
             response.EnsureSuccessStatusCode();
-            var actualDevice = await dbConnection.DeviceData.SingleAsync(d => d.DeviceId == deviceId);
-            var actualRequest = await dbConnection.RequestData.SingleAsync(r => r.DeviceDataId == actualDevice.Id);
+            var actualDevice = await dbConnection.GetTable<DeviceData>().SingleAsync(d => d.DeviceId == deviceId);
+            var actualRequest = await dbConnection.GetTable<RequestData>().SingleAsync(r => r.DeviceDataId == actualDevice.Id);
 
             Assert.Equal("unknown", actualDevice.DeviceName);
             Assert.Equal(deviceId, actualDevice.DeviceId);
@@ -184,11 +186,12 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
 
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
-            var dbConnection = new WatchServerDbConnection(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString());
+            var dbConnection = new DataConnectionFactory(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
+                .Create();
 
             var dataProvider = new DataProvider(
                 TestHelper.GetLoggerMock<DataProvider>().Object, 
-                new DataConnectionFactory<WatchServerDbConnection>(connectionSettings), 
+                new DataConnectionFactory(connectionSettings), 
                 MapperConfig.CreateMapper(), null);
 
             var watchRequest = new WatchRequest
@@ -215,8 +218,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Assert
             //
-            var actualDevice = await dbConnection.DeviceData.SingleAsync(d => d.DeviceId == watchRequest.DeviceId);
-            var actualRequest = await dbConnection.RequestData.SingleAsync(r => r.DeviceDataId == actualDevice.Id);
+            var actualDevice = await dbConnection.GetTable<DeviceData>().SingleAsync(d => d.DeviceId == watchRequest.DeviceId);
+            var actualRequest = await dbConnection.GetTable<RequestData>().SingleAsync(r => r.DeviceDataId == actualDevice.Id);
 
 
             Assert.Equal("device-name", actualDevice.DeviceName);
@@ -236,5 +239,73 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             Assert.Equal((decimal) 3.3, actualRequest.ExchangeRate);
 
         }
+        
+        [Fact]
+        public async Task SameDeviceWithTheSameCoordinatesShouldReturnCity()
+        {
+            // Arrange
+            //
+            var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+
+            var dataProvider = new DataProvider(
+                TestHelper.GetLoggerMock<DataProvider>().Object, 
+                new DataConnectionFactory(connectionSettings), 
+                MapperConfig.CreateMapper(), 
+                TestHelper.GetMetricsMock().Object);
+
+            var watchRequest = new WatchRequest
+            {
+                DeviceId = "device-id",
+                DeviceName = "device-name",
+                Version = "version",
+                CiqVersion = "ciq-version",
+                Framework = "framework",
+                WeatherProvider = "weather-provider",
+                DarkskyKey = "dark-key",
+                Lat = (decimal) 1.1,
+                Lon = (decimal) 2.2,
+                BaseCurrency = "USD",
+                TargetCurrency = "EUR"
+            };
+
+
+            await dataProvider.SaveRequestInfo(watchRequest,
+                new WeatherInfo {WindSpeed = (decimal) 5.5, Temperature = (decimal) 4.4},
+                new LocationInfo {CityName = "city-name2"},
+                new ExchangeRateInfo {ExchangeRate = (decimal) 3.3});
+
+
+            // Act
+            //
+            var actualLocationInfo = await dataProvider.LoadLastLocation("device-id", (decimal)1.1, (decimal)2.2);
+
+            // Assert
+            //
+            Assert.Equal("city-name2", actualLocationInfo.CityName);
+            Assert.Equal(RequestStatusCode.Ok, actualLocationInfo.RequestStatus.StatusCode);
+        }
+
+        [Fact]
+        public async Task NoLocationShouldReturnNull()
+        {
+            // Arrange
+            //
+            var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+
+            var dataProvider = new DataProvider(
+                TestHelper.GetLoggerMock<DataProvider>().Object, 
+                new DataConnectionFactory(connectionSettings), 
+                MapperConfig.CreateMapper(), 
+                TestHelper.GetMetricsMock().Object);
+
+            // Act
+            //
+            var actualLocationInfo = await dataProvider.LoadLastLocation("device-id", (decimal)1.1, (decimal)2.2);
+
+            // Assert
+            //
+            Assert.Null(actualLocationInfo);
+        }
+
     }
 }

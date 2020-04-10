@@ -59,8 +59,7 @@ namespace IB.WatchServer.Service
 
             // services
             //
-            services.AddSingleton<DataConnectionFactory<WatchServerDbConnection>>();
-            services.AddSingleton<DataConnectionFactory<DataConnection>>();
+            services.AddSingleton<DataConnectionFactory>();
             services.AddScoped<IDataProvider, DataProvider>();
             services.AddScoped<ExchangeRateCacheStrategy>();
             services.AddScoped<RequestRateLimit>();

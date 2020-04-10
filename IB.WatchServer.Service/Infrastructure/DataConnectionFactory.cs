@@ -9,7 +9,7 @@ namespace IB.WatchServer.Service.Infrastructure
     /// <summary>
     /// Factory to work with Data Connection from DI 
     /// </summary>
-    public class DataConnectionFactory<T> where T: DataConnection
+    public class DataConnectionFactory
     {
         private readonly IDataProvider _dataProvider;
         private readonly string _connectionString;
@@ -29,13 +29,12 @@ namespace IB.WatchServer.Service.Infrastructure
             this(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
         { }
 
-
-        public virtual T Create()
+        public virtual DataConnection Create()
         {
             if (_dataProvider == null) throw new ArgumentNullException(nameof(_dataProvider));
             if (_connectionString.IsNullOrEmpty()) throw new ArgumentNullException(nameof(_connectionString));
 
-            return (T) Activator.CreateInstance(typeof(T), _dataProvider, _connectionString);
+            return new DataConnection(_dataProvider, _connectionString);
         }
     }
 }

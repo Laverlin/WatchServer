@@ -17,9 +17,9 @@ namespace IB.WatchServer.Service.Controllers
     public class YASailController : ControllerBase
     {
         private readonly ILogger<YASailController> _logger;
-        private readonly DataConnectionFactory<DataConnection> _dbFactory;
+        private readonly DataConnectionFactory _dbFactory;
 
-        public YASailController (ILogger<YASailController > logger, DataConnectionFactory<DataConnection> dbFactory)
+        public YASailController (ILogger<YASailController > logger, DataConnectionFactory dbFactory)
         {
             _logger = logger;
             _dbFactory = dbFactory;

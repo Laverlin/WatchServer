@@ -19,11 +19,11 @@ namespace IB.WatchServer.Service.Service
     public class TelegramService
     {
         private readonly ITelegramBotClient _telegramBot;
-        private readonly DataConnectionFactory<DataConnection> _dbFactory;
+        private readonly DataConnectionFactory _dbFactory;
         private readonly ILogger<TelegramService> _logger;
 
         public TelegramService(
-            ILogger<TelegramService> logger, ITelegramBotClient telegramBot, DataConnectionFactory<DataConnection> dbFactory)
+            ILogger<TelegramService> logger, ITelegramBotClient telegramBot, DataConnectionFactory dbFactory)
         {
             _telegramBot = telegramBot;
             _dbFactory = dbFactory;

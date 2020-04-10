@@ -8,12 +8,15 @@ namespace IB.WatchServer.Service.Infrastructure
     /// </summary>
     public static class SolutionInfo
     {
+        private static readonly Lazy<string> _version = new Lazy<string>(()=>
+            typeof(SolutionInfo).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+
         /// <summary>
         /// Application version info
         /// </summary>
-        public static string Version => (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly())
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-        
+        public static string Version => _version.Value;
+
         /// <summary>
         /// Assembly name
         /// </summary>

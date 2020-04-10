@@ -14,39 +14,16 @@ using Microsoft.Extensions.Logging;
 namespace IB.WatchServer.Service.Service
 {
 
-    public class WatchServerDbConnection : DataConnection
-    {
-        public WatchServerDbConnection(LinqToDB.DataProvider.IDataProvider dataProvider, string connectionString) : 
-            base(dataProvider, connectionString){}
-
-        public virtual ITable<DeviceData> DeviceData => GetTable<DeviceData>();
-
-        public virtual ITable<RequestData> RequestData => GetTable<RequestData>();
-
-        public virtual Task<int> InsertAsync(RequestData requestData)
-        {
-            return RequestData.DataContext.InsertAsync(requestData);
-        }
-
-        public virtual DeviceData AddDevice(string deviceId, string deviceName)
-        {
-            return this.QueryProc<DeviceData>(
-                    "add_device",
-                    new DataParameter("device_id", deviceId),
-                    new DataParameter("device_name", deviceName))
-                .Single();
-        }
-    }
 
     public class DataProvider : IDataProvider
     {
         private readonly ILogger<DataProvider> _logger;
-        private readonly DataConnectionFactory<WatchServerDbConnection> _connectionFactory;
+        private readonly DataConnectionFactory _connectionFactory;
         private readonly IMapper _mapper;
         private readonly IMetrics _metrics;
 
         public DataProvider(
-            ILogger<DataProvider> logger, DataConnectionFactory<WatchServerDbConnection> connectionFactory, IMapper mapper, IMetrics metrics)
+            ILogger<DataProvider> logger, DataConnectionFactory connectionFactory, IMapper mapper, IMetrics metrics)
         {
             _logger = logger;
             _connectionFactory = connectionFactory;
@@ -69,7 +46,11 @@ namespace IB.WatchServer.Service.Service
         {
 
             await using var dbWatchServer = _connectionFactory.Create();
-            var deviceData = dbWatchServer.AddDevice(watchRequest.DeviceId ?? "unknown", watchRequest.DeviceName);
+            var deviceData = dbWatchServer.QueryProc<DeviceData>(
+                    "add_device",
+                    new DataParameter("device_id", watchRequest.DeviceId ?? "unknown"),
+                    new DataParameter("device_name", watchRequest.DeviceName))
+                .Single();
 
             var requestInfo = _mapper.Map<RequestData>(watchRequest);
             requestInfo = _mapper.Map(weatherInfo, requestInfo);
@@ -78,7 +59,7 @@ namespace IB.WatchServer.Service.Service
             requestInfo.DeviceDataId = deviceData.Id;
             requestInfo.RequestTime = DateTime.UtcNow;
             
-            await dbWatchServer.InsertAsync(requestInfo);
+            await dbWatchServer.GetTable<RequestData>().DataContext.InsertAsync(requestInfo);
 
             _logger.LogDebug("{@requestInfo}", requestInfo);
         }
@@ -95,8 +76,8 @@ namespace IB.WatchServer.Service.Service
         {
             await using var dbWatchServer = _connectionFactory.Create();
 
-            var city = await dbWatchServer.RequestData.Where(c => c.RequestTime != null)
-                .Join(dbWatchServer.DeviceData.Where(d => d.DeviceId == deviceId), c => c.DeviceDataId, d => d.Id,
+            var city = await dbWatchServer.GetTable<RequestData>().Where(c => c.RequestTime != null)
+                .Join(dbWatchServer.GetTable<DeviceData>().Where(d => d.DeviceId == deviceId), c => c.DeviceDataId, d => d.Id,
                     (c, d) => new {c.CityName, c.Lat, c.Lon, c.RequestTime})
                 .OrderByDescending(c => c.RequestTime).Take(1)
                 .Where(c => c.Lat == latitude && c.Lon == longitude)
