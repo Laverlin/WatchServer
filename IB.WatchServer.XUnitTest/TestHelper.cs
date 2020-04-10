@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using App.Metrics;
 using App.Metrics.Counter;
+using IB.WatchServer.Service;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service.HttpClients;
@@ -27,6 +28,18 @@ namespace IB.WatchServer.XUnitTest
                 .AddJsonFile("appsettings.Development.json", false, true)
                 .Build();
             var settings = config.LoadVerifiedConfiguration<FaceSettings>();
+
+            return settings;
+        }
+
+        public static IConnectionSettings GetConnectionSettings()
+        {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", false, true)
+                .AddUserSecrets<Startup>()
+                .AddJsonFile("appsettings.Test.json", false, true)
+                .Build();
+            var settings = config.LoadVerifiedConfiguration<PostgresProviderSettings>();
 
             return settings;
         }

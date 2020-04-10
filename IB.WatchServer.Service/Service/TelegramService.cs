@@ -33,7 +33,7 @@ namespace IB.WatchServer.Service.Service
         /// <summary>
         /// Telegram bot message handler
         /// </summary>
-        public async void OnBotMessage(Message message) 
+        public async Task OnBotMessage(Message message) 
         {
             try
             { 

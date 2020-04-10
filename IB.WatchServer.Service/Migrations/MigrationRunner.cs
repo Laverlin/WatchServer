@@ -22,8 +22,8 @@ namespace IB.WatchServer.Service.Migrations
                 .AddLogging(lb => lb.AddConsole().SetMinimumLevel(LogLevel.Debug))
                 .Configure<FluentMigratorLoggerOptions>(options =>
                 {
-                    //options.ShowSql = true;
-                    options.ShowElapsedTime = true;
+                    options.ShowSql = false;
+                    //options.ShowElapsedTime = true;
                 })
                 .BuildServiceProvider(false)
                 .GetRequiredService<IMigrationRunner>();
