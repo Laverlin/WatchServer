@@ -14,7 +14,6 @@ using Microsoft.Extensions.Logging;
 namespace IB.WatchServer.Service.Service
 {
 
-
     public class DataProvider : IDataProvider
     {
         private readonly ILogger<DataProvider> _logger;

@@ -12,7 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		azure-build-publish-pipeline.yml = azure-build-publish-pipeline.yml
 		azure-master-pipeline.yml = azure-master-pipeline.yml
 		azure-stable-pipeline.yml = azure-stable-pipeline.yml
-		CodeCoverage.runsettings = CodeCoverage.runsettings
 	EndProjectSection
 EndProject
 Global
