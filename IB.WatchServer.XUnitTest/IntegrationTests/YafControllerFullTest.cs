@@ -16,10 +16,10 @@ using Moq;
 using Moq.Contrib.HttpClient;
 using Xunit;
 using Xunit.Abstractions;
-using IDataProvider = LinqToDB.DataProvider.IDataProvider;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
+    [Collection("DB test collection")]
     public class YafControllerFullTest  : IClassFixture<ServiceAppTestFixture>, IDisposable
     {
         private readonly ServiceAppTestFixture _factory;
@@ -132,6 +132,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             
         }
 
+
         [Fact]
         public async void RequestToDarkSkyAndCurrencyShouldStoredInDatabase()
         {
@@ -177,7 +178,6 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("dev.virtualearth.net") , Times.Once());
             _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.openweathermap.org") , Times.Never());
         }
-
 
         [Fact]
         public async Task SaveDbShouldCorrectlyGetDataFromQuery()

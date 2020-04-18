@@ -20,6 +20,7 @@ using Xunit;
 
 namespace IB.WatchServer.XUnitTest.UnitTests
 {
+    [Collection("DB test collection")]
     public class TelegramServiceTest : IDisposable
     {
         private IConnectionSettings _connectionSettings;
