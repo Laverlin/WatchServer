@@ -70,7 +70,7 @@ steps:
   inputs:
     command: test
     projects: "**/*XUnitTest/*.csproj"
-    arguments: -c $(BuildConfiguration) --no-build --no-restore -s $(System.DefaultWorkingDirectory)/CodeCoverage.runsettings --collect:"XPlat Code Coverage" 
+    arguments: -c $(BuildConfiguration) --no-build --no-restore --collect:"XPlat Code Coverage" 
   displayName: Run Tests
   env: 
     PostgresProviderSettings__Database : $(testDatabase)
