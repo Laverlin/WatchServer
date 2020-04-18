@@ -37,7 +37,8 @@ namespace IB.WatchServer.XUnitTest
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile("appsettings.Development.json", false, true)
+                .AddEnvironmentVariables()
+                //.AddJsonFile("appsettings.Development.json", false, true)
                 .AddUserSecrets<Startup>()
                 .AddJsonFile("appsettings.Test.json", false, true)
                 .Build();
