@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using IB.WatchServer.Service.Entity.SailingApp;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
@@ -14,8 +16,10 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Moq.Contrib.HttpClient;
+using Newtonsoft.Json.Converters;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
@@ -305,6 +309,46 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Assert
             //
             Assert.Null(actualLocationInfo);
+        }
+
+        [Theory]
+        [InlineData("/api/v1/YASail/RouteList/")]
+        [InlineData("/api/v2/YASail/RouteList/")]
+        public async Task RoutesRequestShouldReturnRoutes(string baseUrl)
+        {
+            // Arrange
+            //
+            var time = DateTime.Now;
+
+            var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+            var dbConnection = new DataConnectionFactory(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
+                .Create();
+            var publicId = "testiddd";
+            var yasUser = new YasUser {PublicId = publicId, TelegramId = 0};
+            var userId = await dbConnection.GetTable<YasUser>().DataContext.InsertWithInt64IdentityAsync(yasUser);
+            var yasRoute = new YasRoute {RouteName = "test-name", UserId = userId, UploadTime = time.ToUniversalTime()};
+            var routeId = await dbConnection.GetTable<YasRoute>().DataContext.InsertWithInt64IdentityAsync(yasRoute);
+            var wayPoint = new YasWaypoint {Latitude = 1, Longitude = 2, Name = "wp-1", OrderId = 0, RouteId = routeId};
+            await dbConnection.GetTable<YasWaypoint>().DataContext.InsertWithInt64IdentityAsync(wayPoint);
+            
+            var faceSetting = _factory.Services.GetRequiredService<FaceSettings>();
+            var url = $"{baseUrl}{publicId}";
+
+
+            // Act
+            //
+            var response = await _client.GetAsync(url);
+
+            // Assert
+            //
+            response.EnsureSuccessStatusCode();
+            var result = await response.Content.ReadAsStringAsync();
+            var expected =
+                "[{\"routeId\":1,\"userId\":1,\"RouteName\":\"test-name\",\"RouteDate\":\"" + 
+                time.ToString("yyyy-MM-ddTHH\\:mm\\:ss.ffffffzzz")  + 
+                "\",\"WayPoints\":[{\"waypointId\":1,\"routeId\":1,\"name\":\"wp-1\",\"Lat\":1,\"Lon\":2}]}]";
+            Assert.Equal(expected, result);
+
         }
 
     }
