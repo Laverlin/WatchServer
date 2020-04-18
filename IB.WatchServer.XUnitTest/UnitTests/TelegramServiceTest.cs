@@ -55,7 +55,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             _migrationRunner.RunMigrationDown(new BaselineMigration());
         }
 
-                [Fact]
+        [Fact]
         public async Task NewUserShouldbeCreatedInDb()
         {
             // Arrange
