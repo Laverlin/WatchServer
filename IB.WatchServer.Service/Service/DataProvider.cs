@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace IB.WatchServer.Service.Service
 {
 
-    public class DataProvider : IDataProvider
+    public class DataProvider 
     {
         private readonly ILogger<DataProvider> _logger;
         private readonly DataConnectionFactory _connectionFactory;
@@ -37,7 +37,7 @@ namespace IB.WatchServer.Service.Service
         /// <param name="weatherInfo">Weather data</param>
         /// <param name="locationInfo">Location data</param>
         /// <param name="exchangeRateInfo">Exchange rate data</param>
-        public async Task SaveRequestInfo(
+        public virtual async Task SaveRequestInfo(
             [NotNull] WatchRequest watchRequest, 
             [NotNull] WeatherInfo weatherInfo, 
             [NotNull] LocationInfo locationInfo, 
@@ -71,7 +71,7 @@ namespace IB.WatchServer.Service.Service
         /// <param name="latitude"></param>
         /// <param name="longitude"></param>
         /// <returns><see cref="LocationInfo"/> with CityName or null</returns>
-        public async Task<LocationInfo> LoadLastLocation(string deviceId, decimal latitude, decimal longitude)
+        public virtual async Task<LocationInfo> LoadLastLocation(string deviceId, decimal latitude, decimal longitude)
         {
             await using var dbWatchServer = _connectionFactory.Create();
 

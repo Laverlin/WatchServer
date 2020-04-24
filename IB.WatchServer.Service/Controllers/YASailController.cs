@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity.SailingApp;
-using LinqToDB.Data;
 
 namespace IB.WatchServer.Service.Controllers
 {

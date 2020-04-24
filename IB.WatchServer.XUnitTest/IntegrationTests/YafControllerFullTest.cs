@@ -345,7 +345,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var result = await response.Content.ReadAsStringAsync();
             var expected =
                 "[{\"routeId\":1,\"userId\":1,\"RouteName\":\"test-name\",\"RouteDate\":\"" + 
-                time.ToString("yyyy-MM-ddTHH\\:mm\\:ss.ffffffzzz")  + 
+                time.ToString("yyyy-MM-ddTHH\\:mm\\:ss.FFFFFFzzz")  + 
                 "\",\"WayPoints\":[{\"waypointId\":1,\"routeId\":1,\"name\":\"wp-1\",\"Lat\":1,\"Lon\":2}]}]";
             Assert.Equal(expected, result);
 

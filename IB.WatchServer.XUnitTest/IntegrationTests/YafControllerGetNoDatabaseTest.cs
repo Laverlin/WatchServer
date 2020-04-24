@@ -38,7 +38,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Mock database
             //
-            var dataProviderMock = new Mock<IDataProvider>();
+            var dataProviderMock = new Mock<DataProvider>(null, null, null, null);
 
      
 

@@ -26,7 +26,7 @@ namespace IB.WatchServer.Service.Controllers
     public class YAFaceController : ControllerBase
     {
         private readonly ILogger<YAFaceController> _logger;
-        private readonly IDataProvider _dataProvider;
+        private readonly DataProvider _dataProvider;
         private readonly ExchangeRateCacheStrategy _exchangeRateCacheStrategy;
         private readonly VirtualearthClient _virtualearthClient;
         private readonly CurrencyConverterClient _currencyConverterClient;
@@ -34,7 +34,7 @@ namespace IB.WatchServer.Service.Controllers
         private readonly OpenWeatherClient _openWeatherClient;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, IDataProvider dataProvider, ExchangeRateCacheStrategy exchangeRateCacheStrategy,
+            ILogger<YAFaceController> logger, DataProvider dataProvider, ExchangeRateCacheStrategy exchangeRateCacheStrategy,
             VirtualearthClient virtualearthClient, CurrencyConverterClient currencyConverterClient, 
             DarkSkyClient darkSkyClient,
             OpenWeatherClient openWeatherClient)
