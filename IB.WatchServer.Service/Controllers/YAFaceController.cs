@@ -29,13 +29,12 @@ namespace IB.WatchServer.Service.Controllers
         private readonly DataProvider _dataProvider;
         private readonly ExchangeRateCacheStrategy _exchangeRateCacheStrategy;
         private readonly VirtualearthClient _virtualearthClient;
-        private readonly CurrencyConverterClient _currencyConverterClient;
         private readonly DarkSkyClient _darkSkyClient;
         private readonly OpenWeatherClient _openWeatherClient;
 
         public YAFaceController(
             ILogger<YAFaceController> logger, DataProvider dataProvider, ExchangeRateCacheStrategy exchangeRateCacheStrategy,
-            VirtualearthClient virtualearthClient, CurrencyConverterClient currencyConverterClient, 
+            VirtualearthClient virtualearthClient,  
             DarkSkyClient darkSkyClient,
             OpenWeatherClient openWeatherClient)
         {
@@ -43,7 +42,6 @@ namespace IB.WatchServer.Service.Controllers
             _dataProvider = dataProvider;
             _exchangeRateCacheStrategy = exchangeRateCacheStrategy;
             _virtualearthClient = virtualearthClient;
-            _currencyConverterClient = currencyConverterClient;
             _darkSkyClient = darkSkyClient;
             _openWeatherClient = openWeatherClient;
         }
@@ -145,8 +143,6 @@ namespace IB.WatchServer.Service.Controllers
                     locationInfo =
                         await _dataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
                         await _virtualearthClient.RequestLocationName(watchRequest.Lat.Value, watchRequest.Lon.Value);
-
-                    //await _exchangeRateCacheStrategy.RequestVirtualearth(watchRequest.Lat.Value, watchRequest.Lon.Value);
                 }
 
                 // Get Exchange Rate info
@@ -178,8 +174,5 @@ namespace IB.WatchServer.Service.Controllers
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
         }
-
-
-
     }
 }

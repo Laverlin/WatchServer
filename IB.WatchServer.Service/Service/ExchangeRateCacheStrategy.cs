@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Service.HttpClients;
+using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -15,6 +16,7 @@ namespace IB.WatchServer.Service.Service
     /// </summary>
     public class ExchangeRateCacheStrategy
     {
+        private readonly ILogger<ExchangeRateCacheStrategy> _logger;
         private readonly FaceSettings _faceSettings;
         private readonly IMetrics _metrics;
         private readonly CurrencyConverterClient _currencyConverterClient;
@@ -22,9 +24,11 @@ namespace IB.WatchServer.Service.Service
         private static readonly MemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
 
         public ExchangeRateCacheStrategy(
+            ILogger<ExchangeRateCacheStrategy> logger,
             CurrencyConverterClient currencyConverterClient, ExchangeRateApiClient exchangeRateApiClient,
             FaceSettings faceSettings, IMetrics metrics)
         {
+            _logger = logger;
             _faceSettings = faceSettings;
             _metrics = metrics;
             _currencyConverterClient = currencyConverterClient;
@@ -56,7 +60,12 @@ namespace IB.WatchServer.Service.Service
                         return await _exchangeRateApiClient.RequestExchangeRateApi(baseCurrency, targetCurrency)
                             .ConfigureAwait(false);
                     return new ExchangeRateInfo();
+                }, onFallbackAsync: async _ =>
+                {
+                    _logger.LogWarning(_.Exception, "Fallback, object state {@ExchangeRateInfo}", _.Result);
+                    await Task.CompletedTask.ConfigureAwait(false);
                 });
+
             exchangeRateInfo = await fallbackPolicy.ExecuteAsync(async () =>
                 await _currencyConverterClient.RequestCurrencyConverter(baseCurrency, targetCurrency)
                     .ConfigureAwait(false));

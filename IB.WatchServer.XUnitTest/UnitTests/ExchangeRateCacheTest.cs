@@ -1,10 +1,12 @@
-﻿using IB.WatchServer.Service.Entity.WatchFace;
+﻿using System;
+using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Service.HttpClients;
 using Moq;
 using Moq.Contrib.HttpClient;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace IB.WatchServer.XUnitTest.UnitTests
@@ -28,6 +30,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 .Verifiable();
 
             var webRequestProvider = new ExchangeRateCacheStrategy(
+                TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
                 currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
@@ -62,6 +65,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 .Verifiable();
 
             var webRequestProvider = new ExchangeRateCacheStrategy(
+                TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
                 currencyConverterClientMock.Object, null, 
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
@@ -99,6 +103,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 .Verifiable();
 
             var webRequestProvider = new ExchangeRateCacheStrategy(
+                TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
                 currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
@@ -136,6 +141,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 .Verifiable();
 
             var webRequestProvider = new ExchangeRateCacheStrategy(
+                TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
                 currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
@@ -150,6 +156,51 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             exchangeApiClientMock.Verify(_ => _.RequestExchangeRateApi(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             Assert.Equal(0, result.ExchangeRate);
             Assert.Equal(RequestStatusCode.HasNotBeenRequested, result.RequestStatus.StatusCode);
+        }
+
+                [Fact]
+        public async void ExchangeRateWithErrorShouldFallbackAndProvideLogRecord()
+        {
+            // Arrange
+            //
+            var handler = new Mock<HttpMessageHandler>();
+            var currencyConverterClientMock = new Mock<CurrencyConverterClient>(
+                MockBehavior.Loose, null, handler.CreateClient(), null,null);
+            currencyConverterClientMock
+                .Setup(_ => _.RequestCurrencyConverter("CHF", "BTC"))
+                .Returns(() => Task.FromResult(new ExchangeRateInfo
+                    {ExchangeRate = 0, RequestStatus = new RequestStatus(RequestStatusCode.Error)}))
+                .Verifiable();
+            var exchangeApiClientMock = new Mock<ExchangeRateApiClient>(
+                MockBehavior.Loose, null, handler.CreateClient(), null,null);
+            exchangeApiClientMock
+                .Setup(_ => _.RequestExchangeRateApi("CHF", "BTC"))
+                .Returns(() => Task.FromResult(new ExchangeRateInfo
+                    {ExchangeRate = (decimal) 1.1, RequestStatus = new RequestStatus(RequestStatusCode.Ok)}))
+                .Verifiable();
+
+            var loggerMock = TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>();
+
+            var webRequestProvider = new ExchangeRateCacheStrategy(
+                loggerMock .Object,
+                currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
+                TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
+
+            // Act
+            //
+            var result = await webRequestProvider.GetExchangeRate("CHF", "BTC");
+
+
+            // Assert
+            //
+            loggerMock.Verify(
+                x => x.Log(
+                    It.IsAny<LogLevel>(),
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((o, t) => o.ToString().StartsWith("Fallback, object state ")),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception, string>) It.IsAny<object>()),
+                Times.Once);
         }
 
     }
