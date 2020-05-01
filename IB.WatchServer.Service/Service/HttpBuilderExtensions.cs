@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using System;
+using Serilog;
 
 namespace IB.WatchServer.Service.Service
 {
@@ -33,7 +34,11 @@ namespace IB.WatchServer.Service.Service
         /// <returns></returns>
         public static IHttpClientBuilder AddRetryPolicyWithCb(this IHttpClientBuilder builder, int attempts, TimeSpan timeout)
         {
-            return builder.AddRetryPolicy().AddTransientHttpErrorPolicy(_ => _.CircuitBreakerAsync(attempts, timeout));
+            return builder.AddRetryPolicy()
+                .AddTransientHttpErrorPolicy(_ => _.CircuitBreakerAsync(attempts, timeout,
+                    onBreak: (r, ts) => Log.Information("Circuit cut, requests will not flow."),
+                    onReset: () => Log.Information("Circuit closed, requests flow normally."),
+                    onHalfOpen: () => Log.Information("Circuit in test mode, one request will be allowed.")));
         }
     }
 }

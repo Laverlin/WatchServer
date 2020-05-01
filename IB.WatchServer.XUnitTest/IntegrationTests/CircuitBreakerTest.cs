@@ -23,7 +23,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
     public class CircuitBreakerTest
     {
-                [Fact]
+        [Fact]
         public async void After2FaultsCircuitBreakerShouldSendRequestsToFallback()
         {
             // Arrange
