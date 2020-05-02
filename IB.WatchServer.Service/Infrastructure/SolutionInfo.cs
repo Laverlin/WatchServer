@@ -20,6 +20,6 @@ namespace IB.WatchServer.Service.Infrastructure
         /// <summary>
         /// Assembly name
         /// </summary>
-        public static string Name => Assembly.GetExecutingAssembly().GetName().Name;
+        public static string Name => typeof(SolutionInfo).Assembly.GetName().Name;
     }
 }

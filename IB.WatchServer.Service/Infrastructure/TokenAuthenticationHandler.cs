@@ -39,22 +39,22 @@ namespace IB.WatchServer.Service.Infrastructure
             var path = Context.GetMetricsCurrentRouteName();
             if (!Request.Query.ContainsKey(Options.ApiTokenName))
             {
-                _metrics.Measure.Counter.Increment(new CounterOptions{Name = "token_no_token", MeasurementUnit = Unit.Calls}, path);
+                _metrics.Measure.Counter.Increment(new CounterOptions {Name = "token_no_token", MeasurementUnit = Unit.Calls}, path);
                 return Task.FromResult(AuthenticateResult.NoResult());
             }
 
             if (Options.ApiToken != Request.Query[Options.ApiTokenName])
             {
-                _metrics.Measure.Counter.Increment(new CounterOptions { Name = "token_wrong_token", MeasurementUnit = Unit.Calls }, path);
+                _metrics.Measure.Counter.Increment(new CounterOptions {Name = "token_wrong_token", MeasurementUnit = Unit.Calls}, path);
                 return Task.FromResult(AuthenticateResult.Fail("Invalid auth token."));
             }
 
             // Create authenticated user
             //
-            var identities = new List<ClaimsIdentity> { new GenericIdentity("watch-face"), new ClaimsIdentity(Options.Scheme) };
+            var identities = new List<ClaimsIdentity> {new GenericIdentity("watch-face"), new ClaimsIdentity(Options.Scheme)};
             var ticket = new AuthenticationTicket(new ClaimsPrincipal(identities), Options.Scheme);
 
-            _metrics.Measure.Counter.Increment(new CounterOptions { Name = "token_ok_token", MeasurementUnit = Unit.Calls }, path);
+            _metrics.Measure.Counter.Increment(new CounterOptions {Name = "token_ok_token", MeasurementUnit = Unit.Calls}, path);
             return Task.FromResult(AuthenticateResult.Success(ticket));
         }
 
@@ -66,7 +66,7 @@ namespace IB.WatchServer.Service.Infrastructure
             Logger.LogInformation("Token forbidden, request {request}", Request.QueryString);
             
             await ForbidAsync(authProperties);
-            await Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse(){ StatusCode = 403, Description = "Unauthorized access" }));
+            await Response.WriteAsync(JsonSerializer.Serialize(new ErrorResponse {StatusCode = 403, Description = "Unauthorized access"}));
         }
     }
 }

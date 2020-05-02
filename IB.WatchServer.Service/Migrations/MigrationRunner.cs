@@ -23,7 +23,6 @@ namespace IB.WatchServer.Service.Migrations
                 .Configure<FluentMigratorLoggerOptions>(options =>
                 {
                     options.ShowSql = false;
-                    //options.ShowElapsedTime = true;
                 })
                 .BuildServiceProvider(false)
                 .GetRequiredService<IMigrationRunner>();
@@ -44,7 +43,6 @@ namespace IB.WatchServer.Service.Migrations
         public void RunMigrationDown(IMigration migration)
         {
             _migrationRunner.Down(migration);
-            //_migrationRunner.Down();
         }
     }
 }
