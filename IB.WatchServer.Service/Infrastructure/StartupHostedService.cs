@@ -30,16 +30,15 @@ namespace IB.WatchServer.Service.Infrastructure
         /// </summary>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Start: {app}, version: {version}",
-                SolutionInfo.Name, SolutionInfo.Version);
+            _logger.LogInformation("Start: {app}, version: {version}", SolutionInfo.Name, SolutionInfo.Version);
 
             try
             {
                 _telegramClient.OnMessage += async (s, e) => await _telegramService.OnBotMessage(e.Message);
                 _telegramClient.StartReceiving(cancellationToken:cancellationToken);
 
-                var me = await _telegramClient.GetMeAsync(cancellationToken);
-                _logger.LogInformation("The bot {BotId} has been started, name is {BotName}", me.Id, me.FirstName);
+                var botUser = await _telegramClient.GetMeAsync(cancellationToken);
+                _logger.LogInformation("The bot {BotId} has been started, name is {BotName}", botUser.Id, botUser.FirstName);
             }
             catch (Exception ex)
             {
