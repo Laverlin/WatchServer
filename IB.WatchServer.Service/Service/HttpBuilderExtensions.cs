@@ -31,7 +31,6 @@ namespace IB.WatchServer.Service.Service
         /// <param name="builder"><see cref="IHttpClientBuilder"/></param>
         /// <param name="attempts">Number of attempts before circuite breaker shell open</param>
         /// <param name="timeout">Time period while cb remains open</param>
-        /// <returns></returns>
         public static IHttpClientBuilder AddRetryPolicyWithCb(this IHttpClientBuilder builder, int attempts, TimeSpan timeout)
         {
             return builder.AddRetryPolicy()

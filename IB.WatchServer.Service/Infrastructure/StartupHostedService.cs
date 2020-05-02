@@ -35,7 +35,7 @@ namespace IB.WatchServer.Service.Infrastructure
 
             try
             {
-                _telegramClient.OnMessage += (s, e) => _telegramService.OnBotMessage(e.Message);
+                _telegramClient.OnMessage += async (s, e) => await _telegramService.OnBotMessage(e.Message);
                 _telegramClient.StartReceiving(cancellationToken:cancellationToken);
 
                 var me = await _telegramClient.GetMeAsync(cancellationToken);
