@@ -19,6 +19,7 @@ namespace IB.WatchServer.RequestCollector
         [FunctionName("CollectorFunction")]
         public void Run([TimerTrigger("*/5 * * * * *")]TimerInfo timerInfo, ILogger logger, ExecutionContext context)
         {
+
             logger.LogDebug($"C# Timer trigger function executed at: {DateTime.Now}");
             logger.LogInformation($"Value SQL: {_collectorSettings.SqlConnection}");
             logger.LogInformation($"Value Kafka: {_collectorSettings.KafkaConnection}");
