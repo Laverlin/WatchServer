@@ -61,7 +61,7 @@ namespace IB.WatchServer.Service
             //
             services.AddSingleton<DataConnectionFactory>();
             services.AddSingleton<KafkaProvider>();
-            services.AddScoped<DataProvider>();
+            services.AddScoped<PostgresDataProvider>();
             services.AddScoped<ExchangeRateCacheStrategy>();
             services.AddScoped<RequestRateLimit>();
 

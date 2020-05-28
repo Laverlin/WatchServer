@@ -14,15 +14,15 @@ using Microsoft.Extensions.Logging;
 namespace IB.WatchServer.Service.Service
 {
 
-    public class DataProvider 
+    public class PostgresDataProvider 
     {
-        private readonly ILogger<DataProvider> _logger;
+        private readonly ILogger<PostgresDataProvider> _logger;
         private readonly DataConnectionFactory _connectionFactory;
         private readonly IMapper _mapper;
         private readonly IMetrics _metrics;
 
-        public DataProvider(
-            ILogger<DataProvider> logger, DataConnectionFactory connectionFactory, IMapper mapper, IMetrics metrics)
+        public PostgresDataProvider(
+            ILogger<PostgresDataProvider> logger, DataConnectionFactory connectionFactory, IMapper mapper, IMetrics metrics)
         {
             _logger = logger;
             _connectionFactory = connectionFactory;

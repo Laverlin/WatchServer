@@ -27,7 +27,7 @@ namespace IB.WatchServer.Service.Controllers
     public class YAFaceController : ControllerBase
     {
         private readonly ILogger<YAFaceController> _logger;
-        private readonly DataProvider _dataProvider;
+        private readonly PostgresDataProvider _postgresDataProvider;
         private readonly KafkaProvider _kafkaProvider;
         private readonly ExchangeRateCacheStrategy _exchangeRateCacheStrategy;
         private readonly VirtualearthClient _virtualearthClient;
@@ -35,14 +35,14 @@ namespace IB.WatchServer.Service.Controllers
         private readonly OpenWeatherClient _openWeatherClient;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, DataProvider dataProvider, KafkaProvider kafkaProvider,
+            ILogger<YAFaceController> logger, PostgresDataProvider postgresDataProvider, KafkaProvider kafkaProvider,
             ExchangeRateCacheStrategy exchangeRateCacheStrategy,
             VirtualearthClient virtualearthClient,  
             DarkSkyClient darkSkyClient,
             OpenWeatherClient openWeatherClient)
         {
             _logger = logger;
-            _dataProvider = dataProvider;
+            _postgresDataProvider = postgresDataProvider;
             _kafkaProvider = kafkaProvider;
             _exchangeRateCacheStrategy = exchangeRateCacheStrategy;
             _virtualearthClient = virtualearthClient;
@@ -145,7 +145,7 @@ namespace IB.WatchServer.Service.Controllers
                     // Get location info
                     //
                     locationInfo =
-                        await _dataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
+                        await _postgresDataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
                         await _virtualearthClient.RequestLocationName(watchRequest.Lat.Value, watchRequest.Lon.Value);
                 }
 
@@ -159,7 +159,7 @@ namespace IB.WatchServer.Service.Controllers
 
                 // Save all requested data
                 //
-                await _dataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
+                await _postgresDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
                 locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
                 var watchResponse = new WatchResponse
