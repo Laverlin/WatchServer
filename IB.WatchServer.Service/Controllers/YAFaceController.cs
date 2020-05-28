@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
-
+using Confluent.Kafka;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -27,19 +28,22 @@ namespace IB.WatchServer.Service.Controllers
     {
         private readonly ILogger<YAFaceController> _logger;
         private readonly DataProvider _dataProvider;
+        private readonly KafkaProvider _kafkaProvider;
         private readonly ExchangeRateCacheStrategy _exchangeRateCacheStrategy;
         private readonly VirtualearthClient _virtualearthClient;
         private readonly DarkSkyClient _darkSkyClient;
         private readonly OpenWeatherClient _openWeatherClient;
 
         public YAFaceController(
-            ILogger<YAFaceController> logger, DataProvider dataProvider, ExchangeRateCacheStrategy exchangeRateCacheStrategy,
+            ILogger<YAFaceController> logger, DataProvider dataProvider, KafkaProvider kafkaProvider,
+            ExchangeRateCacheStrategy exchangeRateCacheStrategy,
             VirtualearthClient virtualearthClient,  
             DarkSkyClient darkSkyClient,
             OpenWeatherClient openWeatherClient)
         {
             _logger = logger;
             _dataProvider = dataProvider;
+            _kafkaProvider = kafkaProvider;
             _exchangeRateCacheStrategy = exchangeRateCacheStrategy;
             _virtualearthClient = virtualearthClient;
             _darkSkyClient = darkSkyClient;
@@ -164,6 +168,9 @@ namespace IB.WatchServer.Service.Controllers
                     WeatherInfo = weatherInfo,
                     ExchangeRateInfo = exchangeRateInfo
                 };
+
+                await _kafkaProvider.SendMessage(watchRequest);
+
                 _logger.LogInformation(
                     new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchRequest, watchResponse);
                 return watchResponse;
@@ -174,5 +181,6 @@ namespace IB.WatchServer.Service.Controllers
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
         }
+
     }
 }

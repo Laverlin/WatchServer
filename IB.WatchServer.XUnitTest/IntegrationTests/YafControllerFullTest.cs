@@ -193,8 +193,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var dbConnection = new DataConnectionFactory(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
                 .Create();
 
-            var dataProvider = new DataProvider(
-                TestHelper.GetLoggerMock<DataProvider>().Object, 
+            var dataProvider = new PostgresDataProvider(
+                TestHelper.GetLoggerMock<PostgresDataProvider>().Object, 
                 new DataConnectionFactory(connectionSettings), 
                 MapperConfig.CreateMapper(), null);
 
@@ -251,8 +251,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
 
-            var dataProvider = new DataProvider(
-                TestHelper.GetLoggerMock<DataProvider>().Object, 
+            var dataProvider = new PostgresDataProvider(
+                TestHelper.GetLoggerMock<PostgresDataProvider>().Object, 
                 new DataConnectionFactory(connectionSettings), 
                 MapperConfig.CreateMapper(), 
                 TestHelper.GetMetricsMock().Object);
@@ -296,8 +296,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
 
-            var dataProvider = new DataProvider(
-                TestHelper.GetLoggerMock<DataProvider>().Object, 
+            var dataProvider = new PostgresDataProvider(
+                TestHelper.GetLoggerMock<PostgresDataProvider>().Object, 
                 new DataConnectionFactory(connectionSettings), 
                 MapperConfig.CreateMapper(), 
                 TestHelper.GetMetricsMock().Object);

@@ -37,7 +37,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             
             // Mock database
             //
-            var dataProviderMock = new Mock<DataProvider>(null, null, null, null);
+            var dataProviderMock = new Mock<PostgresDataProvider>(null, null, null, null);
 
             dataProviderMock.Setup(_ => _.SaveRequestInfo(
                     It.IsAny<WatchRequest>(), It.IsAny<WeatherInfo>(), It.IsAny<LocationInfo>(), It.IsAny<ExchangeRateInfo>()))
