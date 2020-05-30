@@ -1,6 +1,7 @@
 
 using System;
 using Confluent.Kafka;
+using IB.WatchServer.Infrastructure.Settings;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
@@ -11,11 +12,11 @@ namespace IB.WatchServer.RequestCollector
     /// </summary>
     public class CollectorFunction
     {
-        private readonly CollectorSettings _collectorSettings;
+        private readonly KafkaSettings _kafkaSettings;
 
-        public CollectorFunction(CollectorSettings collectorSettings)
+        public CollectorFunction(KafkaSettings kafkaSettings)
         {
-            _collectorSettings = collectorSettings;
+            _kafkaSettings = kafkaSettings;
         }
 
         /// <summary>
@@ -29,15 +30,15 @@ namespace IB.WatchServer.RequestCollector
         {
             var consumerConfig = new ConsumerConfig
             {
-                BootstrapServers = _collectorSettings.KafkaServer,
-                GroupId = _collectorSettings.KafkaConsumerGroup,
+                BootstrapServers = _kafkaSettings.KafkaServer,
+                GroupId = _kafkaSettings.KafkaConsumerGroup,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 EnablePartitionEof = true
             };
 
             using var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
 
-            consumer.Subscribe(_collectorSettings.KafkaTopic);
+            consumer.Subscribe(_kafkaSettings.KafkaTopic);
 
             try
             {
@@ -53,7 +54,7 @@ namespace IB.WatchServer.RequestCollector
             }
             catch (Exception ex)
             {
-                logger.LogDebug(ex, "");
+                logger.LogDebug(ex, "consumer exception");
             }
             finally
             {

@@ -35,6 +35,14 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             factory.Output = output;
             _factory = factory;
             
+
+            // Mock Kafka provider
+            //
+
+            var kafkaProvider = new Mock<KafkaProvider>(null, null);
+            kafkaProvider.Setup(_ => _.SendMessage(It.IsAny<Object>()))
+                .Returns(Task.CompletedTask);
+
             // Mock database
             //
             var dataProviderMock = new Mock<PostgresDataProvider>(null, null, null, null);
@@ -79,6 +87,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                     {
                         services.AddSingleton(_ => httpFactory);
                         services.AddScoped(_ => dataProviderMock.Object);
+                        services.AddSingleton(kafkaProvider.Object);
                     });
                     
                 })

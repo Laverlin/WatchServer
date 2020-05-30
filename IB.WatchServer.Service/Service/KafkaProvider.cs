@@ -1,37 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using IB.WatchServer.Infrastructure.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service
 {
     public class KafkaProvider
     {
+        private readonly KafkaSettings _kafkaSettings;
         private readonly ILogger<KafkaProvider> _logger;
 
-        public KafkaProvider(ILogger<KafkaProvider> logger)
+        public KafkaProvider(KafkaSettings kafkaSettings, ILogger<KafkaProvider> logger)
         {
+            _kafkaSettings = kafkaSettings;
             _logger = logger;
         }
 
-        public async Task SendMessage<TMessage>(TMessage message)
+        public virtual async Task SendMessage<TMessage>(TMessage message)
         {
             try
             {
                 var config = new ProducerConfig
                 {
-                    BootstrapServers = "localhost:9092",
+                    BootstrapServers = _kafkaSettings.KafkaServer,
                     ClientId = Dns.GetHostName(),
+                    //EnableDeliveryReports = false,
+                    MessageTimeoutMs = 10000
                 };
 
                 var payload = JsonSerializer.Serialize(message);
 
                 using var producer = new ProducerBuilder<Null, string>(config).Build();
-                await producer.ProduceAsync("test", new Message<Null, string> {Value = payload});
+                await producer.ProduceAsync(_kafkaSettings.KafkaTopic, new Message<Null, string> {Value = payload});
             }
             catch (Exception exception)
             {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using App.Metrics;
 using App.Metrics.Counter;
+using IB.WatchServer.Infrastructure.Settings;
 using IB.WatchServer.Service;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Infrastructure;

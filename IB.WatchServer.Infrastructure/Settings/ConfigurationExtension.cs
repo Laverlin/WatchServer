@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
-namespace IB.WatchServer.Service.Infrastructure
+namespace IB.WatchServer.Infrastructure.Settings
 {
     public static class ConfigurationExtension
     {
@@ -26,7 +26,7 @@ namespace IB.WatchServer.Service.Infrastructure
         public static ISettings LoadVerifiedConfiguration<ISettings, TSettings>(this IConfiguration configuration)
             where TSettings : ISettings
         {
-            var logger = Log.Logger.ForContext<Startup>();
+            var logger = Log.Logger.ForContext<TSettings>();
             logger.Information($"validate :: { typeof(TSettings).Name }");
             try
             {

@@ -1,26 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace IB.WatchServer.RequestCollector
+namespace IB.WatchServer.Infrastructure.Settings
 {
-    public class CollectorSettings
+    public class KafkaSettings
     {
-        public string SqlConnection { get; set; }
-        
         /// <summary>
         /// Kafka Server Url and port
         /// </summary>
+        [Required]
         public string KafkaServer { get; set; }
 
         /// <summary>
         /// Queue topic 
         /// </summary>
+        [Required]
         public string KafkaTopic { get; set; }
 
         /// <summary>
         /// Consumer group
         /// </summary>
+        [Required]
         public string KafkaConsumerGroup { get; set; }
     }
 }

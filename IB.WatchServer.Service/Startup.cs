@@ -1,39 +1,25 @@
 using App.Metrics;
 using App.Metrics.Extensions.Configuration;
 using App.Metrics.Formatters.Prometheus;
-using AutoMapper;
+using IB.WatchServer.Infrastructure.Settings;
 using IB.WatchServer.Service.Entity;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;
+using IB.WatchServer.Service.Service.HttpClients;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MihaZupan;
-using Polly;
-using Polly.Extensions.Http;
 using Serilog;
 using Serilog.Context;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using IB.WatchServer.Service.Service.HttpClients;
-using LinqToDB.Data;
 using Telegram.Bot;
 
 namespace IB.WatchServer.Service
@@ -54,6 +40,7 @@ namespace IB.WatchServer.Service
             //
             var faceSettings = Configuration.LoadVerifiedConfiguration<FaceSettings>();
             var pgSettings = Configuration.LoadVerifiedConfiguration<IConnectionSettings, PostgresProviderSettings>();
+            services.AddSingleton(Configuration.LoadVerifiedConfiguration<KafkaSettings>());
             services.AddSingleton(faceSettings);
             services.AddSingleton(pgSettings);
 

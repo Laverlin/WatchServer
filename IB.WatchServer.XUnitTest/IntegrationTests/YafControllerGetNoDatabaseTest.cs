@@ -40,6 +40,9 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
             var dataProviderMock = new Mock<PostgresDataProvider>(null, null, null, null);
 
+            // Mock kafka
+            //
+            var kafkaProviderMock = new Mock<KafkaProvider>(null, null);
      
 
             // Mock web requests
@@ -81,6 +84,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                     {
                         services.AddSingleton(_ => httpFactory);
                         services.AddScoped(_ => dataProviderMock.Object);
+                        services.AddSingleton(kafkaProviderMock.Object);
                     });
                 })
                 .CreateClient();
