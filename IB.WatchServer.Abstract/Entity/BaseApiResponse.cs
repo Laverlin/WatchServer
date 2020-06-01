@@ -1,7 +1,6 @@
-﻿using IB.WatchServer.Service.Infrastructure;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace IB.WatchServer.Service.Entity
+namespace IB.WatchServer.Abstract.Entity
 {
     /// <summary>
     /// Base contract for all api responses

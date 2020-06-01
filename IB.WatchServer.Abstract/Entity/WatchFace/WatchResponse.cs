@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace IB.WatchServer.Service.Entity.WatchFace
+namespace IB.WatchServer.Abstract.Entity.WatchFace
 {
     /// <summary>
     /// Response data to the watch request

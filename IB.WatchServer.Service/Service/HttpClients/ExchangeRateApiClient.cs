@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using App.Metrics;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service.HttpClients

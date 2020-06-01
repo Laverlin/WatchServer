@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Confluent.Kafka;
+using IB.WatchServer.Abstract;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 
-using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Abstract.Entity;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using IB.WatchServer.Service.Service.HttpClients;
 using LinqToDB.Common;
 

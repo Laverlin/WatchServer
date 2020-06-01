@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using IB.WatchServer.Abstract;
 
 namespace IB.WatchServer.Service.Service
 {

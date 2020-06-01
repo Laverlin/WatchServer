@@ -1,10 +1,10 @@
-﻿using IB.WatchServer.Infrastructure.Settings;
+﻿
+using IB.WatchServer.Abstract.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using IB.WatchServer.RequestCollector;
 using Microsoft.Azure.WebJobs.Hosting;
-using Microsoft.Extensions.Logging;
 using Serilog;
 using Microsoft.Azure.WebJobs;
 
@@ -32,7 +32,8 @@ namespace IB.WatchServer.RequestCollector
             var logger = new LoggerConfiguration()
                 .WriteTo.Console()
                 .CreateLogger();
-            builder.Services.AddLogging(lb => lb.AddSerilog(logger, true));
+            builder.Services.AddLogging(logBuilder => 
+                logBuilder.AddSerilog(logger, true));
             Log.Logger = logger;
 
             var collectorSettings = configuration.LoadVerifiedConfiguration<KafkaSettings>();

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using App.Metrics;
 using App.Metrics.Counter;
-using IB.WatchServer.Infrastructure.Settings;
+using IB.WatchServer.Abstract.Settings;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;

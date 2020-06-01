@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace IB.WatchServer.Infrastructure.Settings
+namespace IB.WatchServer.Abstract.Settings
 {
     public class KafkaSettings
     {

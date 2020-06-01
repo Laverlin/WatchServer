@@ -1,6 +1,6 @@
 ﻿using App.Metrics;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using Microsoft.Extensions.Caching.Memory;
 using Polly;
 using System;
@@ -21,7 +21,7 @@ namespace IB.WatchServer.Service.Service
         private readonly IMetrics _metrics;
         private readonly CurrencyConverterClient _currencyConverterClient;
         private readonly ExchangeRateApiClient _exchangeRateApiClient;
-        private static readonly MemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
 
         public ExchangeRateCacheStrategy(
             ILogger<ExchangeRateCacheStrategy> logger,
@@ -44,7 +44,7 @@ namespace IB.WatchServer.Service.Service
         public async Task<ExchangeRateInfo> GetExchangeRate(string baseCurrency, string targetCurrency)
         {
             string cacheKey = $"er-{baseCurrency}-{targetCurrency}";
-            if (MemoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
+            if (_memoryCache.TryGetValue(cacheKey, out ExchangeRateInfo exchangeRateInfo))
             {
                 _metrics.ExchangeRateIncrement("cache", SourceType.Memory, baseCurrency, targetCurrency);
                 return exchangeRateInfo;
@@ -71,7 +71,7 @@ namespace IB.WatchServer.Service.Service
                     .ConfigureAwait(false));
             
             if (exchangeRateInfo.RequestStatus.StatusCode == RequestStatusCode.Ok && exchangeRateInfo.ExchangeRate != 0)
-                MemoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
+                _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));
             return exchangeRateInfo;
         }
     }

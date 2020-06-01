@@ -1,7 +1,7 @@
 
 using System;
 using Confluent.Kafka;
-using IB.WatchServer.Infrastructure.Settings;
+using IB.WatchServer.Abstract.Settings;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 
@@ -48,8 +48,9 @@ namespace IB.WatchServer.RequestCollector
                     if (payload.IsPartitionEOF)
                         break;
 
-                    var message = payload?.Message.Value;
-                    logger.LogInformation($"message: {message}");
+                    var message = payload.Message.Value;
+                    
+                    logger.LogInformation("id: {id}, message: {message}", payload.Offset.Value, message);
                 }
             }
             catch (Exception ex)

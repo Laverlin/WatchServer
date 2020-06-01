@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using App.Metrics;
 using App.Metrics.Counter;
 using Microsoft.AspNetCore.Http;
-using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Abstract.Entity;
 
 namespace IB.WatchServer.Service.Infrastructure
 {

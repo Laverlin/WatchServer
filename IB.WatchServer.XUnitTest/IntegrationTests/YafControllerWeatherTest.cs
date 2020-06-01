@@ -3,10 +3,10 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
-using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Abstract.Entity;
 using IB.WatchServer.Service.Entity.Settings;
 
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;

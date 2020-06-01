@@ -1,7 +1,7 @@
 ﻿using System;
 using LinqToDB.Mapping;
 
-namespace IB.WatchServer.Service.Entity.WatchFace
+namespace IB.WatchServer.Abstract.Entity.WatchFace
 {
     /// <summary>
     /// Information about the device
@@ -10,13 +10,13 @@ namespace IB.WatchServer.Service.Entity.WatchFace
     public class DeviceData
     {
         /// <summary>
-        /// Unique id
+        /// Unique internal id
         /// </summary>
         [Column(Name = "id"), Identity, PrimaryKey]
         public int? Id { get; set; }
 
         /// <summary>
-        /// Garmin device unique id
+        /// Garmin device id
         /// </summary>
         [Column(Name = "DeviceId")]
         public string DeviceId { get; set; }

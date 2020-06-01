@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Json.Serialization;
 
-namespace IB.WatchServer.Service.Entity.WatchFace
+namespace IB.WatchServer.Abstract.Entity.WatchFace
 {
     /// <summary>
     /// Description of result of the request to an external service

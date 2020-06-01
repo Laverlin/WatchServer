@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace IB.WatchServer.Service.Infrastructure
+namespace IB.WatchServer.Abstract
 {
     /// <summary>
     /// Helper class to get assembly and solution level info
@@ -10,7 +10,7 @@ namespace IB.WatchServer.Service.Infrastructure
     {
         private static readonly Lazy<string> _version = new Lazy<string>(()=>
             typeof(SolutionInfo).Assembly
-                .GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion);
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
 
         /// <summary>
         /// Application version info

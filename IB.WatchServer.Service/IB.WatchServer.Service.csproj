@@ -43,7 +43,7 @@
     <EmbeddedResource Include="Migrations\baseline-up.sql" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\IB.WatchServer.Infrastructure\IB.WatchServer.Infrastructure.csproj" />
+    <ProjectReference Include="..\IB.WatchServer.Abstract\IB.WatchServer.Abstract.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="appsettings.json">

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
+using IB.WatchServer.Abstract;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;
 using Microsoft.AspNetCore.Http;

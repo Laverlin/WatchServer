@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 using AutoMapper;
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 
 namespace IB.WatchServer.Service.Service
 {

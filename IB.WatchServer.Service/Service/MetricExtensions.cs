@@ -9,7 +9,7 @@ namespace IB.WatchServer.Service.Service
     /// </summary>
     public static class MetricExtensions
     {
-        private static readonly string[] TagNames = {"provider", "source_type"};
+        private static readonly string[] _tagNames = {"provider", "source_type"};
 
         public static void ExchangeRateIncrement(
             this IMetrics metrics, string provider, SourceType sourceType, string baseCurrency, string targetCurrency)
@@ -17,7 +17,7 @@ namespace IB.WatchServer.Service.Service
             metrics.Measure.Counter.Increment(
                 new CounterOptions{Name = "exchangeRate-request", MeasurementUnit = Unit.Calls }, 
                 new MetricTags(
-                    TagNames.Append("currency").ToArray(), 
+                    _tagNames.Append("currency").ToArray(), 
                     new[] {provider, sourceType.ToString(), $"{baseCurrency}-{targetCurrency}"}));
         }
 
@@ -26,14 +26,14 @@ namespace IB.WatchServer.Service.Service
         {
             metrics.Measure.Counter.Increment(
                 new CounterOptions {Name = "weather-request", MeasurementUnit = Unit.Calls},
-                new MetricTags(TagNames, new[] {provider, sourceType.ToString()}));
+                new MetricTags(_tagNames, new[] {provider, sourceType.ToString()}));
         }
 
         public static void LocationIncrement(this IMetrics metrics, string provider, SourceType sourceType)
         {
             metrics.Measure.Counter.Increment(
                 new CounterOptions {Name = "location-request", MeasurementUnit = Unit.Calls},
-                new MetricTags(TagNames, new[] {provider, sourceType.ToString()}));
+                new MetricTags(_tagNames, new[] {provider, sourceType.ToString()}));
         }
     }
 

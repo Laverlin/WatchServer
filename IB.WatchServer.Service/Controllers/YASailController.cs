@@ -1,4 +1,4 @@
-﻿using IB.WatchServer.Service.Entity;
+﻿using IB.WatchServer.Abstract.Entity;
 using IB.WatchServer.Service.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

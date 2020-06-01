@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using IB.WatchServer.Abstract;
 using IB.WatchServer.Service.Service;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

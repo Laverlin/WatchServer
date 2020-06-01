@@ -1,7 +1,7 @@
 ﻿using System;
 using LinqToDB.Mapping;
 
-namespace IB.WatchServer.Service.Entity.WatchFace
+namespace IB.WatchServer.Abstract.Entity.WatchFace
 {
     /// <summary>
     /// Represents request and response data for the storage

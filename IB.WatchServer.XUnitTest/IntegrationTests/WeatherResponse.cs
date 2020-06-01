@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Abstract.Entity;
+
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {

@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using IB.WatchServer.Service.Service.HttpClients;
 using Microsoft.Extensions.Logging;
 using Moq;

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
-namespace IB.WatchServer.Infrastructure.Settings
+namespace IB.WatchServer.Abstract.Settings
 {
     public static class ConfigurationExtension
     {

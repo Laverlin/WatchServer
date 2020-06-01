@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using IB.WatchServer.Infrastructure.Settings;
+using IB.WatchServer.Abstract.Settings;
 using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service
@@ -27,7 +27,6 @@ namespace IB.WatchServer.Service.Service
                 {
                     BootstrapServers = _kafkaSettings.KafkaServer,
                     ClientId = Dns.GetHostName(),
-                    //EnableDeliveryReports = false,
                     MessageTimeoutMs = 10000
                 };
 
@@ -40,7 +39,6 @@ namespace IB.WatchServer.Service.Service
             {
                 _logger.LogWarning(exception, "Unable to send message");
             }
-
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using System;
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Service.HttpClients;
 using Moq;

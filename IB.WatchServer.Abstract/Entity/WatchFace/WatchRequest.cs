@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace IB.WatchServer.Service.Entity.WatchFace
+namespace IB.WatchServer.Abstract.Entity.WatchFace
 {
     /// <summary>
     /// Request parameters from a watch

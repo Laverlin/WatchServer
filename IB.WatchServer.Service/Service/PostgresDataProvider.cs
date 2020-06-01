@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using App.Metrics;
 using AutoMapper;
 
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using IB.WatchServer.Service.Infrastructure;
 using LinqToDB;
 using LinqToDB.Data;
@@ -51,16 +51,16 @@ namespace IB.WatchServer.Service.Service
                     new DataParameter("device_name", watchRequest.DeviceName))
                 .Single();
 
-            var requestInfo = _mapper.Map<RequestData>(watchRequest);
-            requestInfo = _mapper.Map(weatherInfo, requestInfo);
-            requestInfo = _mapper.Map(locationInfo, requestInfo);
-            requestInfo = _mapper.Map(exchangeRateInfo, requestInfo);
-            requestInfo.DeviceDataId = deviceData.Id;
-            requestInfo.RequestTime = DateTime.UtcNow;
+            var requestData = _mapper.Map<RequestData>(watchRequest);
+            requestData = _mapper.Map(weatherInfo, requestData);
+            requestData = _mapper.Map(locationInfo, requestData);
+            requestData = _mapper.Map(exchangeRateInfo, requestData);
+            requestData.DeviceDataId = deviceData.Id;
+            requestData.RequestTime = DateTime.UtcNow;
             
-            await dbWatchServer.GetTable<RequestData>().DataContext.InsertAsync(requestInfo);
+            await dbWatchServer.GetTable<RequestData>().DataContext.InsertAsync(requestData);
 
-            _logger.LogDebug("{@requestInfo}", requestInfo);
+            _logger.LogDebug("{@requestInfo}", requestData);
         }
 
         /// <summary>

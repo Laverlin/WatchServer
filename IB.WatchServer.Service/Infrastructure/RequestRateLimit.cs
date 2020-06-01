@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net;
-using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Abstract.Entity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Caching.Memory;

@@ -1,8 +1,8 @@
 using App.Metrics;
 using App.Metrics.Extensions.Configuration;
 using App.Metrics.Formatters.Prometheus;
-using IB.WatchServer.Infrastructure.Settings;
-using IB.WatchServer.Service.Entity;
+using IB.WatchServer.Abstract.Settings;
+using IB.WatchServer.Abstract.Entity;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;
@@ -20,6 +20,7 @@ using Serilog;
 using Serilog.Context;
 using System;
 using System.Linq;
+using IB.WatchServer.Abstract;
 using Telegram.Bot;
 
 namespace IB.WatchServer.Service
@@ -127,7 +128,7 @@ namespace IB.WatchServer.Service
                 options.AssumeDefaultVersionWhenUnspecified = true;
                 options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.ReportApiVersions = true;
-                options.ErrorResponses = new ErrorResponse();
+                options.ErrorResponses = new VersioningErrorProvider();
             });
         }
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using App.Metrics;
 using AutoMapper;
 using IB.WatchServer.Service.Entity.Settings;
-using IB.WatchServer.Service.Entity.WatchFace;
+using IB.WatchServer.Abstract.Entity.WatchFace;
 using LinqToDB.Tools;
 using Microsoft.Extensions.Logging;
 
