@@ -5,6 +5,7 @@
     <UserSecretsId>dfd1d856-21a8-4738-8807-bc5603ab97a5</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="9.0.0" />
     <PackageReference Include="Confluent.Kafka" Version="1.4.3" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.0.0" />
@@ -16,7 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\IB.WatchServer.Abstract\IB.WatchServer.Abstract.csproj" />
-    <ProjectReference Include="..\IB.WatchServer.Infrastructure\IB.WatchServer.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">

@@ -182,6 +182,5 @@ namespace IB.WatchServer.Service.Controllers
                 return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
             }
         }
-
     }
 }

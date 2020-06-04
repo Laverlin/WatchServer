@@ -68,6 +68,6 @@ namespace IB.WatchServer.Abstract.Entity.WatchFace
         [FromQuery(Name = "tc")]
         public string TargetCurrency { get; set; }
 
-        public DateTime RequestTime => DateTime.UtcNow;
+        public DateTime RequestTime { get; set; } = DateTime.UtcNow;
     }
 }
