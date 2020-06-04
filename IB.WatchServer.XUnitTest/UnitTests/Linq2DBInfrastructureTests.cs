@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using IB.WatchServer.Abstract.Settings;
 using IB.WatchServer.Service.Entity.Settings;
 using LinqToDB.DataProvider;
 using Xunit;

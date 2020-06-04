@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 
 namespace IB.WatchServer.Abstract.Entity.WatchFace
 {
@@ -20,7 +21,7 @@ namespace IB.WatchServer.Abstract.Entity.WatchFace
         public decimal? Lon { get; set; }
 
         /// <summary>
-        /// Unique garmin device ID
+        /// Unique Garmin device ID
         /// </summary>
         [FromQuery(Name = "did")]
         public string DeviceId { get; set; }
@@ -66,5 +67,7 @@ namespace IB.WatchServer.Abstract.Entity.WatchFace
 
         [FromQuery(Name = "tc")]
         public string TargetCurrency { get; set; }
+
+        public DateTime RequestTime => DateTime.UtcNow;
     }
 }

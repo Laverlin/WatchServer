@@ -1,7 +1,7 @@
 CREATE TABLE DeviceInfo(
 	ID bigint IDENTITY(1, 1), 
-	DeviceID nvarchar, 
-	DeviceName nvarchar, 
+	DeviceID nvarchar(100), 
+	DeviceName nvarchar(100), 
 	FirstRequestTime DateTime)
 
 CREATE UNIQUE CLUSTERED INDEX IXUC_ID ON DeviceInfo(ID)

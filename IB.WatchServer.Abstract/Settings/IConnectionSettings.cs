@@ -1,6 +1,6 @@
 ﻿using LinqToDB.DataProvider;
 
-namespace IB.WatchServer.Service.Entity.Settings
+namespace IB.WatchServer.Abstract.Settings
 {
     /// <summary>
     /// The contract for Connection providers

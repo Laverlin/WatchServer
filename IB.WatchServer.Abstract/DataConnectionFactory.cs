@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using LinqToDB.DataProvider;
-using IB.WatchServer.Service.Entity.Settings;
+using IB.WatchServer.Abstract.Settings;
 using LinqToDB.Common;
 using LinqToDB.Data;
 
-namespace IB.WatchServer.Service.Infrastructure
+namespace IB.WatchServer.Abstract
 {
     /// <summary>
     /// Factory to work with Data Connection from DI 
@@ -19,9 +20,11 @@ namespace IB.WatchServer.Service.Infrastructure
         /// </summary>
         /// <param name="dataProvider">Data provider entity</param>
         /// <param name="connectionString">Connection string</param>
-        public DataConnectionFactory(IDataProvider dataProvider, string connectionString)
+        public DataConnectionFactory([NotNull] IDataProvider dataProvider, [NotNull] string connectionString)
         {
-            _dataProvider = dataProvider;
+            if (connectionString.IsNullOrEmpty()) throw new ArgumentNullException(nameof(connectionString));
+
+            _dataProvider = dataProvider ?? throw new ArgumentNullException(nameof(dataProvider));
             _connectionString = connectionString;
         }
 
@@ -31,9 +34,6 @@ namespace IB.WatchServer.Service.Infrastructure
 
         public virtual DataConnection Create()
         {
-            if (_dataProvider == null) throw new ArgumentNullException(nameof(_dataProvider));
-            if (_connectionString.IsNullOrEmpty()) throw new ArgumentNullException(nameof(_connectionString));
-
             return new DataConnection(_dataProvider, _connectionString);
         }
     }

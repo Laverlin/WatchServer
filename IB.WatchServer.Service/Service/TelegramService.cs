@@ -1,5 +1,4 @@
 ﻿using IB.WatchServer.Service.Entity.SailingApp;
-using IB.WatchServer.Service.Infrastructure;
 using LinqToDB;
 using LinqToDB.Common;
 using LinqToDB.Data;
@@ -10,6 +9,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using IB.WatchServer.Abstract;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;

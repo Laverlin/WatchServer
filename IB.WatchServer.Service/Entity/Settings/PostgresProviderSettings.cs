@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using IB.WatchServer.Abstract.Settings;
 using LinqToDB.DataProvider;
 using LinqToDB.DataProvider.PostgreSQL;
 

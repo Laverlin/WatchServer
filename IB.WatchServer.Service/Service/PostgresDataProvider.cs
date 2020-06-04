@@ -4,9 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using App.Metrics;
 using AutoMapper;
-
+using IB.WatchServer.Abstract;
 using IB.WatchServer.Abstract.Entity.WatchFace;
-using IB.WatchServer.Service.Infrastructure;
 using LinqToDB;
 using LinqToDB.Data;
 using Microsoft.Extensions.Logging;

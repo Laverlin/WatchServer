@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using IB.WatchServer.Abstract;
+using IB.WatchServer.Abstract.Settings;
 using IB.WatchServer.Service.Entity.SailingApp;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Infrastructure;
