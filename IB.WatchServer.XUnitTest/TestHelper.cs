@@ -34,6 +34,14 @@ namespace IB.WatchServer.XUnitTest
             return settings;
         }
 
+        public static KafkaSettings GetKafkaSettings()
+        {
+            return new KafkaSettings
+            {
+                KafkaServer = "test-server"
+            };
+        }
+
         public static IConnectionSettings GetConnectionSettings()
         {
             var config = new ConfigurationBuilder()

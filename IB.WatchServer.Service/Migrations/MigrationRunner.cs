@@ -17,6 +17,7 @@ namespace IB.WatchServer.Service.Migrations
             _migrationRunner = new ServiceCollection()
                 .AddFluentMigratorCore()
                 .ConfigureRunner(rb => rb
+                    .WithGlobalStripComments(true)
                     .AddPostgres()
                     .WithGlobalConnectionString(connectionString)
                     .ScanIn(GetType().Assembly).For.Migrations()
@@ -24,9 +25,8 @@ namespace IB.WatchServer.Service.Migrations
                 .Configure<FluentMigratorLoggerOptions>(options =>
                 {
                     options.ShowSql = false;
-                    
                 })
-                .AddLogging(lb => lb.AddSerilog().SetMinimumLevel(LogLevel.Warning))
+                //.AddLogging(lb => lb.AddSerilog().SetMinimumLevel(LogLevel.Warning))
                 .BuildServiceProvider(false)
                 .GetRequiredService<IMigrationRunner>();
         }

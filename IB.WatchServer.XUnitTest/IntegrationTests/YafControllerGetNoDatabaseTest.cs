@@ -43,7 +43,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Mock kafka
             //
-            var kafkaProviderMock = new Mock<KafkaProvider>(null, TestHelper.GetLoggerMock<KafkaProvider>().Object);
+            var kafkaProviderMock = new Mock<KafkaProvider>(TestHelper.GetKafkaSettings(), TestHelper.GetLoggerMock<KafkaProvider>().Object);
      
 
             // Mock web requests
