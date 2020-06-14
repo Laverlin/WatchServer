@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Net.Http;
+using System.Security.Policy;
 
 namespace IB.WatchServer.Service.Entity.Settings
 {
@@ -62,6 +63,8 @@ namespace IB.WatchServer.Service.Entity.Settings
 
         [Required]
         public string[] ExchangeRateSupportedCurrency { get; set; }
+
+        public bool Log2Kafka { get; set; } = true;
     }
 
     /// <summary>

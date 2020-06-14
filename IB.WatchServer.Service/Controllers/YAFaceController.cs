@@ -12,6 +12,7 @@ using IB.WatchServer.Abstract.Entity;
 using IB.WatchServer.Service.Service;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Abstract.Entity.WatchFace;
+using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Service.HttpClients;
 using LinqToDB.Common;
 
@@ -33,13 +34,15 @@ namespace IB.WatchServer.Service.Controllers
         private readonly VirtualearthClient _virtualearthClient;
         private readonly DarkSkyClient _darkSkyClient;
         private readonly OpenWeatherClient _openWeatherClient;
+        private readonly FaceSettings _faceSettings;
 
         public YAFaceController(
             ILogger<YAFaceController> logger, PostgresDataProvider postgresDataProvider, KafkaProvider kafkaProvider,
             ExchangeRateCacheStrategy exchangeRateCacheStrategy,
             VirtualearthClient virtualearthClient,  
             DarkSkyClient darkSkyClient,
-            OpenWeatherClient openWeatherClient)
+            OpenWeatherClient openWeatherClient,
+            FaceSettings faceSettings)
         {
             _logger = logger;
             _postgresDataProvider = postgresDataProvider;
@@ -48,6 +51,7 @@ namespace IB.WatchServer.Service.Controllers
             _virtualearthClient = virtualearthClient;
             _darkSkyClient = darkSkyClient;
             _openWeatherClient = openWeatherClient;
+            _faceSettings = faceSettings;
         }
 
         /// <summary>
@@ -169,7 +173,8 @@ namespace IB.WatchServer.Service.Controllers
                     ExchangeRateInfo = exchangeRateInfo
                 };
 
-                await _kafkaProvider.SendMessage(new {watchRequest, locationInfo, weatherInfo, exchangeRateInfo});
+                if (_faceSettings.Log2Kafka)
+                    await _kafkaProvider.SendMessage(new {watchRequest, locationInfo, weatherInfo, exchangeRateInfo});
 
                 _logger.LogInformation(
                     new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchRequest, watchResponse);
