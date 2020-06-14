@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using LinqToDB.DataProvider.SapHana;
 
 namespace IB.WatchServer.Abstract.Settings
 {
@@ -9,6 +10,10 @@ namespace IB.WatchServer.Abstract.Settings
         /// </summary>
         [Required]
         public string KafkaServer { get; set; }
+
+        public string UserName {get; set;}
+
+        public string Password { get; set; }
 
         /// <summary>
         /// Queue topic 

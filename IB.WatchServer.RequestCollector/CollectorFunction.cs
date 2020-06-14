@@ -9,6 +9,7 @@ using IB.WatchServer.Abstract.Settings;
 using LinqToDB;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.WebJobs.Extensions.Kafka;
 
 namespace IB.WatchServer.RequestCollector
 {
@@ -28,24 +29,53 @@ namespace IB.WatchServer.RequestCollector
             _mapper = mapper;
         }
 
+
+        [FunctionName(nameof(KafkaPayload))]
+        public async Task KafkaPayload([KafkaTrigger(
+                "BootstrapServer",
+                "8cxa2hx6-default",
+                ConsumerGroup = "log-consumer",
+                Protocol = BrokerProtocol.SaslSsl,
+                AuthenticationMode = BrokerAuthenticationMode.ScramSha256,
+                SslCaLocation = "KafkaCloudCert.pem",
+                Username = "ConfluentCloudUsername",
+                Password = "ConfluentCloudPassword")]
+            KafkaEventData<string> kafkaEvent,
+            ILogger logger)
+        {
+            logger.LogInformation(kafkaEvent.Value.ToString());
+
+            var parsedPayload = ParsePayload(kafkaEvent.Value);
+
+            await SaveData(
+                parsedPayload.WatchRequest, parsedPayload.WeatherInfo, parsedPayload.LocationInfo, parsedPayload.ExchangeRateInfo);
+        }
+
+        /*
         /// <summary>
         /// Grab data from the queue and put them to persistent storage
         /// </summary>
         /// <param name="timerInfo">timer info</param>
         /// <param name="logger">logger</param>
         [FunctionName(nameof(ProcessPayload))]
-        public async Task ProcessPayload([TimerTrigger("*/5 * * * * *")]TimerInfo timerInfo, ILogger logger)
+        public async Task ProcessPayload([TimerTrigger("*5 * * * * *")]TimerInfo timerInfo, ILogger logger)
         {
             var consumerConfig = new ConsumerConfig
             {
                 BootstrapServers = _kafkaSettings.KafkaServer,
+                SaslMechanism = SaslMechanism.ScramSha256,
+                SecurityProtocol = SecurityProtocol.SaslSsl,
+                SaslUsername = _kafkaSettings.UserName,
+                SaslPassword = _kafkaSettings.Password,
                 GroupId = _kafkaSettings.KafkaConsumerGroup,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnablePartitionEof = true
+                EnablePartitionEof = true,
+                EnableSslCertificateVerification = false
             };
 
             using var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
             consumer.Subscribe(_kafkaSettings.KafkaTopic);
+            logger.LogInformation("subscribed on {topic}", _kafkaSettings.KafkaTopic);
 
             try
             {
@@ -53,7 +83,10 @@ namespace IB.WatchServer.RequestCollector
                 {
                     var payload = consumer.Consume();
                     if (payload.IsPartitionEOF)
+                    {
+                        logger.LogInformation("no record found");
                         break;
+                    }
 
                     var parsedPayload = ParsePayload(payload);
 
@@ -71,17 +104,17 @@ namespace IB.WatchServer.RequestCollector
             {
                 consumer.Close();
             }
-        }
+        }*/
 
         /// <summary>
         /// Parse payload into typed objects 
         /// </summary>
-        /// <param name="payload">Queue message</param>
+        /// <param name="message">Queue message</param>
         /// <returns>Tuple with parsed objects</returns>
         private (WatchRequest WatchRequest, WeatherInfo WeatherInfo, LocationInfo LocationInfo, ExchangeRateInfo ExchangeRateInfo)
-            ParsePayload(ConsumeResult<Ignore, string> payload)
+            ParsePayload(string message)//ConsumeResult<Ignore, string> payload)
         {
-            var message = payload.Message.Value;
+           // var message = payload.Message.Value;
 
             var jsonMessage = JsonDocument.Parse(message);
             var watchRequest = JsonSerializer.Deserialize<WatchRequest>(

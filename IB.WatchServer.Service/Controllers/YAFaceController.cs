@@ -170,7 +170,6 @@ namespace IB.WatchServer.Service.Controllers
                 };
 
                 await _kafkaProvider.SendMessage(new {watchRequest, locationInfo, weatherInfo, exchangeRateInfo});
-                 //   JsonSerializer.Serialize(new {watchRequest, locationInfo, weatherInfo, exchangeRateInfo}));
 
                 _logger.LogInformation(
                     new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchRequest, watchResponse);

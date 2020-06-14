@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "IB.WatchServer.RequestCollector": {
+      "commandName": "Project"
+    }
+  }
+}

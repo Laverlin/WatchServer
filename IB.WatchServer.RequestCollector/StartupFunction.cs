@@ -6,11 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using IB.WatchServer.RequestCollector;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.WebJobs.Hosting;
 using Serilog;
 using Microsoft.Azure.WebJobs;
 
-[assembly: FunctionsStartup(typeof(StartupFunction))]
+[assembly: FunctionsStartup(typeof(IB.WatchServer.RequestCollector.StartupFunction))]
 namespace IB.WatchServer.RequestCollector
 {
     /// <summary>
@@ -24,7 +25,7 @@ namespace IB.WatchServer.RequestCollector
         public void Configure(IWebJobsBuilder builder)
         {
             var configuration = new ConfigurationBuilder()
-                .AddUserSecrets<StartupFunction>(optional: true)
+               // .AddUserSecrets<StartupFunction>(optional: true)
                 .AddEnvironmentVariables()
                 .Build();
 
@@ -32,6 +33,7 @@ namespace IB.WatchServer.RequestCollector
             //
             var logger = new LoggerConfiguration()
                 .WriteTo.Console()
+                .WriteTo.ApplicationInsights(TelemetryConfiguration.CreateDefault(), TelemetryConverter.Traces)
                 .CreateLogger();
             builder.Services.AddLogging(logBuilder => 
                 logBuilder.AddSerilog(logger, true));
