@@ -2,6 +2,7 @@
 using FluentMigrator.Runner;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace IB.WatchServer.Service.Migrations
 {
@@ -19,7 +20,7 @@ namespace IB.WatchServer.Service.Migrations
                     .WithGlobalConnectionString(connectionString)
                     .ScanIn(GetType().Assembly).For.Migrations()
                     .ScanIn(GetType().Assembly).For.EmbeddedResources())
-                .AddLogging(lb => lb.AddConsole().SetMinimumLevel(LogLevel.Debug))
+                .AddLogging(lb => lb.AddSerilog().SetMinimumLevel(LogLevel.Warning))
                 .Configure<FluentMigratorLoggerOptions>(options =>
                 {
                     options.ShowSql = false;
