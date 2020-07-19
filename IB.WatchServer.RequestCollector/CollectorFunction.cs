@@ -28,7 +28,7 @@ namespace IB.WatchServer.RequestCollector
             _dbFactory = dbFactory;
             _mapper = mapper;
         }
-
+        /*
 
         [FunctionName(nameof(KafkaPayload))]
         public async Task KafkaPayload([KafkaTrigger(
@@ -43,68 +43,86 @@ namespace IB.WatchServer.RequestCollector
             KafkaEventData<string> kafkaEvent,
             ILogger logger)
         {
-            logger.LogInformation(kafkaEvent.Value.ToString());
+            try
+            {
+                logger.LogInformation(kafkaEvent.Value.ToString());
 
-            var parsedPayload = ParsePayload(kafkaEvent.Value);
+                var parsedPayload = ParsePayload(kafkaEvent.Value);
 
-            await SaveData(
-                parsedPayload.WatchRequest, parsedPayload.WeatherInfo, parsedPayload.LocationInfo, parsedPayload.ExchangeRateInfo);
-        }
+                await SaveData(
+                    parsedPayload.WatchRequest, parsedPayload.WeatherInfo, parsedPayload.LocationInfo, parsedPayload.ExchangeRateInfo);
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(e, "Payload processing exception");
+            }
+        } 
 
-        /*
+        */
+
+
         /// <summary>
         /// Grab data from the queue and put them to persistent storage
         /// </summary>
         /// <param name="timerInfo">timer info</param>
         /// <param name="logger">logger</param>
         [FunctionName(nameof(ProcessPayload))]
-        public async Task ProcessPayload([TimerTrigger("*5 * * * * *")]TimerInfo timerInfo, ILogger logger)
+        public async Task ProcessPayload([TimerTrigger("*/5 * * * * *")] TimerInfo timerInfo, ILogger logger)
         {
-            var consumerConfig = new ConsumerConfig
-            {
-                BootstrapServers = _kafkaSettings.KafkaServer,
-                SaslMechanism = SaslMechanism.ScramSha256,
-                SecurityProtocol = SecurityProtocol.SaslSsl,
-                SaslUsername = _kafkaSettings.UserName,
-                SaslPassword = _kafkaSettings.Password,
-                GroupId = _kafkaSettings.KafkaConsumerGroup,
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnablePartitionEof = true,
-                EnableSslCertificateVerification = false
-            };
-
-            using var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build();
-            consumer.Subscribe(_kafkaSettings.KafkaTopic);
-            logger.LogInformation("subscribed on {topic}", _kafkaSettings.KafkaTopic);
-
             try
             {
-                while (true)
+                var consumerConfig = new ConsumerConfig
                 {
-                    var payload = consumer.Consume();
-                    if (payload.IsPartitionEOF)
+                    BootstrapServers = _kafkaSettings.KafkaServer,
+                    SaslMechanism = SaslMechanism.ScramSha256,
+                    SecurityProtocol = SecurityProtocol.SaslSsl,
+                    SaslUsername = _kafkaSettings.UserName,
+                    SaslPassword = _kafkaSettings.Password,
+                    GroupId = _kafkaSettings.KafkaConsumerGroup,
+                    AutoOffsetReset = AutoOffsetReset.Earliest,
+                    EnableAutoCommit = false,
+                    EnablePartitionEof = true,
+                    EnableSslCertificateVerification = false
+                };
+
+                using (var consumer = new ConsumerBuilder<Ignore, string>(consumerConfig).Build())
+                {
+                    consumer.Subscribe(_kafkaSettings.KafkaTopic);
+                    logger.LogDebug("subscribed on {topic}", _kafkaSettings.KafkaTopic);
+
+                    try
                     {
-                        logger.LogInformation("no record found");
-                        break;
+                        while (true)
+                        {
+                            var payload = consumer.Consume();
+                            if (payload.IsPartitionEOF)
+                            {
+                                logger.LogInformation("no record found");
+                                break;
+                            }
+
+                            var parsedPayload = ParsePayload(payload.Message.Value);
+
+                            await SaveData(
+                                parsedPayload.WatchRequest, parsedPayload.WeatherInfo, parsedPayload.LocationInfo,
+                                parsedPayload.ExchangeRateInfo);
+                            consumer.Commit();
+
+                            logger.LogInformation("id: {id}, request: {@WatchRequest}", payload.Offset.Value, parsedPayload.WatchRequest);
+                        }
                     }
-
-                    var parsedPayload = ParsePayload(payload);
-
-                    await SaveData(
-                        parsedPayload.WatchRequest, parsedPayload.WeatherInfo, parsedPayload.LocationInfo, parsedPayload.ExchangeRateInfo);
-                    
-                    logger.LogInformation("id: {id}, request: {@WatchRequest}", payload.Offset.Value, parsedPayload.WatchRequest);
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Processing exception");
+                    }
                 }
             }
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Consumer exception");
             }
-            finally
-            {
-                consumer.Close();
-            }
-        }*/
+
+        }
 
         /// <summary>
         /// Parse payload into typed objects 

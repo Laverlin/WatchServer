@@ -12,13 +12,13 @@ namespace IB.WatchServer.Abstract.Entity.WatchFace
         /// <summary>
         /// Unique internal id
         /// </summary>
-        [Column(Name = "id"), Identity, PrimaryKey]
+        [Column(Name = "id"), Identity]
         public int? Id { get; set; }
 
         /// <summary>
         /// Garmin device id
         /// </summary>
-        [Column(Name = "DeviceId")]
+        [Column(Name = "DeviceId"), PrimaryKey]
         public string DeviceId { get; set; }
 
         /// <summary>

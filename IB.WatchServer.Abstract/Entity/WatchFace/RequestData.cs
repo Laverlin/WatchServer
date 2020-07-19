@@ -10,7 +10,7 @@ namespace IB.WatchServer.Abstract.Entity.WatchFace
     public class RequestData
     {
         [Column("id"), Identity]
-        public int? Id { get; set; }
+        public long? Id { get; set; }
 
         [Column("DeviceInfoId")]
         public int? DeviceDataId { get; set; }
