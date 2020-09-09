@@ -148,9 +148,10 @@ namespace IB.WatchServer.Service.Controllers
 
                     // Get location info
                     //
-                    locationInfo =
-                        await _postgresDataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
-                        await _virtualearthClient.RequestLocationName(watchRequest.Lat.Value, watchRequest.Lon.Value);
+                    locationInfo = await _virtualearthClient
+                        .GetCachedLocationName(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value);
+                    //    await _postgresDataProvider.LoadLastLocation(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value) ??
+                    //    await _virtualearthClient.RequestLocationName(watchRequest.Lat.Value, watchRequest.Lon.Value);
                 }
 
                 // Get Exchange Rate info

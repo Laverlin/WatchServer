@@ -8,6 +8,7 @@ using IB.WatchServer.Abstract;
 using IB.WatchServer.Abstract.Entity.WatchFace;
 using LinqToDB;
 using LinqToDB.Data;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service
@@ -19,6 +20,7 @@ namespace IB.WatchServer.Service.Service
         private readonly DataConnectionFactory _connectionFactory;
         private readonly IMapper _mapper;
         private readonly IMetrics _metrics;
+
 
         public PostgresDataProvider(
             ILogger<PostgresDataProvider> logger, DataConnectionFactory connectionFactory, IMapper mapper, IMetrics metrics)
