@@ -4,7 +4,6 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
       <AssemblyVersion>1.20.0.0</AssemblyVersion>
       <Version>1.20.0.0-dev-local</Version>
-      <AssemblyName>IB.WatchServer</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
