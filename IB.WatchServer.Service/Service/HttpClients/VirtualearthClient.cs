@@ -77,7 +77,11 @@ namespace IB.WatchServer.Service.Service.HttpClients
             if (_memoryCache.TryGetValue(cacheKey, out LocationCache locationCache))
             {
                 if (locationCache.Latitude == lat && locationCache.Longitude == lon)
+                {
+                    _metrics.LocationIncrement("cache", SourceType.Memory);
                     return new LocationInfo(locationCache.LocationName);
+                }
+
                 _memoryCache.Remove(cacheKey);
             }
 
