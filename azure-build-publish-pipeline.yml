@@ -38,7 +38,7 @@ steps:
 # Build new assembly version 
 #
 - pwsh: |
-    $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *.csproj -Recurse
+    $projFiles = Get-Childitem -Path $(Build.SourcesDirectory) -Include *Service.csproj -Include *Abstract.csproj -Recurse
     foreach($projFile in $projFiles)
     {
       Write-Host "Writing version $fullVersion in $projFile"
