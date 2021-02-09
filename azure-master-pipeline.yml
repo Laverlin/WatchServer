@@ -9,7 +9,7 @@ resources:
   # Specify the Docker container hosting the database to be used when running integration tests.
   # 
   - container: 'postgres_linux'
-    image: 'postgres:alpine'
+    image: 'postgres:12-alpine'
     ports:
     - 5432:5432
     env:

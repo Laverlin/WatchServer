@@ -1,7 +1,9 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using LinqToDB.Common;
+using Microsoft.AspNetCore.Builder;
 
 namespace IB.WatchServer.Service.Infrastructure
 {
@@ -36,5 +38,13 @@ namespace IB.WatchServer.Service.Infrastructure
 
             return new string(preprocessed.ToArray()).Normalize(NormalizationForm.FormC).Replace('’', '\'');
         }
+
+        /*
+        public static string ConvertNonUnicode(this string unicodeString)
+        {
+           // string[] nonUnicodeChars = { "À", "Á", "Â", "Ã", "Ä", "Å", "Æ", "Ç", "È", "É", "Ê", "Ë", "Ì", "Í", "Î", "Ï", "Ð", "Ñ", "Ò", "Ó", "Ô", "Õ", "Ö", "×", "Ø", "Ù", "Ú", "Û", "Ü", "Ý", "Þ", "ß", "à", "á", "â", "ã", "ä", "å", "æ", "ç", "è", "é", "ê", "ë", "ì", "í", "î", "ï", "ð", "ñ", "ò", "ó", "ô", "õ", "ö", "÷", "ø", "ù", "ú", "û", "ü", "ý", "þ", "ÿ" };
+
+        }
+        */
     }
 }

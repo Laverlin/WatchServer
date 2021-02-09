@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 using IB.WatchServer.Abstract;
 using Microsoft.AspNetCore.Mvc;
@@ -163,7 +162,12 @@ namespace IB.WatchServer.Service.Controllers
                 // Save all requested data
                 //
                 await _postgresDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
-                locationInfo.CityName = locationInfo.CityName.StripDiacritics();
+
+                // WatchFaces earlier than 0.9.248 can not display diacritics
+                //
+                if (Version.TryParse(watchRequest.Version, out var wfVersion) && 
+                    wfVersion.CompareTo(new Version(0, 9, 248)) < 0)
+                    locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
                 var watchResponse = new WatchResponse
                 {

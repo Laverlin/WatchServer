@@ -8,6 +8,11 @@ steps:
 - checkout: self
   persistCredentials: true
 
+- task: UseDotNet@2
+  inputs:
+    version: '3.1.x'
+    packageType: runtime
+
 - script: dotnet restore
   displayName: 'dotnet restore'
 
