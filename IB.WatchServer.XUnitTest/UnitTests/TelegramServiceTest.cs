@@ -22,7 +22,7 @@ using Xunit;
 
 namespace IB.WatchServer.XUnitTest.UnitTests
 {
-    [Collection("DB test collection")]
+    [Collection("DBTestCollection")]
     public class TelegramServiceTest : IDisposable
     {
         private IConnectionSettings _connectionSettings;
@@ -59,7 +59,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
         }
 
         [Fact]
-        public async Task NewUserShouldbeCreatedInDb()
+        public async Task NewUserShouldBeCreatedInDb()
         {
             // Arrange
             //

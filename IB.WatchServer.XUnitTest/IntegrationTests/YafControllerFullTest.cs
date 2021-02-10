@@ -25,7 +25,7 @@ using Xunit.Sdk;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
-    [Collection("DB test collection")]
+    [Collection("DBTestCollection")]
     public class YafControllerFullTest  : IClassFixture<ServiceAppTestFixture>, IDisposable
     {
         private readonly ServiceAppTestFixture _factory;
