@@ -14,11 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		azure-stable-pipeline.yml = azure-stable-pipeline.yml
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IB.WatchServer.RequestCollector", "IB.WatchServer.RequestCollector\IB.WatchServer.RequestCollector.csproj", "{AB0C8159-3487-48E7-9AD1-4B656EE6216F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IB.WatchServer.Abstract", "IB.WatchServer.Abstract\IB.WatchServer.Abstract.csproj", "{5F7501AD-F9C0-4A67-B5AF-4CAF92F467EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IB.WatchServer.Migrations", "IB.WatchServer.Migrations\IB.WatchServer.Migrations.csproj", "{C43974EB-D2AE-4EE5-9CFF-571876C0D7D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IB.WatchServer.Migrations", "IB.WatchServer.Migrations\IB.WatchServer.Migrations.csproj", "{C43974EB-D2AE-4EE5-9CFF-571876C0D7D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,10 +32,6 @@ Global
 		{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96EA7BF6-4DC4-4B5F-A693-7F5BBF454064}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AB0C8159-3487-48E7-9AD1-4B656EE6216F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB0C8159-3487-48E7-9AD1-4B656EE6216F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB0C8159-3487-48E7-9AD1-4B656EE6216F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB0C8159-3487-48E7-9AD1-4B656EE6216F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5F7501AD-F9C0-4A67-B5AF-4CAF92F467EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5F7501AD-F9C0-4A67-B5AF-4CAF92F467EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F7501AD-F9C0-4A67-B5AF-4CAF92F467EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
