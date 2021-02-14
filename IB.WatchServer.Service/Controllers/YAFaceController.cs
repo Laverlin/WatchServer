@@ -180,7 +180,8 @@ namespace IB.WatchServer.Service.Controllers
                     await _kafkaProvider.SendMessage(new {watchRequest, locationInfo, weatherInfo, exchangeRateInfo});
 
                 _logger.LogInformation(
-                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}", watchRequest, watchResponse);
+                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}, {@DeviceId}, {@CityName}", 
+                    watchRequest, watchResponse, watchRequest.DeviceId, watchResponse.LocationInfo.CityName);
                 return watchResponse;
             }
             catch (Exception ex)
