@@ -22,6 +22,7 @@ using Xunit;
 
 namespace IB.WatchServer.XUnitTest.UnitTests
 {
+    /*
     [Collection("DBTestCollection")]
     public class TelegramServiceTest : IDisposable
     {
@@ -442,4 +443,5 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             }
         }
     }
+    */
 }
