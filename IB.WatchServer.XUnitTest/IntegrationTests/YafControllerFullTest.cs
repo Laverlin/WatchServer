@@ -25,7 +25,7 @@ using Xunit.Sdk;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
-    /*
+    
     [Collection("DBTestCollection")]
     public class YafControllerFullTest  : IClassFixture<ServiceAppTestFixture>, IDisposable
     {
@@ -355,5 +355,5 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
         }
 
     }
-    */
+    
 }

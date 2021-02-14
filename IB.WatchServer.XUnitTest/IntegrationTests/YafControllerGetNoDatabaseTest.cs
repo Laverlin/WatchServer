@@ -142,7 +142,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Assert
             //
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
             var error = JsonSerializer.Deserialize(await response.Content.ReadAsStringAsync(), typeof(ErrorResponse));
             Assert.IsType<ErrorResponse>(error);
         }

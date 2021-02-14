@@ -16,7 +16,7 @@ namespace IB.WatchServer.Abstract.Entity.WatchFace
         public int? DeviceDataId { get; set; }
 
         [Column("RequestTime")]
-        public DateTime RequestTime { get; set; }
+        public DateTime? RequestTime { get; set; }
 
         [Column("CityName")]
         public string CityName { get; set; }

@@ -54,7 +54,8 @@ namespace IB.WatchServer.Migrations
                 ? await pgConnection.GetTable<DeviceData>().ToArrayAsync()
                 : await pgConnection.GetTable<DeviceData>()
                     .Where(d=>d.Id.In(pgConnection.GetTable<RequestData>()
-                        .Where(r=>r.RequestTime.Date == transferDate.Date).Select(r=>r.DeviceDataId)))
+                        .Where(r=>r.RequestTime.Value.Date == transferDate.Date)
+                        .Select(r=>r.DeviceDataId)))
                     .ToArrayAsync();
 
 
@@ -65,7 +66,7 @@ namespace IB.WatchServer.Migrations
                     .Where(r => r.DeviceDataId == device.Id);
 
                     if (transferDate != DateTime.MaxValue)
-                        requests = requests.Where(r => r.RequestTime.Date == transferDate.Date);
+                        requests = requests.Where(r => r.RequestTime.Value.Date == transferDate.Date);
                     
                 
                 await msSqlConnection.GetTable<DeviceData>().DataContext.InsertOrReplaceAsync(device);

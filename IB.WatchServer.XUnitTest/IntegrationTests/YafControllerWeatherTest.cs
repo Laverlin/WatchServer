@@ -288,8 +288,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Assert
             //
-            Assert.Equal(HttpStatusCode.BadRequest, responseWeather.StatusCode); 
-            Assert.Equal(HttpStatusCode.BadRequest, responseLocation.StatusCode);
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, responseWeather.StatusCode); 
+            Assert.Equal(HttpStatusCode.MethodNotAllowed, responseLocation.StatusCode);
 
             var errorWeather = JsonSerializer.Deserialize(await responseWeather.Content.ReadAsStringAsync(), typeof(ErrorResponse));
             var errorLocation = JsonSerializer.Deserialize(await responseLocation.Content.ReadAsStringAsync(), typeof(ErrorResponse));
