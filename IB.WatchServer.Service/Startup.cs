@@ -155,7 +155,7 @@ namespace IB.WatchServer.Service
             //
             app.Use(async (context, next) =>
             {
-                LogContext.PushProperty("UserName", context.User.Identity.Name);
+                LogContext.PushProperty("UserName", context.User.Identity?.Name);
                 LogContext.PushProperty("Headers", context.Request.Headers.ToDictionary(h => h.Key, h => h.Value.ToString()));
                 await next.Invoke();
             });

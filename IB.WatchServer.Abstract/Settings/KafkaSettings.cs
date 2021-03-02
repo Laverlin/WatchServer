@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using LinqToDB.DataProvider.SapHana;
 
 namespace IB.WatchServer.Abstract.Settings
 {

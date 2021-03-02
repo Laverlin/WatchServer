@@ -8,8 +8,8 @@ namespace IB.WatchServer.Abstract
     /// </summary>
     public static class SolutionInfo
     {
-        private static readonly Lazy<string> _version = new Lazy<string>(()=>
-            typeof(SolutionInfo).Assembly
+        private static readonly Lazy<string> _version = new(
+            () => typeof(SolutionInfo).Assembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
 
         /// <summary>

@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IB.WatchServer.Abstract", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IB.WatchServer.Migrations", "IB.WatchServer.Migrations\IB.WatchServer.Migrations.csproj", "{C43974EB-D2AE-4EE5-9CFF-571876C0D7D3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{A3170863-1310-44F6-A4C9-509127448C75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C43974EB-D2AE-4EE5-9CFF-571876C0D7D3} = {A3170863-1310-44F6-A4C9-509127448C75}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {96974A3B-40A1-45DF-9A0D-EB45EB31DEB7}

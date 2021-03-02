@@ -29,6 +29,6 @@ namespace IB.WatchServer.Abstract.Entity.WatchFace
         /// Status of request to the remote server
         /// </summary>
         [JsonPropertyName("status")]
-        public RequestStatus RequestStatus { get; set; } = new RequestStatus();
+        public RequestStatus RequestStatus { get; set; } = new ();
     }
 }

@@ -1,3 +1,4 @@
+using IB.WatchServer.Abstract;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -17,7 +18,9 @@ namespace IB.WatchServer.Service
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration(config => { config.AddEnvironmentVariables().Build(); })
                 .UseSerilog((hostingContext, loggerConfiguration) => loggerConfiguration
-                    .ReadFrom.Configuration(hostingContext.Configuration))
+                    .ReadFrom.Configuration(hostingContext.Configuration)
+                    .Enrich.WithProperty("version", SolutionInfo.Version)
+                    .Enrich.WithProperty("Application", SolutionInfo.Name))
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }
