@@ -2,7 +2,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:5.0-buster-slim AS base
 WORKDIR /app
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0-buster AS build
+FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build
 WORKDIR /src
 COPY ["IB.WatchServer.Service/IB.WatchServer.Service.csproj", "IB.WatchServer.Service/"]
 RUN dotnet restore "IB.WatchServer.Service/IB.WatchServer.Service.csproj"
