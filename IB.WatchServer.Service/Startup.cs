@@ -57,6 +57,8 @@ namespace IB.WatchServer.Service
 
             services.AddHostedService<StartupHostedService>();
 
+            services.AddApplicationInsightsTelemetry(Configuration);
+
             // metrics
             //
             var metrics = AppMetrics.CreateDefaultBuilder()
@@ -145,6 +147,7 @@ namespace IB.WatchServer.Service
             {
                 app.UseDeveloperExceptionPage();
             }
+
 
             app.UseRouting();
 

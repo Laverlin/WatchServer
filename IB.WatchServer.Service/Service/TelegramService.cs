@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using IB.WatchServer.Abstract;
+using shortid.Configuration;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -244,7 +245,7 @@ namespace IB.WatchServer.Service.Service
                 yasUserInfo = new YasUser()
                 {
                     TelegramId = telegramUser.UserId,
-                    PublicId = shortid.ShortId.Generate(true, false, 10),
+                    PublicId = shortid.ShortId.Generate(new GenerationOptions { Length = 10, UseNumbers = true, UseSpecialCharacters = false }),
                     UserName = telegramUser.UserName,
                     RegisterTime = DateTime.UtcNow
                 };
