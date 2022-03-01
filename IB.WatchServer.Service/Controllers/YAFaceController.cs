@@ -15,6 +15,8 @@ using IB.WatchServer.Abstract.Entity.WatchFace;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Service.HttpClients;
 using LinqToDB.Common;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace IB.WatchServer.Service.Controllers
 {
@@ -81,31 +83,31 @@ namespace IB.WatchServer.Service.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
         [Authorize]
-        public async Task<ActionResult<object>> Weather([FromQuery] WatchRequest watchFaceRequest)
+        public ActionResult<object> Weather([FromQuery] WatchRequest watchFaceRequest)
         {
 
             watchFaceRequest.Version = Request.Query["v"];
             watchFaceRequest.DeviceName = Request.Query["dname"];
 
-            var result = await Get(watchFaceRequest);
+            var result = Get(watchFaceRequest);
             var watchResponse = result.Value;
 
-            if (watchResponse != null && 
+            if (watchResponse != null &&
                 watchResponse.WeatherInfo.RequestStatus.StatusCode == RequestStatusCode.Error &&
                 watchResponse.WeatherInfo.RequestStatus.ErrorCode == 401)
             {
-                return StatusCode((int) HttpStatusCode.Forbidden,
-                    new ErrorResponse {StatusCode = (int) HttpStatusCode.Forbidden, Description = "Forbidden"});
+                return StatusCode((int)HttpStatusCode.Forbidden,
+                    new ErrorResponse { StatusCode = (int)HttpStatusCode.Forbidden, Description = "Forbidden" });
             }
 
             if (watchResponse == null || watchFaceRequest.Lat == null || watchFaceRequest.Lon == null ||
                 watchResponse.WeatherInfo.RequestStatus.StatusCode == RequestStatusCode.Error ||
                 watchResponse.LocationInfo.RequestStatus.StatusCode == RequestStatusCode.Error)
             {
-                return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
+                return BadRequest(new ErrorResponse { StatusCode = (int)HttpStatusCode.BadRequest, Description = "Bad request" });
             }
 
-            return new 
+            return new
             {
                 watchResponse.WeatherInfo.WeatherProvider,
                 watchResponse.WeatherInfo.Icon,
@@ -129,44 +131,62 @@ namespace IB.WatchServer.Service.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [RequestRateFactory(KeyField = "did", Seconds = 5)]
         [Authorize]
-        public async Task<ActionResult<WatchResponse>> Get([FromQuery] WatchRequest watchRequest)
+        public ActionResult<WatchResponse> Get([FromQuery] WatchRequest watchRequest)
         {
             try
             {
                 var weatherInfo = new WeatherInfo();
                 var locationInfo = new LocationInfo();
                 var exchangeRateInfo = new ExchangeRateInfo();
+                var tasks = new List<Task>();
+                var cancellationToken = new CancellationTokenSource();
+                cancellationToken.CancelAfter(2000);
 
                 if (watchRequest.Lat != null && watchRequest.Lon != null)
                 {
                     // Get weather info
                     //
                     Enum.TryParse<WeatherProvider>(watchRequest.WeatherProvider, true, out var weatherProvider);
-                    weatherInfo = (weatherProvider == WeatherProvider.DarkSky)
-                        ? await _darkSkyClient.RequestDarkSky(watchRequest.Lat.Value, watchRequest.Lon.Value, watchRequest.DarkskyKey)
-                        : await _openWeatherClient.RequestOpenWeather(watchRequest.Lat.Value, watchRequest.Lon.Value);
+                    if (weatherProvider == WeatherProvider.DarkSky)
+                    {
+                        tasks.Add(
+                            _darkSkyClient
+                                .RequestDarkSky(watchRequest.Lat.Value, watchRequest.Lon.Value, watchRequest.DarkskyKey)
+                                .ContinueWith<WeatherInfo>(r => weatherInfo = r.Result, cancellationToken.Token));
+                    }
+                    else
+                    {
+                        tasks.Add(
+                            _openWeatherClient
+                                .RequestOpenWeather(watchRequest.Lat.Value, watchRequest.Lon.Value)
+                                .ContinueWith(r => weatherInfo = r.Result, cancellationToken.Token));
+                    }
 
                     // Get location info
                     //
-                    locationInfo = await _virtualearthClient
-                        .GetCachedLocationName(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value);
+                    tasks.Add(_virtualearthClient
+                        .GetCachedLocationName(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value)
+                        .ContinueWith(r => locationInfo = r.Result, cancellationToken.Token));
                 }
 
                 // Get Exchange Rate info
                 //
                 if (!watchRequest.BaseCurrency.IsNullOrEmpty() && !watchRequest.TargetCurrency.IsNullOrEmpty())
                 {
-                    exchangeRateInfo = await _exchangeRateCacheStrategy
-                        .GetExchangeRate(watchRequest.BaseCurrency, watchRequest.TargetCurrency);
+                    tasks.Add(_exchangeRateCacheStrategy
+                        .GetExchangeRate(watchRequest.BaseCurrency, watchRequest.TargetCurrency)
+                        .ContinueWith(r => exchangeRateInfo = r.Result, cancellationToken.Token));
                 }
+
+                Task.WaitAll(tasks.ToArray());
 
                 // Save all requested data
                 //
-                await _postgresDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
+                _ = _postgresDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
 
                 // WatchFaces earlier than 0.9.248 can not display diacritics
                 //
-                if (Version.TryParse(watchRequest.Version, out var wfVersion) && 
+                if (Version.TryParse(watchRequest.Version, out var wfVersion) &&
                     wfVersion.CompareTo(new Version(0, 9, 248)) < 0)
                     locationInfo.CityName = locationInfo.CityName.StripDiacritics();
 
@@ -178,17 +198,17 @@ namespace IB.WatchServer.Service.Controllers
                 };
 
                 if (_faceSettings.Log2Kafka)
-                    await _kafkaProvider.SendMessage(new {watchRequest, locationInfo, weatherInfo, exchangeRateInfo});
+                    _ = _kafkaProvider.SendMessage(new { watchRequest, locationInfo, weatherInfo, exchangeRateInfo });
 
                 _logger.LogInformation(
-                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}, {@DeviceId}, {@CityName}", 
+                    new EventId(105, "WatchRequest"), "{@WatchRequest}, {@WatchResponse}, {@DeviceId}, {@CityName}",
                     watchRequest, watchResponse, watchRequest.DeviceId, watchResponse.LocationInfo.CityName);
                 return watchResponse;
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Request error, {@WatchFaceRequest}", watchRequest);
-                return BadRequest(new ErrorResponse {StatusCode = (int) HttpStatusCode.BadRequest, Description = "Bad request"});
+                return BadRequest(new ErrorResponse { StatusCode = (int)HttpStatusCode.BadRequest, Description = "Bad request" });
             }
         }
     }
