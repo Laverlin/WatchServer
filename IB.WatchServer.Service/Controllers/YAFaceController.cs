@@ -139,8 +139,9 @@ namespace IB.WatchServer.Service.Controllers
                 var locationInfo = new LocationInfo();
                 var exchangeRateInfo = new ExchangeRateInfo();
                 var tasks = new List<Task>();
+
                 var cancellationToken = new CancellationTokenSource();
-                cancellationToken.CancelAfter(2000);
+                cancellationToken.CancelAfter(TimeSpan.FromSeconds(10));
 
                 if (watchRequest.Lat != null && watchRequest.Lon != null)
                 {
@@ -149,24 +150,28 @@ namespace IB.WatchServer.Service.Controllers
                     Enum.TryParse<WeatherProvider>(watchRequest.WeatherProvider, true, out var weatherProvider);
                     if (weatherProvider == WeatherProvider.DarkSky)
                     {
-                        tasks.Add(
-                            _darkSkyClient
-                                .RequestDarkSky(watchRequest.Lat.Value, watchRequest.Lon.Value, watchRequest.DarkskyKey)
-                                .ContinueWith<WeatherInfo>(r => weatherInfo = r.Result, cancellationToken.Token));
+                        tasks.Add(_darkSkyClient
+                            .RequestDarkSky(watchRequest.Lat.Value, watchRequest.Lon.Value, watchRequest.DarkskyKey)
+                            .ContinueWith(r => weatherInfo = r.Result, cancellationToken.Token)
+                            .ContinueWith(r => weatherInfo = new WeatherInfo(), TaskContinuationOptions.OnlyOnCanceled)
+                         );
                     }
                     else
                     {
-                        tasks.Add(
-                            _openWeatherClient
-                                .RequestOpenWeather(watchRequest.Lat.Value, watchRequest.Lon.Value)
-                                .ContinueWith(r => weatherInfo = r.Result, cancellationToken.Token));
+                        tasks.Add(_openWeatherClient
+                            .RequestOpenWeather(watchRequest.Lat.Value, watchRequest.Lon.Value)
+                            .ContinueWith(r => weatherInfo = r.Result, cancellationToken.Token)
+                            .ContinueWith(r => weatherInfo = new WeatherInfo(), TaskContinuationOptions.OnlyOnCanceled)
+                        );
                     }
 
                     // Get location info
                     //
                     tasks.Add(_virtualearthClient
                         .GetCachedLocationName(watchRequest.DeviceId, watchRequest.Lat.Value, watchRequest.Lon.Value)
-                        .ContinueWith(r => locationInfo = r.Result, cancellationToken.Token));
+                        .ContinueWith(r => locationInfo = r.Result, cancellationToken.Token)
+                        .ContinueWith(r => locationInfo = new LocationInfo(), TaskContinuationOptions.OnlyOnCanceled)
+                    );
                 }
 
                 // Get Exchange Rate info
@@ -175,10 +180,44 @@ namespace IB.WatchServer.Service.Controllers
                 {
                     tasks.Add(_exchangeRateCacheStrategy
                         .GetExchangeRate(watchRequest.BaseCurrency, watchRequest.TargetCurrency)
-                        .ContinueWith(r => exchangeRateInfo = r.Result, cancellationToken.Token));
+                        .ContinueWith(r => exchangeRateInfo = r.Result, cancellationToken.Token)
+                        .ContinueWith(r => exchangeRateInfo = new ExchangeRateInfo 
+                            { 
+                                RequestStatus = new RequestStatus(RequestStatusCode.Error)
+                                { 
+                                    ErrorDescription = "Service Request Timeout" 
+                                } 
+                            }, 
+                            TaskContinuationOptions.OnlyOnCanceled
+                        ) 
+                    );
                 }
 
-                Task.WaitAll(tasks.ToArray());
+                try
+                {
+                    Task.WaitAll(tasks.ToArray());
+                }
+                catch (AggregateException aex)
+                {
+                    aex.Handle(ex =>
+                    {
+                        TaskCanceledException tcex = ex as TaskCanceledException;
+                        if (tcex != null)
+                        {
+                            _logger.LogWarning($"\n{nameof(TaskCanceledException)} thrown\n");
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    });
+                }
+                finally
+                {
+                    cancellationToken.Dispose();
+                }
+                
 
                 // Save all requested data
                 //

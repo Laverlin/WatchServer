@@ -40,23 +40,30 @@ namespace IB.WatchServer.Service.Service.HttpClients
         {
             _metrics.ExchangeRateIncrement("ExchangeRateApi.com", SourceType.Remote, baseCurrency, targetCurrency);
 
-            using var response = await _httpClient.GetAsync(_faceSettings.BuildExchangeRateApiUrl(baseCurrency, targetCurrency));
-            if (!response.IsSuccessStatusCode)
-            { 
-                _logger.LogWarning($"Error ExchangeRate request, status: {response.StatusCode.ToString()}");
-                return new ExchangeRateInfo {RequestStatus = new RequestStatus(response.StatusCode)};
+            try {
+                using var response = await _httpClient.GetAsync(_faceSettings.BuildExchangeRateApiUrl(baseCurrency, targetCurrency));
+                if (!response.IsSuccessStatusCode)
+                { 
+                    _logger.LogWarning($"Error ExchangeRate request, status: {response.StatusCode}");
+                    return new ExchangeRateInfo {RequestStatus = new RequestStatus(response.StatusCode)};
+                }
+
+                await using var content = await response.Content.ReadAsStreamAsync();
+                using var json = await JsonDocument.ParseAsync(content);
+                return new ExchangeRateInfo
+                {
+                    ExchangeRate = json.RootElement.GetProperty("rates")
+                        .TryGetProperty($"{targetCurrency}", out var rate) 
+                        ? rate.GetDecimal() : 0,
+                    RequestStatus = new RequestStatus(RequestStatusCode.Ok)
+                };
+            }
+            catch(Exception exception)
+            {
+                _logger.LogError($"Error ExchangeRate request: {exception.Message}");
+                return new ExchangeRateInfo {RequestStatus = new RequestStatus(RequestStatusCode.Error)};
             }
 
-            await using var content = await response.Content.ReadAsStreamAsync();
-            using var json = await JsonDocument.ParseAsync(content);
-
-            return new ExchangeRateInfo
-            {
-                ExchangeRate = json.RootElement.GetProperty("rates")
-                    .TryGetProperty($"{targetCurrency}", out var rate) 
-                    ? rate.GetDecimal() : 0,
-                RequestStatus = new RequestStatus(RequestStatusCode.Ok)
-            };
         }
     }
 }
