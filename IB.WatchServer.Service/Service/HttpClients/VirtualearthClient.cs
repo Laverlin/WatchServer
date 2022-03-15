@@ -54,7 +54,7 @@ namespace IB.WatchServer.Service.Service.HttpClients
             {
                 _logger.LogWarning(response.StatusCode == HttpStatusCode.Unauthorized
                     ? $"Unauthorized access to virtualearth"
-                    : $"Error virtualearth request, status: {response.StatusCode.ToString()}");
+                    : $"Error virtualearth request, status: {response.StatusCode}");
                 return new LocationInfo {RequestStatus = new RequestStatus(response.StatusCode)};
             }
 
@@ -64,11 +64,15 @@ namespace IB.WatchServer.Service.Service.HttpClients
                 .GetProperty("resourceSets")[0]
                 .GetProperty("resources");
 
-            var city = (resource.GetArrayLength() > 0)
-                ? resource[0].GetProperty("name").GetString()
-                : null;
+            string location = null;
+            if (resource.GetArrayLength() > 0)
+            {
+                var locality = resource[0].GetProperty("address").GetProperty("locality").GetString();
+                var region = resource[0].GetProperty("address").GetProperty("countryRegion").GetString();
+               location = $"{locality}, {region}"; 
+            }
 
-            return new LocationInfo(city);
+            return new LocationInfo(location);
         }
 
         public async Task<LocationInfo> GetCachedLocationName(string deviceId, decimal lat, decimal lon)
