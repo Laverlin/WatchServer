@@ -64,15 +64,11 @@ namespace IB.WatchServer.Service.Service.HttpClients
                 .GetProperty("resourceSets")[0]
                 .GetProperty("resources");
 
-            string location = null;
-            if (resource.GetArrayLength() > 0)
-            {
-                var locality = resource[0].GetProperty("address").GetProperty("locality").GetString();
-                var region = resource[0].GetProperty("address").GetProperty("countryRegion").GetString();
-               location = $"{locality}, {region}"; 
-            }
+            var city = (resource.GetArrayLength() > 0)
+                ? resource[0].GetProperty("name").GetString()
+                : null;
 
-            return new LocationInfo(location);
+            return new LocationInfo(city);
         }
 
         public async Task<LocationInfo> GetCachedLocationName(string deviceId, decimal lat, decimal lon)

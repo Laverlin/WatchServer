@@ -63,7 +63,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var darkSkyResponse =
                 "{\"currently\":{\"time\":1584864023,\"summary\":\"Possible Drizzle\",\"icon\":\"rain\",\"precipIntensity\":0.2386,\"precipProbability\":0.4,\"precipType\":\"rain\",\"temperature\":9.39,\"apparentTemperature\":8.3,\"dewPoint\":9.39,\"humidity\":1,\"pressure\":1010.8,\"windSpeed\":2.22,\"windGust\":3.63,\"windBearing\":71,\"cloudCover\":0.52,\"uvIndex\":1,\"visibility\":16.093,\"ozone\":391.9},\"offset\":1}";
             var locationResponse =
-                "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, KS\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, KS\",\"locality\": \"Olathe\"}}]}]}";
+                "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, United States\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, United States\",\"locality\": \"Olathe\"}}]}]}";
             var ccResponse = "{\"BTC_DKK\": 1.2}";
 
             _lat = (decimal) 38.855652;
@@ -129,7 +129,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             Assert.Equal((decimal) 4.28, actualRequest.Temperature);
             Assert.Equal((decimal) 2.21, actualRequest.WindSpeed);
-            Assert.Equal("Olathe, KS", actualRequest.CityName);
+            Assert.Equal("Olathe, United States", actualRequest.CityName);
 
 
             _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("api.darksky.net") , Times.Never());
@@ -177,7 +177,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             Assert.Equal((decimal) 9.39, actualRequest.Temperature);
             Assert.Equal((decimal) 2.22, actualRequest.WindSpeed);
             Assert.Equal((decimal) 0.4, actualRequest.PrecipProbability);
-            Assert.Equal("Olathe, KS", actualRequest.CityName);
+            Assert.Equal("Olathe, United States", actualRequest.CityName);
             Assert.Equal((decimal) 1.2, actualRequest.ExchangeRate);
 
             _handler.VerifyRequest(HttpMethod.Get, _ => _.RequestUri.Host.Contains("free.currconv.com") , Times.Once());

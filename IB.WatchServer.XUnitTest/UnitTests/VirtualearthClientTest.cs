@@ -28,7 +28,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             var handler = new Mock<HttpMessageHandler>();
             var locationResponse =
-                "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, KS\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, KS\",\"locality\": \"Olathe\"}}]}]}";
+                "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, United States\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, United States\",\"locality\": \"Olathe\"}}]}]}";
             handler.SetupRequest(HttpMethod.Get, faceSettings.BuildLocationUrl(lat, lon))
                 .ReturnsResponse(locationResponse, "application/json");
 
@@ -45,7 +45,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             // Assert
             //
             Assert.Equal(RequestStatusCode.Ok, result.RequestStatus.StatusCode);
-            Assert.Equal("Olathe, KS", result.CityName);
+            Assert.Equal("Olathe, United States", result.CityName);
         }
 
         [Fact]

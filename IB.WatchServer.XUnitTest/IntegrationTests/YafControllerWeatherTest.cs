@@ -60,7 +60,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var darkSkyResponse =
                 "{\"currently\":{\"time\":1584864023,\"summary\":\"Possible Drizzle\",\"icon\":\"rain\",\"precipIntensity\":0.2386,\"precipProbability\":0.4,\"precipType\":\"rain\",\"temperature\":9.39,\"apparentTemperature\":8.3,\"dewPoint\":9.39,\"humidity\":1,\"pressure\":1010.8,\"windSpeed\":2.22,\"windGust\":3.63,\"windBearing\":71,\"cloudCover\":0.52,\"uvIndex\":1,\"visibility\":16.093,\"ozone\":391.9},\"offset\":1}";
             var locationResponse =
-                "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, KS\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, KS\",\"locality\": \"Olathe\"}}]}]}";
+                "{\"resourceSets\": [{\"resources\": [{\"name\": \"Olathe, United States\", \"address\": { \"adminDistrict\": \"KS\",\"adminDistrict2\": \"Johnson Co.\",\"countryRegion\": \"United States\",\"formattedAddress\": \"Olathe, United States\",\"locality\": \"Olathe\"}}]}]}";
 
             _lat = "38.855652";
             _lon = "-94.799712";
@@ -127,7 +127,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 WindSpeed = (decimal) 2.21,
                 Humidity = (decimal) 0.51,
                 Pressure = 1034,
-                CityName = "Olathe, KS"
+                CityName = "Olathe, United States"
             };
             var expectedJson = JsonSerializer.Serialize(expected);
 
@@ -162,7 +162,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 WindSpeed = (decimal) 2.22,
                 Humidity = (decimal) 1,
                 Pressure = (decimal) 1010.8,
-                CityName = "Olathe, KS"
+                CityName = "Olathe, United States"
             };
             var expectedJson = JsonSerializer.Serialize(expected);
 
