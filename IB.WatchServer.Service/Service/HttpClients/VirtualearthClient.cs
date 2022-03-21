@@ -67,9 +67,17 @@ namespace IB.WatchServer.Service.Service.HttpClients
             string location = null;
             if (resource.GetArrayLength() > 0)
             {
-                var locality = resource[0].GetProperty("address").GetProperty("locality").GetString();
-                var region = resource[0].GetProperty("address").GetProperty("countryRegion").GetString();
-               location = $"{locality}, {region}"; 
+                var locality = "";
+                var region = "";
+                var address = resource[0].GetProperty("address");
+                if (address.TryGetProperty("locality", out JsonElement localityElement))
+                    locality = $"{localityElement.GetString()}, ";
+                else 
+                    locality = (address.TryGetProperty("adminDistrict", out JsonElement districtElement))
+                        ? locality = $"{districtElement.GetString()}, " : "";
+                if (address.TryGetProperty("countryRegion", out JsonElement regionElement))
+                    region = regionElement.GetString();
+                location = $"{locality}{region}"; 
             }
 
             return new LocationInfo(location);
