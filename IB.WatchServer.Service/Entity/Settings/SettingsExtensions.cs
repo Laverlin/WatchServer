@@ -64,5 +64,17 @@ namespace IB.WatchServer.Service.Entity.Settings
         {
             return new Uri(string.Format(settings.ExchangeRateApiUrl, baseCurrency, targetCurrency));
         }
+
+        /// <summary>
+        /// Build url string to request the exchange rate from api.exchangerate.host
+        /// </summary>
+        /// <param name="settings">Configuration object</param>
+        /// <param name="baseCurrency">base currency for exchange rate</param>
+        /// <param name="targetCurrency">target currency for exchange rate</param>
+        /// <returns>url with parameters to get exchange rate from from api.exchangerate.host</returns>
+        public static Uri BuildExchangeHostApiUrl(this FaceSettings settings, string baseCurrency, string targetCurrency)
+        {
+            return new Uri(string.Format(settings.ExchangeHostApiUrl, baseCurrency, targetCurrency));
+        }
     }
 }

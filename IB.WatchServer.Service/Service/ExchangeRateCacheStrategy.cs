@@ -21,17 +21,21 @@ namespace IB.WatchServer.Service.Service
         private readonly IMetrics _metrics;
         private readonly CurrencyConverterClient _currencyConverterClient;
         private readonly ExchangeRateApiClient _exchangeRateApiClient;
+        private readonly ExchangeRateHostClient _exchangeHostClient;
         private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
 
         public ExchangeRateCacheStrategy(
             ILogger<ExchangeRateCacheStrategy> logger,
-            CurrencyConverterClient currencyConverterClient, ExchangeRateApiClient exchangeRateApiClient,
+            CurrencyConverterClient currencyConverterClient, 
+            ExchangeRateApiClient exchangeRateApiClient,
+            ExchangeRateHostClient exchangeRateHostClient,
             FaceSettings faceSettings, IMetrics metrics)
         {
             _logger = logger;
             _faceSettings = faceSettings;
             _metrics = metrics;
             _currencyConverterClient = currencyConverterClient;
+            _exchangeHostClient = exchangeRateHostClient;
             _exchangeRateApiClient = exchangeRateApiClient;
         }
 
@@ -55,11 +59,15 @@ namespace IB.WatchServer.Service.Service
                 .OrResult(_ => _.RequestStatus.StatusCode == RequestStatusCode.Error)
                 .FallbackAsync(async cancellationToken =>
                 {
+                    return await _currencyConverterClient.RequestCurrencyConverter(baseCurrency, targetCurrency)
+                        .ConfigureAwait(false);
+                    /*
                     if (_faceSettings.ExchangeRateSupportedCurrency.Contains(baseCurrency) &&
                         _faceSettings.ExchangeRateSupportedCurrency.Contains(targetCurrency))
                         return await _exchangeRateApiClient.RequestExchangeRateApi(baseCurrency, targetCurrency)
                             .ConfigureAwait(false);
                     return new ExchangeRateInfo();
+                    */
                 }, onFallbackAsync: async _ =>
                 {
                     _logger.LogWarning(_.Exception, "Fallback, object state {@ExchangeRateInfo}", _.Result);
@@ -67,8 +75,8 @@ namespace IB.WatchServer.Service.Service
                 });
 
             exchangeRateInfo = await fallbackPolicy.ExecuteAsync(async () =>
-                await _currencyConverterClient.RequestCurrencyConverter(baseCurrency, targetCurrency)
-                    .ConfigureAwait(false));
+                await _exchangeHostClient.RequestExchangeRateHostApi(baseCurrency, targetCurrency).ConfigureAwait(false));
+                //await _currencyConverterClient.RequestCurrencyConverter(baseCurrency, targetCurrency).ConfigureAwait(false));
             
             if (exchangeRateInfo.RequestStatus.StatusCode == RequestStatusCode.Ok && exchangeRateInfo.ExchangeRate != 0)
                 _memoryCache.Set(cacheKey, exchangeRateInfo, TimeSpan.FromMinutes(60));

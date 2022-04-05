@@ -95,6 +95,7 @@ namespace IB.WatchServer.Service
             services.AddHttpClient<VirtualearthClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
             services.AddHttpClient<CurrencyConverterClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
             services.AddHttpClient<ExchangeRateApiClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
+            services.AddHttpClient<ExchangeRateHostClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
             services.AddHttpClient<DarkSkyClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
             services.AddHttpClient<OpenWeatherClient>().AddRetryPolicyWithCb(4, TimeSpan.FromMinutes(10));
 
