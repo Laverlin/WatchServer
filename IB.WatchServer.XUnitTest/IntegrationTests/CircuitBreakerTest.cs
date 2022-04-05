@@ -35,12 +35,17 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 .AddJsonFile("appsettings.Development.json", false, true)
                 .Build();
             var settings = config.LoadVerifiedConfiguration<FaceSettings>();
-            
+            /*
             var mainUrl1 = settings.BuildCurrencyConverterUrl("USD", "RUB");
             var mainUrl2 = settings.BuildCurrencyConverterUrl("EUR", "PHP");
             var fallbackUrl1 = settings.BuildExchangeRateApiUrl("USD", "RUB");
             var fallbackUrl2 = settings.BuildExchangeRateApiUrl("EUR", "PHP");
+            */
 
+            var fallbackUrl1 = settings.BuildCurrencyConverterUrl("USD", "RUB");
+            var fallbackUrl2 = settings.BuildCurrencyConverterUrl("EUR", "PHP");
+            var mainUrl1 = settings.BuildExchangeHostApiUrl("USD", "RUB");
+            var mainUrl2 = settings.BuildExchangeHostApiUrl("EUR", "PHP");
 
             var handler = new Mock<HttpMessageHandler>();
             handler.SetupRequest(HttpMethod.Get, mainUrl1)
@@ -84,6 +89,9 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
                 .AddRetryPolicyWithCb(2, TimeSpan.FromMinutes(10))
                 .AddHttpMessageHandler(()=>new StubDelegatingHandler(client));
             services.AddHttpClient<ExchangeRateApiClient>()
+                .AddRetryPolicyWithCb(2, TimeSpan.FromMinutes(10))
+                .AddHttpMessageHandler(()=>new StubDelegatingHandler(client));
+            services.AddHttpClient<ExchangeRateHostClient>()
                 .AddRetryPolicyWithCb(2, TimeSpan.FromMinutes(10))
                 .AddHttpMessageHandler(()=>new StubDelegatingHandler(client));
 
