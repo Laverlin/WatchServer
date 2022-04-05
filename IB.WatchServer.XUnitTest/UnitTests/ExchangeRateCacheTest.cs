@@ -23,8 +23,11 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                 MockBehavior.Loose, null, handler.CreateClient(), null,null);
             var exchangeApiClientMock = new Mock<ExchangeRateApiClient>(
                 MockBehavior.Loose, null, handler.CreateClient(), null,null);
-            currencyConverterClientMock
-                .Setup(_ => _.RequestCurrencyConverter("USD", "EUR"))
+
+            var rateHostClientMock = new Mock<ExchangeRateHostClient>(
+                MockBehavior.Loose, null, handler.CreateClient(), null,null);
+            rateHostClientMock
+                .Setup(_ => _.RequestExchangeRateHostApi("USD", "EUR"))
                 .Returns(() => Task.FromResult(new ExchangeRateInfo
                     {ExchangeRate = (decimal) 1.1, RequestStatus = new RequestStatus(RequestStatusCode.Ok)}))
                 .Verifiable();
@@ -32,6 +35,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             var webRequestProvider = new ExchangeRateCacheStrategy(
                 TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
                 currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
+                rateHostClientMock.Object,
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
             // Act
@@ -41,7 +45,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             // Assert
             //
-            currencyConverterClientMock.Verify(_ => _.RequestCurrencyConverter("USD", "EUR"), Times.Once);
+            rateHostClientMock.Verify(_ => _.RequestExchangeRateHostApi("USD", "EUR"), Times.Once);
             Assert.Equal((decimal)1.1, result.ExchangeRate);
         }
 
@@ -66,7 +70,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             var webRequestProvider = new ExchangeRateCacheStrategy(
                 TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
-                currencyConverterClientMock.Object, null, 
+                currencyConverterClientMock.Object, null, null,
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
             // Act
@@ -92,7 +96,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             currencyConverterClientMock
                 .Setup(_ => _.RequestCurrencyConverter("CHF", "EUR"))
                 .Returns(() => Task.FromResult(new ExchangeRateInfo
-                    {ExchangeRate = 0, RequestStatus = new RequestStatus(RequestStatusCode.Error)}))
+                    {ExchangeRate = (decimal) 1.1, RequestStatus = new RequestStatus(RequestStatusCode.Ok)}))
                 .Verifiable();
             var exchangeApiClientMock = new Mock<ExchangeRateApiClient>(
                 MockBehavior.Loose, null, handler.CreateClient(), null,null);
@@ -102,9 +106,18 @@ namespace IB.WatchServer.XUnitTest.UnitTests
                     {ExchangeRate = (decimal) 1.1, RequestStatus = new RequestStatus(RequestStatusCode.Ok)}))
                 .Verifiable();
 
+            var rateHostClientMock = new Mock<ExchangeRateHostClient>(
+                MockBehavior.Loose, null, handler.CreateClient(), null,null);
+            rateHostClientMock
+                .Setup(_ => _.RequestExchangeRateHostApi("CHF", "EUR"))
+                .Returns(() => Task.FromResult(new ExchangeRateInfo
+                    {ExchangeRate = 0, RequestStatus = new RequestStatus(RequestStatusCode.Error)}))
+                .Verifiable();
+
             var webRequestProvider = new ExchangeRateCacheStrategy(
                 TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
                 currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
+                rateHostClientMock.Object,
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
             // Act
@@ -115,50 +128,12 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             // Assert
             //
             currencyConverterClientMock.Verify(_ => _.RequestCurrencyConverter("CHF", "EUR"), Times.Once);
-            exchangeApiClientMock.Verify(_ => _.RequestExchangeRateApi("CHF", "EUR"), Times.Once);
+            rateHostClientMock.Verify(_ => _.RequestExchangeRateHostApi("CHF", "EUR"), Times.Once);
             Assert.Equal((decimal)1.1, result.ExchangeRate);
         }
 
+
         [Fact]
-        public async void ExchangeRateWithErrorShouldFallbackAndReturnZeroForUnsupportedPair()
-        {
-            // Arrange
-            //
-            var handler = new Mock<HttpMessageHandler>();
-            var currencyConverterClientMock = new Mock<CurrencyConverterClient>(
-                MockBehavior.Loose, null, handler.CreateClient(), null,null);
-            currencyConverterClientMock
-                .Setup(_ => _.RequestCurrencyConverter("CHF", "BTC"))
-                .Returns(() => Task.FromResult(new ExchangeRateInfo
-                    {ExchangeRate = 0, RequestStatus = new RequestStatus(RequestStatusCode.Error)}))
-                .Verifiable();
-            var exchangeApiClientMock = new Mock<ExchangeRateApiClient>(
-                MockBehavior.Loose, null, handler.CreateClient(), null,null);
-            exchangeApiClientMock
-                .Setup(_ => _.RequestExchangeRateApi("CHF", "BTC"))
-                .Returns(() => Task.FromResult(new ExchangeRateInfo
-                    {ExchangeRate = (decimal) 1.1, RequestStatus = new RequestStatus(RequestStatusCode.Ok)}))
-                .Verifiable();
-
-            var webRequestProvider = new ExchangeRateCacheStrategy(
-                TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
-                currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
-                TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
-
-            // Act
-            //
-            var result = await webRequestProvider.GetExchangeRate("CHF", "BTC");
-
-
-            // Assert
-            //
-            currencyConverterClientMock.Verify(_ => _.RequestCurrencyConverter(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
-            exchangeApiClientMock.Verify(_ => _.RequestExchangeRateApi(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-            Assert.Equal(0, result.ExchangeRate);
-            Assert.Equal(RequestStatusCode.HasNotBeenRequested, result.RequestStatus.StatusCode);
-        }
-
-                [Fact]
         public async void ExchangeRateWithErrorShouldFallbackAndProvideLogRecord()
         {
             // Arrange
@@ -169,8 +144,17 @@ namespace IB.WatchServer.XUnitTest.UnitTests
             currencyConverterClientMock
                 .Setup(_ => _.RequestCurrencyConverter("CHF", "BTC"))
                 .Returns(() => Task.FromResult(new ExchangeRateInfo
+                    {ExchangeRate = (decimal)1.1, RequestStatus = new RequestStatus(RequestStatusCode.Ok)}))
+                .Verifiable();
+
+            var rateHostClientMock = new Mock<ExchangeRateHostClient>(
+                MockBehavior.Loose, null, handler.CreateClient(), null,null);
+            rateHostClientMock
+                .Setup(_ => _.RequestExchangeRateHostApi("CHF", "BTC"))
+                .Returns(() => Task.FromResult(new ExchangeRateInfo
                     {ExchangeRate = 0, RequestStatus = new RequestStatus(RequestStatusCode.Error)}))
                 .Verifiable();
+
             var exchangeApiClientMock = new Mock<ExchangeRateApiClient>(
                 MockBehavior.Loose, null, handler.CreateClient(), null,null);
             exchangeApiClientMock
@@ -183,7 +167,7 @@ namespace IB.WatchServer.XUnitTest.UnitTests
 
             var webRequestProvider = new ExchangeRateCacheStrategy(
                 loggerMock .Object,
-                currencyConverterClientMock.Object, exchangeApiClientMock.Object, 
+                currencyConverterClientMock.Object, exchangeApiClientMock.Object, rateHostClientMock.Object,
                 TestHelper.GetFaceSettings(), TestHelper.GetMetricsMock().Object);
 
             // Act

@@ -94,6 +94,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             var webRequestProvider = new ExchangeRateCacheStrategy(
                 TestHelper.GetLoggerMock<ExchangeRateCacheStrategy>().Object,
                 isp.GetRequiredService<CurrencyConverterClient>(), isp.GetRequiredService<ExchangeRateApiClient>(),
+                isp.GetRequiredService<ExchangeRateHostClient>(),
                 settings, metricsMock.Object);
 
 
