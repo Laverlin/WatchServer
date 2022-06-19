@@ -2,7 +2,6 @@ using App.Metrics;
 using App.Metrics.Extensions.Configuration;
 using App.Metrics.Formatters.Prometheus;
 using IB.WatchServer.Abstract.Settings;
-using IB.WatchServer.Abstract.Entity;
 using IB.WatchServer.Service.Entity.Settings;
 using IB.WatchServer.Service.Infrastructure;
 using IB.WatchServer.Service.Service;
@@ -55,7 +54,7 @@ namespace IB.WatchServer.Service
 
             services.AddControllers();
 
-            services.AddHostedService<StartupHostedService>();
+
 
             services.AddApplicationInsightsTelemetry(Configuration);
 
@@ -117,6 +116,10 @@ namespace IB.WatchServer.Service
                 : null;
             services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(faceSettings.TelegramKey, proxy));
             services.AddSingleton<TelegramService>();
+            if (!faceSettings.DisableYasBot)
+                services.AddHostedService<StartupHostedService>();
+            else
+                Log.Logger.Information("Skip Telegram Bot start");
 
             // Add the health check
             //
@@ -148,7 +151,6 @@ namespace IB.WatchServer.Service
             {
                 app.UseDeveloperExceptionPage();
             }
-
 
             app.UseRouting();
 

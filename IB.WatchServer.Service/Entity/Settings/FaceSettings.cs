@@ -68,6 +68,8 @@ namespace IB.WatchServer.Service.Entity.Settings
         public string[] ExchangeRateSupportedCurrency { get; set; }
 
         public bool Log2Kafka { get; set; } = true;
+
+        public bool DisableYasBot {get; set; } = false;
     }
 
     /// <summary>
