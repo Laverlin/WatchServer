@@ -36,6 +36,7 @@ namespace IB.WatchServer.Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            Log.Logger.Information("Read Configs");
             // configuration
             //
             var faceSettings = Configuration.LoadVerifiedConfiguration<FaceSettings>();
@@ -111,10 +112,10 @@ namespace IB.WatchServer.Service
 
             // Add telegram bot
             //
-            var proxy = (faceSettings.ProxySettings != null)
-                ? new HttpToSocks5Proxy(faceSettings.ProxySettings.Host, faceSettings.ProxySettings.Port)
-                : null;
-            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(faceSettings.TelegramKey, proxy));
+            // var proxy = (faceSettings.ProxySettings != null)
+            //    ? new HttpToSocks5Proxy(faceSettings.ProxySettings.Host, faceSettings.ProxySettings.Port)
+            //    : null;
+            services.AddSingleton<ITelegramBotClient>(new TelegramBotClient(faceSettings.TelegramKey));
             services.AddSingleton<TelegramService>();
             if (!faceSettings.DisableYasBot)
                 services.AddHostedService<StartupHostedService>();
