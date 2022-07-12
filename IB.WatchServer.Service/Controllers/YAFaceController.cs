@@ -197,6 +197,7 @@ namespace IB.WatchServer.Service.Controllers
                 {
                     Task.WaitAll(tasks.ToArray());
                 }
+/*
                 catch (AggregateException aex)
                 {
                     aex.Handle(ex =>
@@ -204,7 +205,7 @@ namespace IB.WatchServer.Service.Controllers
                         TaskCanceledException tcex = ex as TaskCanceledException;
                         if (tcex != null)
                         {
-                            _logger.LogWarning($"\n{nameof(TaskCanceledException)} thrown\n");
+                            _logger.LogWarning(tcex, $"\n{nameof(TaskCanceledException)} thrown\n");
                             return true;
                         }
                         else
@@ -212,7 +213,8 @@ namespace IB.WatchServer.Service.Controllers
                             return false;
                         }
                     });
-                }
+                } 
+*/
                 finally
                 {
                     cancellationToken.Dispose();
