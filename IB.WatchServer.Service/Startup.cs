@@ -44,12 +44,14 @@ namespace IB.WatchServer.Service
             services.AddSingleton(Configuration.LoadVerifiedConfiguration<KafkaSettings>());
             services.AddSingleton(faceSettings);
             services.AddSingleton(pgSettings);
+            services.AddSingleton(Configuration.LoadVerifiedConfiguration<MsSqlProviderSettings>());
 
             // services
             //
             services.AddSingleton<DataConnectionFactory>();
             services.AddSingleton<KafkaProvider>();
             services.AddScoped<PostgresDataProvider>();
+            services.AddScoped<MsSqlDataProvider>();
             services.AddScoped<ExchangeRateCacheStrategy>();
             services.AddScoped<RequestRateLimit>();
 

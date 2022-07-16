@@ -37,6 +37,7 @@ namespace IB.WatchServer.Service.Controllers
         private readonly DarkSkyClient _darkSkyClient;
         private readonly OpenWeatherClient _openWeatherClient;
         private readonly FaceSettings _faceSettings;
+        private readonly MsSqlDataProvider _msSqlDataProvider;
 
         public YAFaceController(
             ILogger<YAFaceController> logger, PostgresDataProvider postgresDataProvider, KafkaProvider kafkaProvider,
@@ -44,7 +45,8 @@ namespace IB.WatchServer.Service.Controllers
             VirtualearthClient virtualearthClient,  
             DarkSkyClient darkSkyClient,
             OpenWeatherClient openWeatherClient,
-            FaceSettings faceSettings)
+            FaceSettings faceSettings,
+            MsSqlDataProvider msSqlDataProvider)
         {
             _logger = logger;
             _postgresDataProvider = postgresDataProvider;
@@ -54,6 +56,7 @@ namespace IB.WatchServer.Service.Controllers
             _darkSkyClient = darkSkyClient;
             _openWeatherClient = openWeatherClient;
             _faceSettings = faceSettings;
+            _msSqlDataProvider = msSqlDataProvider;
         }
 
         /// <summary>
@@ -204,7 +207,7 @@ namespace IB.WatchServer.Service.Controllers
                         TaskCanceledException tcex = ex as TaskCanceledException;
                         if (tcex != null)
                         {
-                            _logger.LogDebug(tcex, $"\n{nameof(TaskCanceledException)} thrown\n");
+                           // _logger.LogDebug(tcex, $"\n{nameof(TaskCanceledException)} thrown\n");
                             return true;
                         }
                         else
@@ -222,6 +225,7 @@ namespace IB.WatchServer.Service.Controllers
                 // Save all requested data
                 //
                 _ = _postgresDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
+                _ = _msSqlDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
 
                 // WatchFaces earlier than 0.9.248 can not display diacritics
                 //
@@ -246,7 +250,7 @@ namespace IB.WatchServer.Service.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Request error, {@WatchFaceRequest}", watchRequest);
+                _logger.LogError(ex, "Request error, {@WatchFaceRequest}", watchRequest);
                 return BadRequest(new ErrorResponse { StatusCode = (int)HttpStatusCode.BadRequest, Description = "Bad request" });
             }
         }

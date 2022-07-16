@@ -45,23 +45,30 @@ namespace IB.WatchServer.Service.Service
             [NotNull] ExchangeRateInfo exchangeRateInfo)
         {
 
-            await using var dbWatchServer = _connectionFactory.Create();
-            var deviceData = dbWatchServer.QueryProc<DeviceData>(
-                    "add_device",
-                    new DataParameter("device_id", watchRequest.DeviceId ?? "unknown"),
-                    new DataParameter("device_name", watchRequest.DeviceName))
-                .Single();
+            try
+            {
+                await using var dbWatchServer = _connectionFactory.Create();
+                var deviceData = dbWatchServer.QueryProc<DeviceData>(
+                        "add_device",
+                        new DataParameter("device_id", watchRequest.DeviceId ?? "unknown"),
+                        new DataParameter("device_name", watchRequest.DeviceName))
+                    .Single();
 
-            var requestData = _mapper.Map<RequestData>(watchRequest);
-            requestData = _mapper.Map(weatherInfo, requestData);
-            requestData = _mapper.Map(locationInfo, requestData);
-            requestData = _mapper.Map(exchangeRateInfo, requestData);
-            requestData.DeviceDataId = deviceData.Id;
-            requestData.RequestTime = DateTime.UtcNow;
+                var requestData = _mapper.Map<RequestData>(watchRequest);
+                requestData = _mapper.Map(weatherInfo, requestData);
+                requestData = _mapper.Map(locationInfo, requestData);
+                requestData = _mapper.Map(exchangeRateInfo, requestData);
+                requestData.DeviceDataId = deviceData.Id;
+                requestData.RequestTime = DateTime.UtcNow;
             
-            await dbWatchServer.GetTable<RequestData>().DataContext.InsertAsync(requestData);
+                await dbWatchServer.GetTable<RequestData>().DataContext.InsertAsync(requestData);
 
-            _logger.LogDebug("{@requestInfo}", requestData);
+                _logger.LogDebug("{@requestInfo}", requestData);
+            }
+            catch(Exception exception)
+            {
+                _logger.LogError(exception, "Error Postgres db save");
+            }
         }
 
         /// <summary>

@@ -25,6 +25,13 @@ namespace IB.WatchServer.Service.Service
                         s.ContainsKey(o.DestinationMember.Name.ToLower())
                             ? s[o.DestinationMember.Name.ToLower()]
                             : null));
+
+                mc.CreateMap<WatchRequest, ResponseLog>();
+                mc.CreateMap<WeatherInfo, ResponseLog>();
+                mc.CreateMap<LocationInfo, ResponseLog>();
+                mc.CreateMap<ExchangeRateInfo, ResponseLog>();
+
+
             }).CreateMapper();
         }
     }
