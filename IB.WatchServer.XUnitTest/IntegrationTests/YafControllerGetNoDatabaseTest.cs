@@ -19,6 +19,7 @@ using Moq;
 using Moq.Contrib.HttpClient;
 using Xunit;
 using Xunit.Abstractions;
+using IB.WatchServer.Abstract.Settings;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
@@ -37,9 +38,11 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             factory.Output = output;
             _factory = factory;
 
+
+            var pgDataSettingMock = new Mock<PostgresProviderSettings>();
             // Mock database
             //
-            var dataProviderMock = new Mock<PostgresDataProvider>(null, null, null, null);
+            var dataProviderMock = new Mock<PostgresDataProvider>(null, pgDataSettingMock.Object, null, null);
 
             // Mock kafka
             //
@@ -114,8 +117,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Assert
             //
-//            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode); // Status Code 429
-//            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode); // Status Code 429
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
 
 
@@ -218,8 +221,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Assert
             //
-            // Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode); // Status Code 400
-           // Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+            //Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode); // Status Code 400
+            //Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
 
     }

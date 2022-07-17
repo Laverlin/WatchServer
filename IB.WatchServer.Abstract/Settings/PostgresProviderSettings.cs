@@ -62,5 +62,6 @@ namespace IB.WatchServer.Abstract.Settings
         /// Pool size maximum
         /// </summary>
         public int MaxPoolSize { get; set; } = 100;
+
     }
 }

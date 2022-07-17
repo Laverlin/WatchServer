@@ -69,7 +69,11 @@ namespace IB.WatchServer.Service.Entity.Settings
 
         public bool Log2Kafka { get; set; } = true;
 
-        public bool DisableYasBot {get; set; } = false;
+        public bool DisableYasBot { get; set; } = false;
+
+        public bool IsPgExportDisabled { get; set; } = false;
+
+        public bool IsMsExportDisabled { get; set; } = false;
     }
 
     /// <summary>

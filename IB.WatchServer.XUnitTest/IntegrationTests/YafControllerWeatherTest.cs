@@ -14,6 +14,7 @@ using Moq;
 using Moq.Contrib.HttpClient;
 using Xunit;
 using Xunit.Abstractions;
+using IB.WatchServer.Abstract.Settings;
 
 namespace IB.WatchServer.XUnitTest.IntegrationTests
 {
@@ -43,9 +44,10 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             kafkaProvider.Setup(_ => _.SendMessage(It.IsAny<Object>()))
                 .Returns(Task.CompletedTask);
 
+            var pgDataSettingMock = new Mock<PostgresProviderSettings>();
             // Mock database
             //
-            var dataProviderMock = new Mock<PostgresDataProvider>(null, null, null, null);
+            var dataProviderMock = new Mock<PostgresDataProvider>(null, pgDataSettingMock.Object, null, null);
 
             dataProviderMock.Setup(_ => _.SaveRequestInfo(
                     It.IsAny<WatchRequest>(), It.IsAny<WeatherInfo>(), It.IsAny<LocationInfo>(), It.IsAny<ExchangeRateInfo>()))

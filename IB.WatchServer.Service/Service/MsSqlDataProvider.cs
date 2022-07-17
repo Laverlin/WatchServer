@@ -41,6 +41,7 @@ namespace IB.WatchServer.Service.Service
             [NotNull] LocationInfo locationInfo, 
             [NotNull] ExchangeRateInfo exchangeRateInfo)
         {
+
             try
             {
                 await using var dbWatchServer = _connectionFactory.Create();

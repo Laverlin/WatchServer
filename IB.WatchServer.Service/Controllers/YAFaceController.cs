@@ -224,8 +224,19 @@ namespace IB.WatchServer.Service.Controllers
 
                 // Save all requested data
                 //
-                _ = _postgresDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
-                _ = _msSqlDataProvider.SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo);
+                if (!_faceSettings.IsPgExportDisabled)
+                    _postgresDataProvider
+                        .SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo)
+                        .ContinueWith(
+                            e => _logger.LogError(e.Exception, "Pg export error"), 
+                            TaskContinuationOptions.OnlyOnFaulted);
+
+                if (!_faceSettings.IsMsExportDisabled)
+                    _msSqlDataProvider
+                        .SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo)
+                        .ContinueWith(
+                            e => _logger.LogError(e.Exception, "MsSql export error"), 
+                            TaskContinuationOptions.OnlyOnFaulted);
 
                 // WatchFaces earlier than 0.9.248 can not display diacritics
                 //

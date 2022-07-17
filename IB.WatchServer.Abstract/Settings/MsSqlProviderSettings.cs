@@ -40,5 +40,6 @@ namespace IB.WatchServer.Abstract.Settings
         /// </summary>
         [Required]
         public string Password { get; set; }
+
     }
 }

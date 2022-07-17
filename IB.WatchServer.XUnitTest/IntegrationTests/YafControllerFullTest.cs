@@ -193,12 +193,13 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             //
 
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+            var pgProviderSettings = _factory.Services.GetRequiredService<PostgresProviderSettings>();
             var dbConnection = new DataConnectionFactory(connectionSettings.GetDataProvider(), connectionSettings.BuildConnectionString())
                 .Create();
 
             var dataProvider = new PostgresDataProvider(
                 TestHelper.GetLoggerMock<PostgresDataProvider>().Object, 
-                new DataConnectionFactory(connectionSettings), 
+                pgProviderSettings, 
                 MapperConfig.CreateMapper(), null);
 
             var watchRequest = new WatchRequest
@@ -253,10 +254,11 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Arrange
             //
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+            var pgProviderSettings = _factory.Services.GetRequiredService<PostgresProviderSettings>();
 
             var dataProvider = new PostgresDataProvider(
                 TestHelper.GetLoggerMock<PostgresDataProvider>().Object, 
-                new DataConnectionFactory(connectionSettings), 
+                pgProviderSettings, 
                 MapperConfig.CreateMapper(), 
                 TestHelper.GetMetricsMock().Object);
 
@@ -298,10 +300,11 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             // Arrange
             //
             var connectionSettings = _factory.Services.GetRequiredService<IConnectionSettings>();
+            var pgProviderSettings = _factory.Services.GetRequiredService<PostgresProviderSettings>();
 
             var dataProvider = new PostgresDataProvider(
                 TestHelper.GetLoggerMock<PostgresDataProvider>().Object, 
-                new DataConnectionFactory(connectionSettings), 
+                pgProviderSettings, 
                 MapperConfig.CreateMapper(), 
                 TestHelper.GetMetricsMock().Object);
 

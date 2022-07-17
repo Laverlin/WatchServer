@@ -6,9 +6,9 @@ using App.Metrics;
 using AutoMapper;
 using IB.WatchServer.Abstract;
 using IB.WatchServer.Abstract.Entity.WatchFace;
+using IB.WatchServer.Abstract.Settings;
 using LinqToDB;
 using LinqToDB.Data;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace IB.WatchServer.Service.Service
@@ -23,10 +23,11 @@ namespace IB.WatchServer.Service.Service
 
 
         public PostgresDataProvider(
-            ILogger<PostgresDataProvider> logger, DataConnectionFactory connectionFactory, IMapper mapper, IMetrics metrics)
+            ILogger<PostgresDataProvider> logger, PostgresProviderSettings providerSettings, IMapper mapper, IMetrics metrics)
         {
             _logger = logger;
-            _connectionFactory = connectionFactory;
+            _connectionFactory = new DataConnectionFactory(
+                providerSettings.GetDataProvider(), providerSettings.BuildConnectionString());
             _mapper = mapper;
             _metrics = metrics;
         }
@@ -44,7 +45,6 @@ namespace IB.WatchServer.Service.Service
             [NotNull] LocationInfo locationInfo, 
             [NotNull] ExchangeRateInfo exchangeRateInfo)
         {
-
             try
             {
                 await using var dbWatchServer = _connectionFactory.Create();
