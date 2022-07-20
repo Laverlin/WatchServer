@@ -45,16 +45,21 @@ namespace IB.WatchServer.Service
             services.AddSingleton(faceSettings);
             services.AddSingleton(pgSettings);
             services.AddSingleton(pgSettings as PostgresProviderSettings);
-            services.AddSingleton(Configuration.LoadVerifiedConfiguration<MsSqlProviderSettings>());
+
 
             // services
             //
             services.AddSingleton<KafkaProvider>();
             services.AddSingleton<DataConnectionFactory>();
             services.AddScoped<PostgresDataProvider>();
-            services.AddScoped<MsSqlDataProvider>();
             services.AddScoped<ExchangeRateCacheStrategy>();
             services.AddScoped<RequestRateLimit>();
+
+            if (!faceSettings.DisableMsExport)
+            {
+                services.AddSingleton(Configuration.LoadVerifiedConfiguration<MsSqlProviderSettings>());
+                services.AddScoped<MsSqlDataProvider>();
+            }
 
             services.AddControllers();
 

@@ -117,8 +117,8 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
 
             // Assert
             //
-            //Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode); // Status Code 429
-            //Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
+            Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode); // Status Code 429
+            Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
         }
 
 
@@ -199,31 +199,7 @@ namespace IB.WatchServer.XUnitTest.IntegrationTests
             Assert.Equal(RequestStatusCode.Ok, actual.ExchangeRateInfo.RequestStatus.StatusCode);
         }
 
-        [Fact]
-        public async Task OnExceptionShouldReturnBadRequest()
-        {
-            // Arrange
-            //
-            var expected = new ErrorResponse
-            {
-                StatusCode = 400,
-                Description = "Bad request"
-            };
-            var expectedJson = JsonSerializer.Serialize(expected);
 
-            var faceSettings = _factory.Services.GetRequiredService<FaceSettings>();
-            //_handler.SetupAnyRequest().Throws(new Exception());
-            var url = $"/api/v2/YAFace?apiToken={faceSettings.AuthSettings.Token}&did=test-device14&bc=DKK&tc=CHF";
-
-            // Act
-            //
-            var response = await _client.GetAsync(url);
-
-            // Assert
-            //
-            //Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode); // Status Code 400
-            //Assert.Equal(expectedJson, await response.Content.ReadAsStringAsync());
-        }
 
     }
 }

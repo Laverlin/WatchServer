@@ -39,6 +39,7 @@ namespace IB.WatchServer.Service.Controllers
         private readonly FaceSettings _faceSettings;
         private readonly MsSqlDataProvider _msSqlDataProvider;
 
+
         public YAFaceController(
             ILogger<YAFaceController> logger, PostgresDataProvider postgresDataProvider, KafkaProvider kafkaProvider,
             ExchangeRateCacheStrategy exchangeRateCacheStrategy,
@@ -46,7 +47,7 @@ namespace IB.WatchServer.Service.Controllers
             DarkSkyClient darkSkyClient,
             OpenWeatherClient openWeatherClient,
             FaceSettings faceSettings,
-            MsSqlDataProvider msSqlDataProvider)
+            MsSqlDataProvider? msSqlDataProvider = null)
         {
             _logger = logger;
             _postgresDataProvider = postgresDataProvider;
@@ -224,14 +225,14 @@ namespace IB.WatchServer.Service.Controllers
 
                 // Save all requested data
                 //
-                if (!_faceSettings.IsPgExportDisabled)
+                if (!_faceSettings.DisablePgExport)
                     _postgresDataProvider
                         .SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo)
                         .ContinueWith(
                             e => _logger.LogError(e.Exception, "Pg export error"), 
                             TaskContinuationOptions.OnlyOnFaulted);
 
-                if (!_faceSettings.IsMsExportDisabled)
+                if (!_faceSettings.DisableMsExport)
                     _msSqlDataProvider
                         .SaveRequestInfo(watchRequest, weatherInfo, locationInfo, exchangeRateInfo)
                         .ContinueWith(

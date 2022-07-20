@@ -71,9 +71,9 @@ namespace IB.WatchServer.Service.Entity.Settings
 
         public bool DisableYasBot { get; set; } = false;
 
-        public bool IsPgExportDisabled { get; set; } = false;
+        public bool DisablePgExport { get; set; } = false;
 
-        public bool IsMsExportDisabled { get; set; } = false;
+        public bool DisableMsExport { get; set; } = false;
     }
 
     /// <summary>
